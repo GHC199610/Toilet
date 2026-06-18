@@ -1,0 +1,2098 @@
+﻿﻿﻿﻿﻿﻿﻿﻿
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卫生间隔断自动生成器</title>
+<style>
+:root{
+  --font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --color-text-primary:#1f2328;
+  --color-text-secondary:#656d76;
+  --color-text-tertiary:#8c959f;
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f6f8fa;
+  --color-border-primary:#d0d7de;
+  --color-border-secondary:#d8dee4;
+  --color-border-tertiary:#e1e4e8;
+  --border-radius-md:0.375rem;
+  --border-radius-lg:0.5rem;
+}
+body.theme-dark{
+  --color-text-primary:#e6edf3;
+  --color-text-secondary:#9da7b3;
+  --color-text-tertiary:#7d8793;
+  --color-background-primary:#141a22;
+  --color-background-secondary:#0f141b;
+  --color-border-primary:#344152;
+  --color-border-secondary:#303a48;
+  --color-border-tertiary:#27313d;
+  --group-mono:#ffffff;
+}
+body{--group-mono:#000000}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;height:100%}
+body{height:100%;font-family:'Microsoft YaHei', var(--font-sans);color:var(--color-text-primary);background:#f6f8fa}
+body.theme-dark{background:#090d12}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.wrap{display:flex;gap:0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary);height:calc(100vh - 1.25rem);margin:0.625rem}
+.sidebar{width:16rem;flex-shrink:0;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);overflow-y:auto}
+.sb-head{padding:1rem 1rem 0.75rem;border-bottom:0.5px solid var(--color-border-tertiary);display:grid;grid-template-columns:1fr auto;gap:0.75rem;align-items:start}
+.sb-title{min-width:0}
+.sb-head p{font-size:0.9375rem;line-height:1.4;font-weight:600;color:var(--color-text-primary)}
+.sb-head span{display:block;margin-top:0.125rem;font-size:0.75rem;line-height:1.45;color:var(--color-text-tertiary)}
+.theme-btn{width:2rem;height:2rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;line-height:1;transition:all .15s}
+.theme-btn:hover{border-color:#378ADD;color:#185FA5}
+body.theme-dark .theme-btn:hover{color:#79c0ff}
+.group-list{display:flex;flex-direction:column;gap:0.375rem;height:14rem;overflow-y:auto;overscroll-behavior:contain;padding-right:0.125rem;scrollbar-width:thin}
+body.view-plan .group-list{height:24rem}
+.group-block{display:grid;gap:0.375rem}
+.row-collapse{display:grid;grid-template-rows:0fr;transition:grid-template-rows .22s ease}
+.row-collapse.open{grid-template-rows:1fr}
+.row-collapse-inner{overflow:hidden;display:grid;gap:0.375rem}
+.group-item{width:100%;padding:0.5rem 0.625rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;text-align:left;display:grid;grid-template-columns:1fr auto;gap:0.375rem;align-items:center}
+.row-anim-wrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .2s ease,opacity .16s ease}
+.row-anim-wrap.entering,.row-anim-wrap.leaving{grid-template-rows:0fr;opacity:0}
+.row-anim-inner{overflow:hidden}
+.group-item.active{border-color:#378ADD;background:#E6F1FB;color:#185FA5}
+body.theme-dark .group-item.active{border-color:#58a6ff;background:#102a43;color:#b9dcff}
+.group-item.row-item.active{background:var(--color-background-primary)}
+body.theme-dark .group-item.row-item.active{background:var(--color-background-primary)}
+.group-item.group-color{border-color:var(--color-border-secondary);color:var(--color-text-tertiary);box-shadow:inset 4px 0 0 var(--group-color)}
+.group-item.group-color.open{border-color:var(--group-color);color:var(--group-color)}
+.group-item.group-color.active{background:var(--color-background-primary);border-color:var(--color-border-secondary);color:var(--color-text-tertiary)}
+body.theme-dark .group-item.group-color.active{background:var(--color-background-primary);border-color:var(--color-border-secondary);color:var(--color-text-tertiary)}
+.group-item.group-color.open.active{background:color-mix(in srgb, var(--group-color) 14%, var(--color-background-primary));border-color:var(--group-color);color:var(--group-color)}
+body.theme-dark .group-item.group-color.open.active{background:color-mix(in srgb, var(--group-color) 18%, var(--color-background-primary));border-color:var(--group-color);color:var(--group-color)}
+.group-item.group-color{padding-left:0.75rem}
+.group-item.row-item{padding-left:0.625rem}
+.group-item.row-item.active{border-color:var(--group-color);color:var(--group-color)}
+body.theme-dark .group-item.row-item.active{border-color:var(--group-color);color:var(--group-color)}
+.group-name{font-size:0.8125rem;font-weight:600;color:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.group-meta{font-size:0.6875rem;color:var(--color-text-tertiary);grid-column:1 / -1}
+.group-actions-inline{display:flex;gap:0.375rem;align-items:center;justify-content:flex-end}
+.group-toggle{width:2rem;height:1.125rem;border:0.5px solid var(--color-border-secondary);border-radius:999px;background:var(--color-border-secondary);cursor:pointer;position:relative;flex:0 0 auto;transition:background .18s,border-color .18s}
+.group-toggle::after{content:"";position:absolute;width:0.8125rem;height:0.8125rem;left:0.125rem;top:50%;border-radius:50%;background:#fff;transform:translateY(-50%);box-shadow:0 1px 2px rgba(31,35,40,.18);transition:left .18s}
+.group-toggle.open{background:var(--group-color);border-color:var(--group-color)}
+.group-toggle.open::after{left:1rem}
+.icon-action{width:1.5rem;height:1.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.icon-action.add{color:#2DA44E}
+.icon-action.del{color:#CF222E}
+.icon-action.add.row-add{font-size:0;position:relative}
+.icon-action.add.row-add::before,.icon-action.add.row-add::after{content:"";position:absolute;left:50%;top:50%;width:0.875rem;height:0.125rem;border-radius:999px;background:currentColor;transform:translate(-50%,-50%)}
+.icon-action.add.row-add::after{transform:translate(-50%,-50%) rotate(90deg)}
+.icon-action.del.row-delete{font-size:0;position:relative}
+.icon-action.del.row-delete::before{content:"";width:0.875rem;height:0.125rem;border-radius:999px;background:currentColor;display:block}
+.icon-action:hover{border-color:currentColor;background:var(--color-background-primary)}
+.new-group-btn{width:100%;height:2.25rem;margin-top:0.625rem;border:0.5px solid #185FA5;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer}
+.new-group-btn:hover{background:#0C447C;border-color:#0C447C}
+.sec{padding:0.875rem 1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.sec.elevation-only{display:block}
+body.view-plan .sec.elevation-only{display:none}
+.sec-title{font-size:0.6875rem;font-weight:600;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.625rem;line-height:1.35}
+.wall-section .sec-title{font-size:0.8125rem;margin-bottom:0.75rem}
+.wall-section .wall-btn{font-size:0.875rem;min-height:5rem}
+.wall-section .wall-btn svg{width:3.375rem;height:2.5rem;margin-bottom:0.375rem}
+.field{margin-bottom:0.625rem}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:0.8125rem;line-height:1.45;color:var(--color-text-secondary);margin-bottom:0.25rem}
+.field label span,.sec-title span{display:inline-block;margin-left:0.25rem;padding:0 0.25rem;border-radius:0.1875rem;background:#fff;color:#111;font-weight:600;text-shadow:none;text-transform:none;letter-spacing:0}
+.field input[type=number],.field input[type=text],.field select{width:100%;padding:0.375rem 0.625rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.875rem;line-height:1.25;height:2rem;-webkit-appearance:none;-moz-appearance:textfield}
+.field input[type=number]::-webkit-outer-spin-button,.field input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.check-field{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.625rem;color:var(--color-text-secondary);font-size:0.8125rem;line-height:1.45}
+.check-field input{width:1rem;height:1rem;accent-color:#185FA5}
+.wall-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}
+.wall-btn{min-height:4.25rem;padding:0.5rem 0.375rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);font-size:0.8125rem;color:var(--color-text-secondary);cursor:pointer;text-align:center;line-height:1.35;transition:all 0.15s}
+.wall-btn.active{background:#E6F1FB;border-color:#378ADD;color:#185FA5}
+body.theme-dark .wall-btn.active{background:#102a43;border-color:#58a6ff;color:#b9dcff}
+.wall-btn svg{display:block;margin:0 auto 0.3125rem;width:3rem;height:2.25rem}
+.booth-swing-panel{display:grid;gap:0.5rem;margin-top:0.625rem;padding-top:0.625rem;border-top:0.5px solid var(--color-border-tertiary)}
+.booth-swing-hint{font-size:0.6875rem;color:var(--color-text-tertiary);line-height:1.45}
+.booth-pick-line{display:flex;gap:0.375rem;align-items:center}
+.booth-pick-input{height:2rem;min-width:0;flex:1;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.8125rem;padding:0.375rem 0.625rem;text-transform:uppercase}
+.booth-pick-input:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,.16)}
+.booth-pick-clear{height:2rem;padding:0 0.625rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;cursor:pointer}
+.booth-pick-clear:hover{border-color:#378ADD;color:#185FA5}
+.gen-btn{width:calc(100% - 2rem);margin:0.875rem 1rem;padding:0.625rem 0.75rem;background:#185FA5;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:0.875rem;line-height:1.4;cursor:pointer;font-weight:600;transition:background 0.15s}
+.gen-btn:hover{background:#0C447C}
+.right{flex:1;display:flex;flex-direction:column;min-width:0}
+.view-tabs{display:flex;align-items:center;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.vtab{padding:0.5rem 1rem;font-size:0.75rem;cursor:pointer;border-bottom:2px solid transparent;color:var(--color-text-secondary);transition:all 0.15s}
+.vtab.active{border-bottom-color:#378ADD;color:#185FA5;font-weight:500}
+body.theme-dark .vtab.active{border-bottom-color:#58a6ff;color:#b9dcff}
+.top-widths{display:flex;align-items:center;gap:0.5rem;margin-left:1rem;min-width:20rem;max-width:38rem;flex:0 1 38rem}
+.top-widths label{font-size:0.75rem;color:var(--color-text-secondary);white-space:nowrap}
+.top-widths input{width:100%;height:1.625rem;padding:0.25rem 0.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.75rem;line-height:1.2}
+.canvas-area{flex:1;position:relative;background:#eef1f4;overflow:hidden}
+body.theme-dark .canvas-area{background:#202734}
+canvas{display:block;width:100%;height:100%}
+.bom-area{border-top:0.5px solid var(--color-border-tertiary);padding:0.625rem 0.875rem;background:var(--color-background-secondary)}
+.bom-title{font-size:0.6875rem;font-weight:500;color:var(--color-text-secondary);margin-bottom:0.375rem}
+.bom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));gap:0.375rem}
+.bom-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.4375rem 0.625rem}
+.bom-card .name{font-size:0.625rem;color:var(--color-text-tertiary)}
+.bom-card .val{font-size:0.8125rem;font-weight:500;color:var(--color-text-primary)}
+.bom-card .sub{font-size:0.625rem;color:var(--color-text-tertiary)}
+.export-row{display:flex;gap:0.5rem;padding:0.625rem 0.875rem;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.ex-btn{padding:0.3125rem 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.25rem}
+.ex-btn:hover{background:var(--color-background-primary);border-color:#378ADD;color:#185FA5}
+body.theme-dark .ex-btn:hover{border-color:#58a6ff;color:#b9dcff}
+.cv-controls{position:absolute;top:0.625rem;right:0.625rem;display:flex;align-items:center;gap:0.375rem;z-index:10}
+.cv-btn{padding:0.3125rem 0.625rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:rgba(255,255,255,0.94);color:var(--color-text-secondary);font-size:0.6875rem;cursor:pointer;transition:all .15s}
+.cv-btn:hover{border-color:#378ADD;color:#185FA5;background:#fff}
+body.theme-dark .cv-btn{background:rgba(20,26,34,.92)}
+body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141a22}
+.zoom-info{font-size:0.6875rem;color:var(--color-text-tertiary);min-width:2.25rem;text-align:right;font-family:Consolas,'Microsoft YaHei',monospace}
+@media print{
+  body,body.theme-dark{background:#fff;color:#1f2328}
+  body.theme-dark{
+    --color-text-primary:#1f2328;
+    --color-text-secondary:#656d76;
+    --color-text-tertiary:#8c959f;
+    --color-background-primary:#ffffff;
+    --color-background-secondary:#f6f8fa;
+    --color-border-primary:#d0d7de;
+    --color-border-secondary:#d8dee4;
+    --color-border-tertiary:#e1e4e8;
+  }
+  .theme-btn{display:none}
+  .canvas-area{background:#eef1f4!important}
+}
+</style>
+
+<h2 class="sr-only">卫生间隔断自动生成器 — 输入参数后自动生成平面图和立面图，并输出材料清单</h2>
+<div class="wrap">
+  <div class="sidebar">
+    <div class="sb-head">
+      <div class="sb-title">
+        <p>隔断参数设置</p>
+        <span>填写后点击生成图纸</span>
+      </div>
+      <button class="theme-btn" id="theme-toggle" type="button" onclick="toggleTheme()" title="切换深色主题" aria-label="切换深色主题">☾</button>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">项目分组</div>
+      <div class="group-list" id="group-list"></div>
+      <button class="new-group-btn" type="button" onclick="addGroup()">新建组</button>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">隔间布局</div>
+      <div class="field"><label>间数（个） <span id="layout-target-label"></span></label><input type="number" id="p-count" value="3" min="1" max="999" step="1"></div>
+      <div class="field"><label>总长度（mm）</label><input type="number" id="p-total" value="3000" min="600" max="20000" step="100"></div>
+      <div class="field"><label>隔间深度（mm）</label><input type="number" id="p-depth" value="1220" min="800" max="2000" step="50"></div>
+      <div class="field"><label>门宽（mm）</label><input type="number" id="p-door" value="600" min="400" max="1000" step="50"></div>
+      <div class="field"><label>门缝（mm）</label><input type="number" id="p-gap" value="10" min="4" max="100" step="1"></div>
+      <label class="check-field"><span>门板/立板子母口</span><input type="checkbox" id="p-rebate"></label>
+      <div class="field"><label>单边启口值（mm）</label><input type="number" id="p-rebate-depth" value="10" min="0" max="100" step="1"></div>
+    </div>
+
+    <div class="sec elevation-only" id="height-section">
+      <div class="sec-title">板材高度（mm）</div>
+      <div class="field"><label>立板高度</label><input type="number" id="h-upright" value="1830" min="1000" max="2400" step="50"></div>
+      <div class="field"><label>门板高度</label><input type="number" id="h-door" value="1750" min="900" max="2400" step="50"></div>
+      <div class="field"><label>中隔板高度</label><input type="number" id="h-mid" value="1800" min="1000" max="2400" step="50"></div>
+      <div class="field"><label>见光板高度</label><input type="number" id="h-vis" value="1830" min="100" max="2400" step="50"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">板材厚度（mm）</div>
+      <div class="field"><label>隔断板厚</label><input type="number" id="t-panel" value="12" min="6" max="25" step="1"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">开门方向</div>
+      <div class="wall-grid" id="swing-grid"></div>
+      <div class="booth-swing-panel" id="booth-swing-panel"></div>
+    </div>
+
+    <div class="sec wall-section">
+      <div class="sec-title">墙体条件 <span id="wall-target-label"></span></div>
+      <div class="wall-grid">
+        <button class="wall-btn active" data-wall="three" onclick="setWall(this)">
+          <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="4" height="24" fill="#378ADD"/><rect x="28" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
+          三面靠墙
+        </button>
+        <button class="wall-btn" data-wall="left" onclick="setWall(this)">
+          <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
+          左边靠墙
+        </button>
+        <button class="wall-btn" data-wall="right" onclick="setWall(this)">
+          <svg width="32" height="24" viewBox="0 0 32 24"><rect x="28" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
+          右边靠墙
+        </button>
+        <button class="wall-btn" data-wall="back" onclick="setWall(this)">
+          <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
+          只有背墙
+        </button>
+      </div>
+    </div>
+
+    <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> 生成图纸</button>
+  </div>
+
+  <div class="right">
+    <div class="view-tabs">
+      <div class="vtab active" id="tab-plan" onclick="switchTab('plan')">平面图</div>
+      <div class="vtab" id="tab-front" onclick="switchTab('front')">正立面图</div>
+      <div class="vtab" id="tab-side" onclick="switchTab('side')">侧立面图</div>
+      <div class="top-widths"><label for="p-widths">单间净宽</label><input type="text" id="p-widths" placeholder="如 950,1000,1050"></div>
+    </div>
+    <div class="canvas-area" id="carea">
+      <canvas id="cv"></canvas>
+      <div class="cv-controls">
+        <span class="zoom-info" id="zoom-info">100%</span>
+        <button class="cv-btn" onclick="resetZoom()">重置视图</button>
+      </div>
+    </div>
+    <div class="bom-area">
+      <div class="bom-title">材料清单</div>
+      <div class="bom-grid" id="bom"></div>
+    </div>
+    <div class="export-row">
+      <button class="ex-btn" onclick="exportImg('平面图')"><i class="ti ti-download" aria-hidden="true" style="font-size:14px"></i> 导出当前视图</button>
+      <button class="ex-btn" onclick="exportAll()"><i class="ti ti-file-export" aria-hidden="true" style="font-size:14px"></i> 导出全部视图</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let wallMode = 'three';
+let swingMode = 'in-right';
+let currentTab = 'plan';
+let lastParams = null;
+let zoomScale = 1;
+let panX = 0, panY = 0;
+let isDragging = false;
+let dragStartX = 0, dragStartY = 0;
+let dragStartPanX = 0, dragStartPanY = 0;
+let activeGroupId = 1;
+let activeRowId = 1;
+let selectionScope = 'row';
+let selectedBoothIndex = null;
+let selectedBoothRef = null;
+let rowAnimation = null;
+let planHitAreas = [];
+let openGroupIds = new Set([1]);
+let lastAutoTotal = 3000;
+let committedWidthsText = '';
+const swingDefs = {
+  'in-left': {label:'左内开', hinge:'left', opensUp:true, vx:8, y1:6, y2:30, arcEndX:32, arcEndY:30, arcSweep:1},
+  'in-right': {label:'右内开', hinge:'right', opensUp:true, vx:40, y1:6, y2:30, arcEndX:16, arcEndY:30, arcSweep:0},
+  'out-left': {label:'左外开', hinge:'left', opensUp:false, vx:8, y1:30, y2:6, arcEndX:32, arcEndY:6, arcSweep:0},
+  'out-right': {label:'右外开', hinge:'right', opensUp:false, vx:40, y1:30, y2:6, arcEndX:16, arcEndY:6, arcSweep:1},
+};
+const swingOrder = ['in-left', 'in-right', 'out-left', 'out-right'];
+const defaultRow = {id:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], hUpright:1830, hDoor:1750, hMid:1800, hVis:1830, tPanel:12, wall:'three'};
+const blankRow = {...defaultRow, enabled:false};
+let groups = [
+  {id:1, name:'A组', rows:[{...defaultRow}]},
+  {id:2, name:'B组', rows:[{...blankRow}]},
+  {id:3, name:'C组', rows:[{...blankRow}]},
+  {id:4, name:'D组', rows:[{...blankRow}]},
+  {id:5, name:'E组', rows:[{...blankRow}]},
+  {id:6, name:'F组', rows:[{...blankRow}]}
+];
+
+function applyTheme(theme) {
+  const isDark = theme === 'dark';
+  document.body.classList.toggle('theme-dark', isDark);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    btn.textContent = isDark ? '☀' : '☾';
+    btn.title = isDark ? '切换浅色主题' : '切换深色主题';
+    btn.setAttribute('aria-label', btn.title);
+  }
+}
+
+function toggleTheme() {
+  const next = document.body.classList.contains('theme-dark') ? 'light' : 'dark';
+  localStorage.setItem('partition-theme', next);
+  applyTheme(next);
+}
+
+applyTheme(localStorage.getItem('partition-theme') || 'light');
+
+function swingIcon(key) {
+  const d = swingDefs[key];
+  return `<svg viewBox="0 0 48 36"><path d="M${d.vx} ${d.y1} V${d.y2}" fill="none" stroke="#378ADD" stroke-width="2"/><path d="M${d.vx} ${d.y1} A24 24 0 0 ${d.arcSweep} ${d.arcEndX} ${d.arcEndY}" fill="none" stroke="#9fc4ea" stroke-width="1.2" stroke-dasharray="5 4"/></svg>`;
+}
+
+function renderSwingButtons() {
+  const grid = document.getElementById('swing-grid');
+  if (!grid) return;
+  const row = activeRow();
+  const selectedSwing = isSelectedBooth(activeGroupId, activeRowId, selectedBoothIndex) && row ? boothSwingAt(row, selectedBoothIndex) : swingMode;
+  grid.innerHTML = swingOrder.map(key => `
+    <button class="wall-btn ${key === selectedSwing ? 'active' : ''}" data-swing="${key}" onclick="setSwing(this)">
+      ${swingIcon(key)}
+      ${swingDefs[key].label}
+    </button>`).join('');
+}
+
+function normalizeBoothSwings(values, count, fallback = swingMode) {
+  const source = Array.isArray(values) ? values : [];
+  return Array.from({length: Math.max(1, count || 1)}, (_, i) => swingDefs[source[i]] ? source[i] : fallback);
+}
+
+function boothSwingAt(p, index) {
+  return swingDefs[p.boothSwings?.[index]] ? p.boothSwings[index] : (p.swing || 'in-right');
+}
+
+function clearSelectedBooth() {
+  selectedBoothIndex = null;
+  selectedBoothRef = null;
+}
+
+function setSelectedBooth(groupId, rowId, index) {
+  selectedBoothIndex = index;
+  selectedBoothRef = {groupId, rowId, index};
+}
+
+function isSelectedBooth(groupId, rowId, index) {
+  return selectionScope === 'booth'
+    && selectedBoothRef?.groupId === groupId
+    && selectedBoothRef?.rowId === rowId
+    && selectedBoothRef?.index === index;
+}
+
+function setRowSwing(row, swing) {
+  if (!row) return;
+  const count = Math.max(1, Number(row.count) || 1);
+  row.swing = swing;
+  row.boothSwings = Array.from({length: count}, () => swing);
+}
+
+function setGroupSwing(group, swing) {
+  ensureRows(group).forEach(row => setRowSwing(row, swing));
+}
+
+function renderBoothSwingPanel() {
+  const panel = document.getElementById('booth-swing-panel');
+  if (!panel) return;
+  const row = activeRow();
+  const count = Math.max(1, parseInt(document.getElementById('p-count')?.value) || row?.count || 1);
+  const values = normalizeBoothSwings(row?.boothSwings, count, swingMode);
+  if (selectedBoothRef && (!isSelectedBooth(activeGroupId, activeRowId, selectedBoothRef.index) || selectedBoothRef.index >= count)) clearSelectedBooth();
+  const prefix = activeGroup()?.name?.replace('组', '') || 'A';
+  const startNo = rowBoothStartIndex(activeGroup(), row);
+  const rowNo = (activeGroupRows().find(item => item.row.id === row?.id)?.index ?? 0) + 1;
+  const selectedCode = selectedBoothRef ? `${prefix}${startNo + selectedBoothRef.index + 1}` : '';
+  const currentInfo = selectionScope === 'group'
+    ? `当前已选择：${activeGroup()?.name || '当前组'}`
+    : !selectedBoothRef
+      ? `当前已选择：${activeGroup()?.name || '当前组'}-${rowNo}排`
+      : `当前已选择：${prefix}${startNo + selectedBoothRef.index + 1}`;
+  panel.innerHTML = `
+    <div class="booth-swing-hint">${currentInfo}</div>
+    <div class="booth-pick-line">
+      <input class="booth-pick-input" id="booth-code-input" value="${selectedCode}" placeholder="自定义：A1 (单独修改)" onkeydown="handleBoothCodeKey(event)" onchange="applyBoothCodeInput(this.value)">
+      <button class="booth-pick-clear" type="button" onclick="clearBoothSelection()">清除</button>
+    </div>`;
+}
+
+function updateLayoutTargetLabel() {
+  const group = activeGroup();
+  const row = activeRow();
+  const rowNo = (activeGroupRows().find(item => item.row.id === row?.id)?.index ?? 0) + 1;
+  const text = selectionScope === 'group' ? `${group?.name || ''}` : `${group?.name || ''}-${rowNo}排`;
+  ['layout-target-label', 'wall-target-label'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  });
+}
+
+function activeGroup() {
+  return groups.find(g => g.id === activeGroupId) || groups[0];
+}
+
+function ensureRows(group) {
+  if (!group.rows) {
+    group.rows = [{...group, id:1}];
+  }
+  return group.rows;
+}
+
+function activeRow() {
+  const rows = ensureRows(activeGroup());
+  return rows.find(r => r.id === activeRowId) || rows[0];
+}
+
+function allRows() {
+  return groups.flatMap(group => ensureRows(group).map((row, index) => ({group, row, index})));
+}
+
+function activeGroupRows() {
+  const group = activeGroup();
+  return ensureRows(group).map((row, index) => ({group, row, index}));
+}
+
+function drawableGroupRows() {
+  return activeGroupRows().filter(item => item.row.enabled === true);
+}
+
+function rowBoothStartIndex(group = activeGroup(), row = activeRow()) {
+  const rows = ensureRows(group);
+  let start = 0;
+  for (const r of rows) {
+    if (r.id === row?.id) break;
+    start += Math.max(1, Number(r.count) || 1);
+  }
+  return start;
+}
+
+function findBoothByCode(code) {
+  const match = String(code || '').trim().toUpperCase().match(/^([A-Z])(\d+)$/);
+  if (!match) return null;
+  const group = groups.find(g => g.name?.replace('组', '').toUpperCase() === match[1]);
+  const targetNo = Number(match[2]);
+  if (!group || !Number.isFinite(targetNo) || targetNo < 1) return null;
+  let start = 0;
+  for (const row of ensureRows(group)) {
+    const count = Math.max(1, Number(row.count) || 1);
+    if (targetNo <= start + count) {
+      return {group, row, index: targetNo - start - 1};
+    }
+    start += count;
+  }
+  return null;
+}
+
+function saveActiveGroup(enable = false) {
+  const row = activeRow();
+  if (!row) return;
+  const params = getParams();
+  if (selectionScope === 'group') {
+    ensureRows(activeGroup()).forEach(targetRow => applyParamsToRow(targetRow, params, enable));
+    return;
+  }
+  applyParamsToRow(row, params, enable);
+}
+
+function applyParamsToRow(row, params, enable = false) {
+  const nextEnabled = enable ? true : row.enabled === true;
+  const boothSwings = row === activeRow() ? params.boothSwings : normalizeBoothSwings(row.boothSwings, params.count, params.swing || swingMode);
+  Object.assign(row, {...params, boothSwings}, {enabled: nextEnabled});
+  row.boothSwings = normalizeBoothSwings(row.boothSwings, row.count, row.swing || swingMode);
+}
+
+function loadGroupToForm(group, row = activeRow()) {
+  document.getElementById('p-count').value = row.count;
+  document.getElementById('p-total').value = row.total;
+  document.getElementById('p-widths').value = row.widthsText || '';
+  committedWidthsText = row.widthsText || '';
+  document.getElementById('p-depth').value = row.depth;
+  document.getElementById('p-door').value = row.doorW;
+  document.getElementById('p-gap').value = row.doorGap ?? 10;
+  document.getElementById('p-rebate').checked = row.rebate ?? false;
+  document.getElementById('p-rebate-depth').value = row.rebateDepth ?? 10;
+  document.getElementById('h-upright').value = row.hUpright;
+  document.getElementById('h-door').value = row.hDoor;
+  document.getElementById('h-mid').value = row.hMid;
+  document.getElementById('h-vis').value = row.hVis;
+  document.getElementById('t-panel').value = row.tPanel;
+  swingMode = row.swing || 'in-right';
+  row.boothSwings = normalizeBoothSwings(row.boothSwings, row.count, swingMode);
+  renderSwingButtons();
+  renderBoothSwingPanel();
+  updateLayoutTargetLabel();
+  wallMode = row.wall;
+  document.querySelectorAll('[data-wall]').forEach(btn => btn.classList.toggle('active', btn.dataset.wall === wallMode));
+}
+
+function renderGroups(animateCollapse = false) {
+  const list = document.getElementById('group-list');
+  if (!list) return;
+  const sidebar = document.querySelector('.sidebar');
+  const scrollTop = sidebar ? sidebar.scrollTop : 0;
+  const listScrollTop = list.scrollTop;
+  list.innerHTML = groups.map((g, groupIndex) => {
+    const rows = ensureRows(g);
+    const totalCount = rows.reduce((sum, r) => sum + (r.enabled === true ? r.count : 0), 0);
+    const color = groupColor(groupIndex);
+    const isOpen = openGroupIds.has(g.id);
+    const rowButtons = rows.map((r, i) => {
+      const animClass = rowAnimation && rowAnimation.groupId === g.id && rowAnimation.rowId === r.id ? rowAnimation.type : '';
+      return `<div class="row-anim-wrap ${animClass}" data-row-wrap="${g.id}:${r.id}"><div class="row-anim-inner">
+        <div class="group-item row-item ${g.id === activeGroupId && (selectionScope === 'group' || r.id === activeRowId) ? 'active' : ''}" data-row-card="${g.id}:${r.id}" style="--group-color:${color}" role="button" tabindex="0" onclick="selectRow(${g.id},${r.id})">
+          <span class="group-name">${g.name}-${i + 1}排</span>
+          <span class="group-actions-inline"><span data-row-count="${g.id}:${r.id}">${r.enabled === true ? `${r.count} 间` : ''}</span><button class="icon-action del row-delete" type="button" title="删除排" aria-label="删除排" onclick="event.stopPropagation(); deleteRow(${g.id},${r.id})"></button></span>
+          <span class="group-meta" data-row-meta="${g.id}:${r.id}">${r.enabled === true ? '已生成' : '未生成'}</span>
+        </div>
+      </div></div>`;
+    }).join('');
+    return `
+      <div class="group-block" data-group-block="${g.id}">
+        <div class="group-item group-color ${isOpen ? 'open' : ''} ${g.id === activeGroupId ? 'active' : ''}" data-group-card="${g.id}" style="--group-color:${color}" role="button" tabindex="0" onclick="selectGroup(${g.id})">
+          <span class="group-name">${g.name}</span>
+          <span class="group-actions-inline"><span data-group-count="${g.id}">${totalCount} 间</span><button class="group-toggle ${isOpen ? 'open' : ''}" data-group-toggle="${g.id}" type="button" title="展开/收起" aria-label="展开/收起${g.name}" onclick="event.stopPropagation(); toggleGroup(${g.id})"></button><button class="icon-action add row-add" type="button" title="添加排" aria-label="添加排" onclick="event.stopPropagation(); addRow(${g.id})"></button></span>
+          <span class="group-meta" data-group-meta="${g.id}">共 ${rows.length} 排</span>
+        </div>
+        <div class="row-collapse ${isOpen && !animateCollapse ? 'open' : ''}" data-group-id="${g.id}" data-open="${isOpen ? '1' : '0'}"><div class="row-collapse-inner">${rowButtons}</div></div>
+      </div>`;
+  }).join('');
+  if (animateCollapse || rowAnimation) {
+    requestAnimationFrame(() => {
+      if (animateCollapse) list.querySelectorAll('.row-collapse[data-open="1"]').forEach(el => el.classList.add('open'));
+      if (rowAnimation?.type === 'entering') {
+        const el = list.querySelector(`[data-row-wrap="${rowAnimation.groupId}:${rowAnimation.rowId}"]`);
+        if (el) requestAnimationFrame(() => el.classList.remove('entering'));
+        window.setTimeout(() => { rowAnimation = null; }, 220);
+      }
+    });
+  }
+  if (sidebar) sidebar.scrollTop = scrollTop;
+  list.scrollTop = listScrollTop;
+  updateGroupListState();
+}
+
+function updateGroupListState() {
+  document.querySelectorAll('[data-group-card]').forEach(el => {
+    const groupId = Number(el.dataset.groupCard);
+    el.classList.toggle('active', groupId === activeGroupId);
+    el.classList.toggle('open', openGroupIds.has(groupId));
+  });
+  document.querySelectorAll('[data-row-card]').forEach(el => {
+    const [groupId, rowId] = el.dataset.rowCard.split(':').map(Number);
+    el.classList.toggle('active', groupId === activeGroupId && (selectionScope === 'group' || rowId === activeRowId));
+  });
+  groups.forEach(g => {
+    const rows = ensureRows(g);
+    const collapse = document.querySelector(`.row-collapse[data-group-id="${g.id}"]`);
+    if (collapse) collapse.classList.toggle('open', openGroupIds.has(g.id));
+    const toggle = document.querySelector(`[data-group-toggle="${g.id}"]`);
+    if (toggle) toggle.classList.toggle('open', openGroupIds.has(g.id));
+    const countEl = document.querySelector(`[data-group-count="${g.id}"]`);
+    if (countEl) countEl.textContent = `${rows.reduce((sum, r) => sum + (r.enabled === true ? r.count : 0), 0)} 间`;
+    const metaEl = document.querySelector(`[data-group-meta="${g.id}"]`);
+    if (metaEl) metaEl.textContent = `共 ${rows.length} 排`;
+    rows.forEach(r => {
+      const rowCount = document.querySelector(`[data-row-count="${g.id}:${r.id}"]`);
+      if (rowCount) rowCount.textContent = r.enabled === true ? `${r.count} 间` : '';
+      const rowMeta = document.querySelector(`[data-row-meta="${g.id}:${r.id}"]`);
+      if (rowMeta) rowMeta.textContent = r.enabled === true ? '已生成' : '未生成';
+    });
+  });
+}
+
+function revealActiveGroupInList() {
+  const list = document.getElementById('group-list');
+  const target = document.querySelector(`[data-group-block="${activeGroupId}"]`);
+  if (!list || !target) return;
+  const top = target.offsetTop;
+  const bottom = top + target.offsetHeight;
+  if (top < list.scrollTop) {
+    list.scrollTop = top;
+  } else if (bottom > list.scrollTop + list.clientHeight) {
+    list.scrollTop = bottom - list.clientHeight;
+  }
+}
+
+function selectGroup(id) {
+  saveActiveGroup();
+  activeGroupId = id;
+  activeRowId = ensureRows(activeGroup())[0].id;
+  selectionScope = 'group';
+  clearSelectedBooth();
+  loadGroupToForm(activeGroup(), activeRow());
+  updateGroupListState();
+  refreshDrawing(true, false, false);
+}
+
+function toggleGroup(id) {
+  saveActiveGroup();
+  activeGroupId = id;
+  const rows = ensureRows(activeGroup());
+  activeRowId = rows.find(r => r.id === activeRowId)?.id || rows[0].id;
+  selectionScope = 'group';
+  clearSelectedBooth();
+  const wasOpen = openGroupIds.has(id);
+  if (wasOpen) {
+    openGroupIds.delete(id);
+    const el = document.querySelector(`.row-collapse[data-group-id="${id}"]`);
+    if (el) el.classList.remove('open');
+  } else {
+    openGroupIds.add(id);
+    const el = document.querySelector(`.row-collapse[data-group-id="${id}"]`);
+    if (el) requestAnimationFrame(() => el.classList.add('open'));
+  }
+  loadGroupToForm(activeGroup(), activeRow());
+  updateGroupListState();
+  refreshDrawing(true, false, false);
+}
+
+function selectRow(groupId, rowId) {
+  saveActiveGroup();
+  activeGroupId = groupId;
+  activeRowId = rowId;
+  selectionScope = 'row';
+  clearSelectedBooth();
+  openGroupIds.add(groupId);
+  loadGroupToForm(activeGroup(), activeRow());
+  updateGroupListState();
+  refreshDrawing(false, false, false);
+}
+
+function addGroup() {
+  saveActiveGroup();
+  const base = {...activeGroup()};
+  delete base.rows;
+  const id = Math.max(...groups.map(g => g.id)) + 1;
+  const row = {...blankRow, id:1, boothSwings:[...blankRow.boothSwings]};
+  const baseGroup = {id, name:`${String.fromCharCode(64 + Math.min(id, 26))}组`, rows:[row]};
+  groups.push(baseGroup);
+  activeGroupId = id;
+  activeRowId = 1;
+  selectionScope = 'group';
+  clearSelectedBooth();
+  openGroupIds.add(id);
+  loadGroupToForm(baseGroup, row);
+  rowAnimation = null;
+  renderGroups(false);
+  revealActiveGroupInList();
+  refreshDrawing(true, false, false);
+}
+
+function addRow(groupId = activeGroupId) {
+  saveActiveGroup();
+  activeGroupId = groupId;
+  openGroupIds.add(groupId);
+  const group = activeGroup();
+  const rows = ensureRows(group);
+  const id = Math.max(...rows.map(r => r.id)) + 1;
+  const row = {...blankRow, id, boothSwings:[...blankRow.boothSwings]};
+  rows.push(row);
+  activeRowId = id;
+  selectionScope = 'row';
+  clearSelectedBooth();
+  loadGroupToForm(group, row);
+  rowAnimation = {type:'entering', groupId, rowId:id};
+  renderGroups(false);
+  refreshDrawing(true, false, false);
+}
+
+function deleteRow(groupId = activeGroupId, rowId = activeRowId) {
+  activeGroupId = groupId;
+  activeRowId = rowId;
+  openGroupIds.add(groupId);
+  const group = activeGroup();
+  const rows = ensureRows(group);
+  if (rows.length <= 1) return;
+  const wrap = document.querySelector(`[data-row-wrap="${groupId}:${rowId}"]`);
+  if (wrap && !wrap.classList.contains('leaving')) {
+    wrap.classList.add('leaving');
+    window.setTimeout(() => finishDeleteRow(groupId, rowId), 210);
+    return;
+  }
+  finishDeleteRow(groupId, rowId);
+}
+
+function finishDeleteRow(groupId, rowId) {
+  activeGroupId = groupId;
+  const group = activeGroup();
+  const rows = ensureRows(group);
+  if (rows.length <= 1) return;
+  group.rows = rows.filter(r => r.id !== rowId);
+  activeRowId = group.rows[0].id;
+  selectionScope = 'row';
+  clearSelectedBooth();
+  rowAnimation = null;
+  loadGroupToForm(group, group.rows[0]);
+  renderGroups(false);
+  refreshDrawing(true, false, false);
+}
+
+function deleteGroup(groupId = activeGroupId) {
+  if (groups.length <= 1) return;
+  groups = groups.filter(g => g.id !== groupId);
+  openGroupIds.delete(groupId);
+  activeGroupId = groups[0].id;
+  activeRowId = ensureRows(groups[0])[0].id;
+  selectionScope = 'group';
+  clearSelectedBooth();
+  openGroupIds.add(activeGroupId);
+  loadGroupToForm(groups[0], ensureRows(groups[0])[0]);
+  rowAnimation = null;
+  renderGroups(false);
+  revealActiveGroupInList();
+  refreshDrawing(true, false, false);
+}
+
+function setWall(btn) {
+  document.querySelectorAll('[data-wall]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  wallMode = btn.dataset.wall;
+  refreshDrawing(false);
+}
+
+function setSwing(btn) {
+  const codeInput = document.getElementById('booth-code-input');
+  if (codeInput && codeInput.value.trim()) {
+    const found = findBoothByCode(codeInput.value);
+    if (found) {
+      activeGroupId = found.group.id;
+      activeRowId = found.row.id;
+      setSelectedBooth(found.group.id, found.row.id, found.index);
+      selectionScope = 'booth';
+      openGroupIds.add(activeGroupId);
+      loadGroupToForm(found.group, found.row);
+    }
+  }
+  const nextSwing = btn.dataset.swing;
+  const row = activeRow();
+  if (row && selectionScope === 'booth' && isSelectedBooth(activeGroupId, activeRowId, selectedBoothIndex)) {
+    const count = Math.max(1, Number(row.count) || 1);
+    row.boothSwings = normalizeBoothSwings(row.boothSwings, count, swingMode);
+    row.boothSwings[selectedBoothIndex] = nextSwing;
+  } else if (selectionScope === 'group') {
+    setGroupSwing(activeGroup(), nextSwing);
+    swingMode = activeRow()?.swing || nextSwing;
+  } else {
+    swingMode = nextSwing;
+    setRowSwing(row, nextSwing);
+  }
+  renderSwingButtons();
+  renderBoothSwingPanel();
+  updateLayoutTargetLabel();
+  refreshDrawing(false);
+}
+
+function applyBoothCodeInput(value) {
+  const found = findBoothByCode(value);
+  if (!found) return;
+  saveActiveGroup();
+  activeGroupId = found.group.id;
+  activeRowId = found.row.id;
+  setSelectedBooth(found.group.id, found.row.id, found.index);
+  selectionScope = 'booth';
+  openGroupIds.add(activeGroupId);
+  loadGroupToForm(found.group, found.row);
+  renderGroups(false);
+  revealActiveGroupInList();
+  renderSwingButtons();
+  renderBoothSwingPanel();
+  updateLayoutTargetLabel();
+  refreshDrawing(true, false, false);
+}
+
+function handleBoothCodeKey(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  applyBoothCodeInput(e.currentTarget.value);
+}
+
+function clearBoothSelection() {
+  clearSelectedBooth();
+  selectionScope = 'row';
+  renderSwingButtons();
+  renderBoothSwingPanel();
+  updateLayoutTargetLabel();
+}
+
+function refreshDrawing(refit = false, renderList = true, enableRow = true) {
+  saveActiveGroup(enableRow);
+  const p = getParams();
+  lastParams = p;
+  if (refit) autoFit(p);
+  drawView(p, currentTab);
+  renderBOM(p);
+  if (renderList) updateGroupListState();
+}
+
+function applyViewMode() {
+  document.body.classList.toggle('view-plan', currentTab === 'plan');
+  document.body.classList.toggle('view-elevation', currentTab !== 'plan');
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  applyViewMode();
+  document.querySelectorAll('.vtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (lastParams) {
+    autoFit(lastParams);
+    drawView(lastParams, tab);
+  }
+}
+
+function getParams() {
+  return {
+    count: Math.max(1, parseInt(document.getElementById('p-count').value)||3),
+    widthsText: committedWidthsText,
+    total: parseInt(document.getElementById('p-total').value)||3000,
+    depth: parseInt(document.getElementById('p-depth').value)||1220,
+    doorW: parseInt(document.getElementById('p-door').value)||600,
+    doorGap: Math.max(4, parseInt(document.getElementById('p-gap').value)||10),
+    rebate: document.getElementById('p-rebate').checked,
+    rebateDepth: Math.max(0, parseInt(document.getElementById('p-rebate-depth').value) || 0),
+    swing: swingMode,
+    boothSwings: normalizeBoothSwings(activeRow()?.boothSwings, Math.max(1, parseInt(document.getElementById('p-count').value)||3), swingMode),
+    hUpright: parseInt(document.getElementById('h-upright').value)||1830,
+    hDoor: parseInt(document.getElementById('h-door').value)||1750,
+    hMid: parseInt(document.getElementById('h-mid').value)||1800,
+    hVis: parseInt(document.getElementById('h-vis').value)||1830,
+    tPanel: parseInt(document.getElementById('t-panel').value)||12,
+    wall: wallMode
+  };
+}
+
+function fmtMm(value) {
+  const n = Number(value) || 0;
+  return String(Math.round(n));
+}
+
+function parseWidths(text) {
+  return String(text || '')
+    .split(/[,，\s]+/)
+    .map(v => parseFloat(v))
+    .filter(v => Number.isFinite(v) && v > 0);
+}
+
+function splitInteger(total, count) {
+  const n = Math.max(0, count | 0);
+  if (!n) return [];
+  const roundedTotal = Math.round(Number(total) || 0);
+  const base = Math.floor(roundedTotal / n);
+  let rem = roundedTotal - base * n;
+  return Array.from({length:n}, () => base + (rem-- > 0 ? 1 : 0));
+}
+
+function rebateLabel(size, p, type = 'double', role = 'panel', swingOverride = null) {
+  const big = Math.max(0, Math.round(Number(size) || 0));
+  if (!p.rebate) return fmtMm(big);
+  const cut = (p.rebateDepth || 0) * (type === 'single' ? 1 : 2);
+  const small = Math.max(0, Math.round(big - cut));
+  const inward = String(swingOverride || p.swing || '').startsWith('in');
+  const doorBigInside = role === 'door';
+  const bigOnTop = doorBigInside ? inward : !inward;
+  return bigOnTop ? {top: fmtMm(big), bottom: fmtMm(small), topName:'大', bottomName:'小'} : {top: fmtMm(small), bottom: fmtMm(big), topName:'小', bottomName:'大'};
+}
+
+function rebateText(size, p, type = 'double') {
+  const label = rebateLabel(size, p, type);
+  if (typeof label !== 'object') return label;
+  const big = label.topName === '大' ? label.top : label.bottom;
+  const small = label.topName === '小' ? label.top : label.bottom;
+  return `大${big}/小${small}`;
+}
+
+function boardDimLabel(bigMm, p, cutSides, topIsSmall) {
+  const big = Math.max(0, Math.round(Number(bigMm) || 0));
+  if (!p.rebate) return fmtMm(big);
+  const small = Math.max(0, Math.round(big - (p.rebateDepth || 0) * cutSides));
+  return topIsSmall ? {top: fmtMm(small), bottom: fmtMm(big)} : {top: fmtMm(big), bottom: fmtMm(small)};
+}
+
+function uniqueRebateTexts(values, p, type) {
+  return [...new Set(values.map(v => rebateText(v, p, type)))].join(' / ');
+}
+
+function rebateSmallSize(size, p, type = 'double') {
+  const big = Math.max(0, Math.round(Number(size) || 0));
+  if (!p.rebate) return big;
+  const cut = (p.rebateDepth || 0) * (type === 'single' ? 1 : 2);
+  return Math.max(0, Math.round(big - cut));
+}
+
+function syncTotalByCount() {
+  const countEl = document.getElementById('p-count');
+  const totalEl = document.getElementById('p-total');
+  const count = Math.max(1, parseInt(countEl.value) || 1);
+  const suggested = count * 1000;
+  const current = parseInt(totalEl.value) || 0;
+  if (current <= suggested || current === lastAutoTotal) {
+    totalEl.value = suggested;
+    lastAutoTotal = suggested;
+  }
+}
+
+function syncCustomWidths() {
+  const text = document.getElementById('p-widths').value.trim();
+  committedWidthsText = text;
+}
+
+function syncBoothSwingsByCount() {
+  const count = Math.max(1, parseInt(document.getElementById('p-count').value) || 1);
+  const rows = selectionScope === 'group' ? ensureRows(activeGroup()) : [activeRow()];
+  rows.forEach(row => {
+    if (row) row.boothSwings = normalizeBoothSwings(row.boothSwings, count, row.swing || swingMode);
+  });
+}
+
+function compute(p) {
+  const hasLeft = p.wall==='three'||p.wall==='left';
+  const hasRight = p.wall==='three'||p.wall==='right';
+  const hasBack = ['three','left','right','back'].includes(p.wall);
+  const wallT = 120;
+  const middlePanels = p.count - 1;
+  const totalPanelThickness = middlePanels * p.tPanel;
+  const projectMode = false;
+  const customWidthsRaw = parseWidths(p.widthsText);
+  const hasCustomWidths = customWidthsRaw.length > 0;
+  const standardDoorInstallW = rebateSmallSize(p.doorW, p, 'double');
+  const doorZoneW = standardDoorInstallW + p.doorGap;
+  const minEdgePanel = 100;
+  const minMiddlePanel = 200;
+  const minDoorW = 500;
+  const preferredDoorWidths = Array.from({length:p.count}, () => standardDoorInstallW);
+  const doorTotal = preferredDoorWidths.reduce((sum, w) => sum + w, 0);
+  const doorZoneTotal = p.count * doorZoneW;
+  const remainingForMargins = p.total - doorZoneTotal;
+  const adjustedLength = remainingForMargins < 0;
+  const autoBoothW = adjustedLength ? doorZoneW : doorZoneW + Math.round(remainingForMargins / p.count);
+  const fixedWidths = customWidthsRaw.slice(0, p.count).map(v => Math.round(v));
+  const fixedTotal = fixedWidths.reduce((sum, w) => sum + w, 0);
+  const remainingCount = Math.max(0, p.count - fixedWidths.length);
+  const remainingWidth = Math.max(0, p.total - fixedTotal);
+  const fillWidths = splitInteger(remainingWidth, remainingCount);
+  const boothWidths = Array.from({length:p.count}, (_, i) => fixedWidths[i] || fillWidths[i - fixedWidths.length] || autoBoothW);
+  const doorInstallWidths = boothWidths.map((width, i) => {
+    const minSides = (i === 0 ? minEdgePanel : 0) + (i === p.count - 1 ? minEdgePanel : 0);
+    const maxDoor = Math.max(0, Math.round(width - minSides - p.doorGap));
+    return Math.max(minDoorW, Math.min(standardDoorInstallW, maxDoor));
+  });
+  const doorWidths = doorInstallWidths.map(w => p.rebate ? w + (p.rebateDepth || 0) * 2 : w);
+  const sidePairs = boothWidths.map((width, i) => {
+    const available = Math.max(0, Math.round(width - doorInstallWidths[i] - p.doorGap));
+    const pair = splitInteger(available, 2);
+    if (p.count === 1) {
+      const left = Math.max(pair[0] || 0, Math.min(minEdgePanel, available));
+      const right = Math.max(0, available - left);
+      return [left, right];
+    }
+    if (i === 0 && (pair[0] || 0) < minEdgePanel) return [Math.min(minEdgePanel, available), Math.max(0, available - minEdgePanel)];
+    if (i === p.count - 1 && (pair[1] || 0) < minEdgePanel) return [Math.max(0, available - minEdgePanel), Math.min(minEdgePanel, available)];
+    return pair;
+  });
+  for (let i = 0; i < p.count - 1; i++) {
+    let middle = sidePairs[i][1] + sidePairs[i + 1][0];
+    let deficit = minMiddlePanel - middle;
+    if (deficit <= 0) continue;
+    const nextCanShrink = Math.max(0, doorInstallWidths[i + 1] - minDoorW);
+    const fromNext = Math.min(deficit, nextCanShrink);
+    doorInstallWidths[i + 1] -= fromNext;
+    doorWidths[i + 1] = p.rebate ? doorInstallWidths[i + 1] + (p.rebateDepth || 0) * 2 : doorInstallWidths[i + 1];
+    sidePairs[i + 1][0] += fromNext;
+    deficit -= fromNext;
+    const currentCanShrink = Math.max(0, doorInstallWidths[i] - minDoorW);
+    const fromCurrent = Math.min(deficit, currentCanShrink);
+    doorInstallWidths[i] -= fromCurrent;
+    doorWidths[i] = p.rebate ? doorInstallWidths[i] + (p.rebateDepth || 0) * 2 : doorInstallWidths[i];
+    sidePairs[i][1] += fromCurrent;
+  }
+  const gapPairs = boothWidths.map(() => splitInteger(p.doorGap, 2));
+  const insufficientDoors = doorInstallWidths.map(w => w < minDoorW);
+  const insufficientEdges = sidePairs.map((pair, i) => (i === 0 && pair[0] < minEdgePanel) || (i === p.count - 1 && pair[1] < minEdgePanel));
+  const insufficientMiddles = sidePairs.slice(0, -1).map((pair, i) => pair[1] + sidePairs[i + 1][0] < minMiddlePanel);
+  const totalRun = adjustedLength ? doorZoneTotal : p.total;
+  const edge = sidePairs[0]?.[0] || 0;
+  const middle = edge * 2;
+  const boothW = hasCustomWidths ? boothWidths[0] : autoBoothW;
+  const boothD = p.depth;
+  const standardBoothW = boothW;
+  const segmentSize = 999;
+  const segmentedMode = false;
+  return {hasLeft, hasRight, hasBack, wallT, middlePanels, boothW, boothWidths, doorWidths, doorInstallWidths, sidePairs, gapPairs, boothD, projectMode, segmentedMode, segmentSize, totalRun, standardBoothW, adjustedLength, edge, middle, doorTotal, totalPanelThickness, remainingForMargins, hasCustomWidths, minEdgePanel, minMiddlePanel, minDoorW, insufficientDoors, insufficientEdges, insufficientMiddles};
+}
+
+function resizeCanvas() {
+  const area = document.getElementById('carea');
+  const r = area.getBoundingClientRect();
+  cv.width = Math.floor(r.width);
+  cv.height = Math.max(340, Math.floor(r.height) || 380);
+}
+
+function generate() {
+  saveActiveGroup(true);
+  const p = getParams();
+  lastParams = p;
+  resizeCanvas();
+  autoFit(p);
+  drawView(p, currentTab);
+  renderBOM(p);
+}
+
+function drawView(p, tab) {
+  planHitAreas = [];
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle = '#eef1f4';
+  ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.save();
+  ctx.translate(panX, panY);
+  ctx.scale(zoomScale, zoomScale);
+  drawSheet(tab === 'plan' ? '卫生间隔断平面图' : tab === 'front' ? '卫生间隔断正立面图' : '卫生间隔断侧立面图', p);
+  if (tab==='plan') drawPlan(p);
+  else if (tab==='front') drawFront(p);
+  else drawSide(p);
+  ctx.restore();
+  updateZoomInfo();
+}
+
+function drawHatch(x, y, w, h, gap = 42) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  ctx.strokeStyle = 'rgba(120,126,135,.16)';
+  ctx.lineWidth = 0.7;
+  for (let i = -h; i < w + h; i += gap) {
+    ctx.beginPath();
+    ctx.moveTo(x + i, y + h);
+    ctx.lineTo(x + i + h, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function autoFit(p) {
+  const layout = getSheetLayout(p);
+  const contentW = layout.sheetW + 80;
+  const contentH = layout.sheetH + 80;
+  const scale = Math.min(cv.width / contentW, cv.height / contentH, 0.8);
+  zoomScale = scale;
+  const anchorX = Math.max(20, Math.min(48, cv.width * 0.035));
+  const anchorY = Math.max(18, Math.min(36, cv.height * 0.04));
+  panX = anchorX;
+  panY = anchorY;
+}
+
+const SHEET_W = 1180;
+const SHEET_H = 820;
+const PLOT = {x:70, y:112, w:1040, h:545};
+
+function getSheetLayout(p = lastParams || getParams()) {
+  const rows = drawableGroupRows();
+  const sourceRows = rows.length > 1 ? rows.map(item => item.row) : [p];
+  const maxRun = sourceRows.reduce((max, r) => Math.max(max, compute(r).totalRun || r.total || 0), 0);
+  const maxDepth = sourceRows.reduce((max, r) => Math.max(max, r.depth || 0), 0);
+  const sheetW = Math.max(SHEET_W, Math.min(5200, 1180 + Math.max(0, maxRun - 5000) * 0.14));
+  const extraRowsH = rows.length > 1 ? Math.max(0, rows.length - 1) * Math.max(230, maxDepth * 0.14) : 0;
+  const sheetH = Math.max(SHEET_H, Math.min(5200, SHEET_H + extraRowsH));
+  return {
+    sheetW,
+    sheetH,
+    plot: {x:70, y:112, w:sheetW - 140, h:sheetH - 275}
+  };
+}
+
+function canvasTextScale() {
+  return 1 / zoomScale;
+}
+
+function drawSheet(title, p) {
+  const layout = getSheetLayout(p);
+  const sheetW = layout.sheetW, sheetH = layout.sheetH;
+  ctx.save();
+  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(0,0,0,.16)';
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 8;
+  ctx.fillRect(0, 0, sheetW, sheetH);
+  ctx.shadowColor = 'transparent';
+
+  ctx.strokeStyle = '#c7cbd1';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5, 0.5, sheetW - 1, sheetH - 1);
+  ctx.strokeStyle = '#30343a';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(24.5, 24.5, sheetW - 49, sheetH - 49);
+
+  ctx.restore();
+}
+
+function drawTitleBlock(title, p, layout = getSheetLayout(p)) {
+  const x = layout.sheetW - 342, y = layout.sheetH - 106, w = 318, h = 82;
+  ctx.strokeStyle = '#30343a';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, w, h);
+  ctx.beginPath(); ctx.moveTo(x, y + 28); ctx.lineTo(x + w, y + 28); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 82, y + 28); ctx.lineTo(x + 82, y + h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x + 205, y + 28); ctx.lineTo(x + 205, y + h); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x, y + 55); ctx.lineTo(x + w, y + 55); ctx.stroke();
+  ctx.fillStyle = '#1f2328';
+  ctx.font = `14px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(title, x + w / 2, y + 14);
+  ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.fillText('比例', x + 41, y + 42);
+  ctx.fillText('自动适配', x + 143, y + 42);
+  ctx.fillText('日期', x + 261, y + 42);
+  ctx.fillText('单位', x + 41, y + 68);
+  ctx.fillText('mm', x + 143, y + 68);
+  ctx.fillText(new Date().toLocaleDateString('zh-CN'), x + 261, y + 68);
+}
+
+function wallLabel(wall) {
+  return {three:'三面靠墙', left:'左边靠墙', right:'右边靠墙', back:'只有背墙'}[wall] || '三面靠墙';
+}
+
+function swingLabel(swing) {
+  return (swingDefs[swing] || swingDefs['in-right']).label;
+}
+
+function groupColor(index) {
+  return ['var(--group-mono)', '#2DA44E', '#C65300', '#8250DF', '#BF3989', '#185FA5'][index % 6];
+}
+
+function drawDim(x1,y1,x2,y2,label,side) {
+  ctx.save();
+  ctx.strokeStyle='#111'; ctx.fillStyle='#111';
+  ctx.lineWidth=1; ctx.font=`15px 'Microsoft YaHei', Arial, sans-serif`;
+  const isH = Math.abs(x2-x1) > Math.abs(y2-y1);
+  const off = side || 45;
+  if (isH) {
+    const dy = (y1+y2)/2 - off;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1); ctx.lineTo(x1,dy+off);
+    ctx.moveTo(x2,y2); ctx.lineTo(x2,dy+off);
+    ctx.moveTo(x1,dy); ctx.lineTo(x2,dy);
+    ctx.stroke();
+    const aw=5;
+    ctx.beginPath(); ctx.moveTo(x1,dy); ctx.lineTo(x1+aw,dy-aw/2); ctx.lineTo(x1+aw,dy+aw/2); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x2,dy); ctx.lineTo(x2-aw,dy-aw/2); ctx.lineTo(x2-aw,dy+aw/2); ctx.closePath(); ctx.fill();
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText(label,(x1+x2)/2,dy-5);
+  } else {
+    const dx = (x1+x2)/2 + off;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1); ctx.lineTo(dx-off,y1);
+    ctx.moveTo(x2,y2); ctx.lineTo(dx-off,y2);
+    ctx.moveTo(dx,y1); ctx.lineTo(dx,y2);
+    ctx.stroke();
+    const aw=5;
+    ctx.beginPath(); ctx.moveTo(dx,y1); ctx.lineTo(dx-aw/2,y1+aw); ctx.lineTo(dx+aw/2,y1+aw); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(dx,y2); ctx.lineTo(dx-aw/2,y2-aw); ctx.lineTo(dx+aw/2,y2-aw); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.translate(dx+18, (y1+y2)/2); ctx.rotate(Math.PI/2);
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,0,0);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function drawChainDim(y, segments, color = '#111') {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 1;
+  ctx.font = `13px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  const start = segments[0].x1;
+  const end = segments[segments.length - 1].x2;
+  ctx.beginPath(); ctx.moveTo(start, y); ctx.lineTo(end, y); ctx.stroke();
+  segments.forEach(seg => {
+    ctx.beginPath(); ctx.moveTo(seg.x1, y - 7); ctx.lineTo(seg.x1, y + 7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(seg.x2, y - 7); ctx.lineTo(seg.x2, y + 7); ctx.stroke();
+    const cx = (seg.x1 + seg.x2) / 2;
+    if (seg.label && typeof seg.label === 'object') {
+      ctx.fillText(seg.label.top, cx, y - 8);
+      ctx.textBaseline = 'top';
+      ctx.fillText(seg.label.bottom, cx, y + 12);
+      ctx.textBaseline = 'bottom';
+    } else if (seg.label) {
+      ctx.fillText(seg.label, cx, y - 8);
+    }
+  });
+  ctx.restore();
+}
+
+function collectGuardWarnings(c) {
+  const warnings = [];
+  c.insufficientDoors.forEach((bad, i) => { if (bad) warnings.push(`${i + 1}间门<${c.minDoorW}`); });
+  c.insufficientEdges.forEach((bad, i) => { if (bad) warnings.push(`${i + 1}间边板<${c.minEdgePanel}`); });
+  c.insufficientMiddles.forEach((bad, i) => { if (bad) warnings.push(`${i + 1}-${i + 2}立板<${c.minMiddlePanel}`); });
+  return warnings;
+}
+
+function drawPlanWarnings(c, x, y) {
+  const warnings = collectGuardWarnings(c);
+  if (!warnings.length) return;
+  ctx.save();
+  ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  const text = `尺寸冲突：${warnings.join('，')}`;
+  const w = Math.min(360, ctx.measureText(text).width + 18);
+  const h = 24;
+  ctx.fillStyle = '#fff5f5';
+  ctx.strokeStyle = '#d64242';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#d64242';
+  ctx.fillText(text, x + 9, y + 5);
+  ctx.restore();
+}
+
+function drawProjectOverview(p, c) {
+  const cols = Math.min(12, Math.ceil(Math.sqrt(p.count * 1.35)));
+  const rows = Math.ceil(p.count / cols);
+  const gap = 8;
+  const cellW = Math.min(68, (PLOT.w - 160 - gap * (cols - 1)) / cols);
+  const cellH = Math.min(42, (PLOT.h - 190 - gap * (rows - 1)) / rows);
+  const gridW = cols * cellW + (cols - 1) * gap;
+  const gridH = rows * cellH + (rows - 1) * gap;
+  const ox = PLOT.x + 70;
+  const oy = PLOT.y + 122;
+
+  ctx.fillStyle = '#1f2328';
+  ctx.font = `bold 18px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(`项目总览：共 ${p.count} 间标准隔间`, ox, oy - 54);
+  ctx.fillStyle = '#656d76';
+  ctx.font = `13px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.fillText(`单间参考：宽 ${fmtMm(c.boothW)}mm × 深 ${p.depth}mm，门宽 ${p.doorW}mm，板厚 ${p.tPanel}mm`, ox, oy - 28);
+
+  for (let i = 0; i < p.count; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = ox + col * (cellW + gap);
+    const y = oy + row * (cellH + gap);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x, y, cellW, cellH);
+    ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, cellW, cellH);
+    ctx.strokeStyle = '#185FA5';
+    ctx.beginPath(); ctx.moveTo(x + cellW * .28, y + cellH - 4); ctx.lineTo(x + cellW * .72, y + cellH - 4); ctx.stroke();
+    if (cellW >= 40 && cellH >= 26) {
+      ctx.fillStyle = '#185FA5';
+      ctx.font = `10px 'Microsoft YaHei', Arial, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`${i + 1}`, x + cellW / 2, y + cellH / 2);
+    }
+  }
+
+  const sx = ox + gridW + 60;
+  const sy = oy;
+  drawStandardPlanModule(sx, sy, 280, 185, p, c);
+  drawProjectStats(sx, sy + 225, p, c, cols, rows);
+  drawDim(ox, oy + gridH + 42, ox + gridW, oy + gridH + 42, `示意排布 ${cols} 列 × ${rows} 行`, -14);
+}
+
+function drawStandardPlanModule(x, y, w, h, p, c) {
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 1.2; ctx.strokeRect(x, y, w, h);
+  drawHatch(x, y - 18, w, 18, 14); ctx.strokeStyle = '#666'; ctx.strokeRect(x, y - 18, w, 18);
+  const doorW = w * Math.min(.72, p.doorW / c.boothW);
+  const dx = x + (w - doorW) / 2;
+  ctx.strokeStyle = '#185FA5'; ctx.strokeRect(dx, y + h - 6, doorW, 6);
+  ctx.setLineDash([6,4]); ctx.strokeStyle = '#9fc4ea'; ctx.beginPath(); ctx.arc(dx + doorW, y + h - 6, doorW, Math.PI, Math.PI * 1.5); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = '#185FA5'; ctx.font = `bold 14px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('标准单间', x + w / 2, y + h / 2);
+  drawDim(x, y - 46, x + w, y - 46, `宽 ${fmtMm(c.boothW)}mm`, 12);
+  drawDim(x + w + 28, y, x + w + 28, y + h, `深 ${p.depth}mm`, 12);
+}
+
+function drawPlanWalls(ox, oy, sW, sD, swt, c) {
+  const left = c.hasLeft ? swt : 0;
+  const right = c.hasRight ? swt : 0;
+  const back = c.hasBack ? swt : 0;
+  if (!left && !right && !back) return;
+  const outerX = ox - left;
+  const outerY = oy - back;
+  const outerW = sW + left + right;
+  const outerH = sD + back;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(outerX, outerY, outerW, outerH);
+  ctx.rect(ox, oy, sW, sD);
+  ctx.fillStyle = '#fbfbfb';
+  ctx.fill('evenodd');
+  ctx.clip('evenodd');
+
+  ctx.strokeStyle = 'rgba(120,126,135,.18)';
+  ctx.lineWidth = 1;
+  for (let i = -outerH; i < outerW + outerH; i += 22) {
+    ctx.beginPath();
+    ctx.moveTo(outerX + i, outerY + outerH);
+    ctx.lineTo(outerX + i + outerH, outerY);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle = '#c8c8c8';
+  ctx.lineWidth = 1.2;
+  ctx.lineJoin = 'miter';
+  ctx.beginPath();
+  ctx.rect(outerX, outerY, outerW, outerH);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.rect(ox, oy, sW, sD);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawDoorSwing(door, baseY, st, p) {
+  const swing = swingDefs[door.swing || p.swing || 'in-right'] || swingDefs['in-right'];
+  const isRight = swing.hinge === 'right';
+  const hingeX = isRight ? door.end : door.start;
+  const leafEndX = isRight ? hingeX - door.width : hingeX + door.width;
+  const leafEndY = swing.opensUp ? baseY - door.width : baseY + door.width;
+  const baseTopY = baseY - st;
+  const baseBottomY = baseY;
+  ctx.strokeStyle = '#185FA5';
+  ctx.lineWidth = 0.8;
+  if (!p.rebate) {
+    ctx.beginPath();
+    ctx.moveTo(door.start, baseTopY);
+    ctx.lineTo(door.end, baseTopY);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(hingeX, baseTopY);
+  ctx.lineTo(hingeX, swing.opensUp ? baseTopY - door.width : baseBottomY + door.width);
+  ctx.stroke();
+  ctx.strokeStyle = '#9fc4ea';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([7,5]);
+  ctx.beginPath();
+  ctx.moveTo(leafEndX, baseY);
+  ctx.quadraticCurveTo(leafEndX, leafEndY, hingeX, leafEndY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawPlanRebateEdge(x, y1, y2, color = '#222') {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 0.55;
+  ctx.beginPath();
+  ctx.moveTo(x, y1);
+  ctx.lineTo(x, y2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function frontSmallOnTopForSwing(swing) {
+  return String(swing || '').startsWith('in');
+}
+
+function doorSmallOnTopForSwing(swing) {
+  return !frontSmallOnTopForSwing(swing);
+}
+
+function buildBoardModel(p, c, doors, ox, sW, scale) {
+  const rebate = Math.max(0, Number(p.rebateDepth) || 0);
+  const panels = [];
+  const doorBoards = doors.map((door, i) => ({
+    kind: 'door',
+    index: i,
+    bigX1: door.start - Math.min(rebate * scale, door.gapLeft || 0),
+    bigX2: door.end + Math.min(rebate * scale, door.gapRight || 0),
+    bigMm: c.doorWidths[i] || p.doorW,
+    smallMm: c.doorInstallWidths[i] || c.doorWidths[i] || p.doorW,
+    leftRebate: true,
+    rightRebate: true,
+    topIsSmall: doorSmallOnTopForSwing(door.swing),
+    swing: door.swing
+  }));
+
+  if (doors.length) {
+    panels.push({
+      kind: 'edge', index: 0, bigX1: ox, bigX2: doors[0].zoneStart,
+      bigMm: c.sidePairs[0]?.[0] || 0,
+      leftRebate: false, rightRebate: true,
+      leftTopIsSmall: frontSmallOnTopForSwing(doors[0].swing),
+      rightTopIsSmall: frontSmallOnTopForSwing(doors[0].swing)
+    });
+    for (let i = 0; i < doors.length - 1; i++) {
+      const leftSwing = doors[i].swing;
+      const rightSwing = doors[i + 1].swing;
+      panels.push({
+        kind: 'middle', index: i,
+        bigX1: doors[i].zoneEnd,
+        bigX2: doors[i + 1].zoneStart,
+        bigMm: (c.sidePairs[i]?.[1] || 0) + (c.sidePairs[i + 1]?.[0] || 0),
+        leftMm: c.sidePairs[i]?.[1] || 0,
+        rightMm: c.sidePairs[i + 1]?.[0] || 0,
+        leftRebate: true,
+        rightRebate: true,
+        leftTopIsSmall: frontSmallOnTopForSwing(leftSwing),
+        rightTopIsSmall: frontSmallOnTopForSwing(rightSwing),
+        mixed: frontSmallOnTopForSwing(leftSwing) !== frontSmallOnTopForSwing(rightSwing)
+      });
+    }
+    panels.push({
+      kind: 'edge', index: doors.length - 1, bigX1: doors[doors.length - 1].zoneEnd, bigX2: ox + sW,
+      bigMm: c.sidePairs[p.count - 1]?.[1] || 0,
+      leftRebate: true, rightRebate: false,
+      leftTopIsSmall: frontSmallOnTopForSwing(doors[doors.length - 1].swing),
+      rightTopIsSmall: frontSmallOnTopForSwing(doors[doors.length - 1].swing)
+    });
+  }
+  return {panels, doors: doorBoards};
+}
+
+function drawPlanRebateDetails(p, ox, oy, sW, sD, st, scale, boardModel) {
+  if (!p.rebate || !boardModel?.doors?.length) return;
+  ctx.save();
+  const rebatePx = Math.max(1.5, (p.rebateDepth || 0) * scale);
+  const profileH = st;
+  const yTop = oy + sD - profileH;
+  const yBot = oy + sD;
+  const yMid = yTop + profileH * 0.5;
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 0.75;
+  ctx.lineJoin = 'miter';
+  ctx.lineCap = 'butt';
+
+  const drawBoardProfile = (bigX1, bigX2, leftRebate, rightRebate, leftTopIsSmall, rightTopIsSmall = leftTopIsSmall) => {
+    if (bigX2 <= bigX1 + 1) return;
+    const r = Math.min(rebatePx, Math.max(1, (bigX2 - bigX1) / 3));
+    const smallX1 = leftRebate ? bigX1 + r : bigX1;
+    const smallX2 = rightRebate ? bigX2 - r : bigX2;
+    const topLeft = leftTopIsSmall ? smallX1 : bigX1;
+    const topRight = rightTopIsSmall ? smallX2 : bigX2;
+    const botLeft = leftTopIsSmall ? bigX1 : smallX1;
+    const botRight = rightTopIsSmall ? bigX2 : smallX2;
+    ctx.beginPath();
+    ctx.moveTo(topLeft, yTop);
+    ctx.lineTo(topRight, yTop);
+    if (topRight !== botRight) ctx.lineTo(topRight, yMid);
+    ctx.lineTo(botRight, yMid);
+    ctx.lineTo(botRight, yBot);
+    ctx.lineTo(botLeft, yBot);
+    if (botLeft !== topLeft) ctx.lineTo(botLeft, yMid);
+    ctx.lineTo(topLeft, yMid);
+    ctx.lineTo(topLeft, yTop);
+    ctx.stroke();
+  };
+
+  boardModel.panels.forEach(panel => drawBoardProfile(panel.bigX1, panel.bigX2, panel.leftRebate, panel.rightRebate, panel.leftTopIsSmall, panel.rightTopIsSmall));
+  boardModel.doors.forEach(door => drawBoardProfile(door.bigX1, door.bigX2, door.leftRebate, door.rightRebate, door.topIsSmall));
+  ctx.restore();
+}
+
+
+function drawProjectStats(x, y, p, c, cols, rows) {
+  const lines = [
+    ['总间数', `${p.count} 间`],
+    ['排布示意', `${cols} × ${rows}`],
+    ['估算总长度', `${Math.round(c.totalRun / 1000)} m`],
+    ['门板数量', `${p.count} 块`],
+    ['中隔板数量', `${p.count} 块`],
+  ];
+  ctx.strokeStyle = '#30343a'; ctx.lineWidth = 1; ctx.strokeRect(x, y, 280, 150);
+  ctx.fillStyle = '#f6f8fa'; ctx.fillRect(x, y, 280, 28);
+  ctx.fillStyle = '#1f2328'; ctx.font = `bold 13px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('项目统计', x + 12, y + 14);
+  ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+  lines.forEach((line, i) => {
+    const yy = y + 46 + i * 20;
+    ctx.fillStyle = '#656d76'; ctx.fillText(line[0], x + 12, yy);
+    ctx.fillStyle = '#1f2328'; ctx.textAlign = 'right'; ctx.fillText(line[1], x + 266, yy); ctx.textAlign = 'left';
+  });
+}
+
+function drawMultiGroupOverview() {
+  const rows = activeGroupRows();
+  const totalCount = rows.reduce((sum, item) => sum + item.row.count, 0);
+  const totalRun = rows.reduce((sum, item) => sum + compute(item.row).totalRun, 0);
+  ctx.fillStyle = '#1f2328';
+  ctx.font = `bold 18px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(`项目分组总览：${groups.length} 组 / ${totalCount} 间`, PLOT.x + 18, PLOT.y + 20);
+  ctx.fillStyle = '#656d76';
+  ctx.font = `13px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.fillText(`估算总长度：${Math.round(totalRun / 1000 * 10) / 10} m。切换左侧组可编辑单组参数。`, PLOT.x + 18, PLOT.y + 48);
+
+  const cols = groups.length <= 2 ? 2 : 3;
+  const gap = 20;
+  const cardW = (PLOT.w - 36 - gap * (cols - 1)) / cols;
+  const cardH = 150;
+  const startX = PLOT.x + 18;
+  const startY = PLOT.y + 88;
+  rows.forEach((item, i) => {
+    const g = item.row;
+    const c = compute(g);
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = startX + col * (cardW + gap);
+    const y = startY + row * (cardH + gap);
+    ctx.fillStyle = item.group.id === activeGroupId && g.id === activeRowId ? '#f0f7ff' : '#fff';
+    ctx.fillRect(x, y, cardW, cardH);
+    ctx.strokeStyle = item.group.id === activeGroupId && g.id === activeRowId ? '#185FA5' : '#c7cbd1';
+    ctx.lineWidth = item.group.id === activeGroupId && g.id === activeRowId ? 1.6 : 1;
+    ctx.strokeRect(x, y, cardW, cardH);
+    ctx.fillStyle = '#1f2328';
+    ctx.font = `bold 15px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.fillText(`${item.group.name}-${item.index + 1}排`, x + 14, y + 12);
+    ctx.fillStyle = '#656d76';
+    ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.fillText(`${g.count} 间 · ${wallLabel(g.wall)}`, x + 14, y + 36);
+    ctx.fillText(`单间 ${fmtMm(c.boothW)}×${g.depth}mm · 门 ${g.doorW}mm`, x + 14, y + 56);
+
+    const mx = x + 14, my = y + 84, mw = Math.min(120, cardW - 28), mh = 42;
+    ctx.fillStyle = '#fff'; ctx.fillRect(mx, my, mw, mh);
+    ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.strokeRect(mx, my, mw, mh);
+    ctx.strokeStyle = '#185FA5'; ctx.beginPath(); ctx.moveTo(mx + mw*.3, my + mh - 5); ctx.lineTo(mx + mw*.7, my + mh - 5); ctx.stroke();
+    ctx.fillStyle = '#1f2328'; ctx.textAlign = 'right'; ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.fillText(`${Math.round(c.totalRun/1000*10)/10} m`, x + cardW - 14, y + 112);
+    ctx.textAlign = 'left';
+  });
+}
+
+function drawSegmentedPlan(p, c) {
+  const segmentSize = c.segmentSize;
+  const segments = Math.ceil(p.count / segmentSize);
+  const gapY = 64;
+  const rowH = Math.min(128, (PLOT.h - 150 - gapY * (segments - 1)) / segments);
+  const startY = PLOT.y + 92;
+  ctx.fillStyle = '#656d76';
+  ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(`共 ${p.count} 间，按每段最多 ${segmentSize} 间分段显示。`, PLOT.x + 18, PLOT.y + 58);
+
+  for (let s = 0; s < segments; s++) {
+    const count = Math.min(segmentSize, p.count - s * segmentSize);
+    const segP = {...p, count, total: count * c.boothW};
+    const segC = compute(segP);
+    const W = segC.totalRun, D = p.depth;
+    const wt = segC.wallT, t = p.tPanel;
+    const leftWall = segC.hasLeft ? wt : 0;
+    const rightWall = segC.hasRight ? wt : 0;
+    const backWall = segC.hasBack ? wt : 0;
+    const scale = Math.min((PLOT.w - 180) / (W + leftWall + rightWall), rowH / (D + backWall));
+    const ox = PLOT.x + 100 + leftWall * scale;
+    const oy = startY + s * (rowH + gapY) + backWall * scale;
+    const sW = W * scale, sD = D * scale, st = Math.max(1.3, t * scale), swt = wt * scale;
+    const firstNo = s * segmentSize + 1;
+
+    drawPlanWalls(ox, oy, sW, sD, swt, segC);
+    ctx.strokeStyle = '#222'; ctx.lineWidth = 1.1; ctx.strokeRect(ox, oy, sW, sD);
+    let x = ox;
+    if (!segC.hasLeft) { ctx.strokeRect(x, oy, st, sD); x += st; }
+    for (let i = 0; i < count; i++) {
+      const bw = segC.boothW * scale;
+      const doorW = (segC.doorInstallWidths[i] || segC.doorWidths[i] || p.doorW) * scale;
+      const dsx = x + (bw - doorW) / 2;
+      drawDoorSwing({start:dsx, end:dsx + doorW, width:doorW, swing:boothSwingAt(p, i)}, oy + sD, st, p);
+      ctx.fillStyle = '#185FA5'; ctx.font = `bold 14px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`B${firstNo + i}`, x + bw / 2, oy + sD / 2);
+      x += bw;
+      if (i < count - 1) { ctx.strokeStyle = '#222'; ctx.strokeRect(x, oy, st, sD); x += st; }
+    }
+    if (!segC.hasRight) ctx.strokeRect(x, oy, st, sD);
+    drawDim(ox, oy - swt - 38, ox + sW, oy - swt - 38, `第 ${s + 1} 段：B${firstNo}-B${firstNo + count - 1} / ${W}mm`, 12);
+  }
+}
+
+function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', options = {}) {
+  const c = compute(p);
+  const W = c.totalRun, D = p.depth;
+  const t = p.tPanel, wt = c.wallT;
+  const wtPx = wt * scale;
+  const sW = W * scale, sD = D * scale, st = Math.max(3, t * scale), swt = wt * scale;
+
+  ctx.strokeStyle = '#222222'; ctx.lineWidth = 0.8;
+  ctx.strokeRect(ox, oy, sW, sD);
+
+  drawPlanWalls(ox, oy, sW, sD, swt, c);
+  const rowSelected = options.groupId === activeGroupId && (
+    selectionScope === 'group' ||
+    (selectionScope === 'row' && options.rowId === activeRowId)
+  );
+  if (rowSelected) {
+    ctx.save();
+    ctx.strokeStyle = '#378ADD';
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([10, 5]);
+    ctx.strokeRect(ox - 6, oy - 6, sW + 12, sD + 12);
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+  if (showGroupName) {
+    ctx.save();
+    const tagText = showGroupName;
+    ctx.font = `13px 'Microsoft YaHei', Arial, sans-serif`;
+    const tagW = Math.max(68, ctx.measureText(tagText).width + 18);
+    const tagH = 22;
+    const tagX = options.labelX ?? (ox - tagW - 24);
+    const tagY = options.labelY ?? (oy - Math.min(12, swt));
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#d64242';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.rect(tagX, tagY, tagW, tagH);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#d64242';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(tagText, tagX + tagW / 2, tagY + tagH / 2);
+    ctx.restore();
+  }
+
+  let x = ox;
+  if (!c.hasLeft) {
+    ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
+    ctx.strokeRect(x, oy, st, Math.max(1, sD - st));
+  }
+  const doors = [];
+  let boothX = ox;
+  for (let i=0; i<p.count; i++) {
+    const bx = boothX;
+    const boothMm = c.boothWidths[i] || c.boothW;
+    const bw = boothMm * scale;
+    const doorW = (c.doorInstallWidths[i] || c.doorWidths[i] || p.doorW) * scale;
+    const gapLeft = c.gapPairs[i]?.[0] || 0;
+    const gapRight = c.gapPairs[i]?.[1] || 0;
+    const zoneStart = bx + (c.sidePairs[i]?.[0] || 0) * scale;
+    const dsx = zoneStart + gapLeft * scale, dsw = doorW;
+    const zoneEnd = dsx + dsw + gapRight * scale;
+    if (options.groupId && options.rowId) {
+      planHitAreas.push({x:bx, y:oy, w:bw, h:sD, groupId:options.groupId, rowId:options.rowId, index:i});
+    }
+    doors.push({start: dsx, end: dsx + dsw, zoneStart, zoneEnd, gapLeft: gapLeft * scale, gapRight: gapRight * scale, width: dsw, boothX: bx, boothW: bw, swing: boothSwingAt(p, i)});
+    const currentLabelNo = (options.labelStart || 0) + i + 1;
+    if (isSelectedBooth(options.groupId ?? activeGroupId, options.rowId ?? activeRowId, i)) {
+      const cx = bx + bw / 2, cy = oy + sD / 2;
+      ctx.strokeStyle = '#185FA5'; ctx.lineWidth = 0.8;
+      ctx.strokeRect(cx - 20, cy - 14, 40, 28);
+    }
+    ctx.fillStyle='#185FA5'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font=`18px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.fillText(`${labelPrefix}${currentLabelNo}`, bx+bw/2, oy+sD/2);
+    if (i < p.count - 1) {
+      ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
+      const panelX = bx + bw - st / 2;
+      ctx.strokeRect(panelX, oy, st, Math.max(1, sD - st));
+    }
+    boothX += bw;
+  }
+  ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
+  if (doors.length && !p.rebate) {
+    if (doors[0].zoneStart > ox + 0.5) ctx.strokeRect(ox, oy+sD-st, doors[0].zoneStart - ox, st);
+    for (let i = 0; i < doors.length - 1; i++) {
+      const start = doors[i].zoneEnd;
+      const end = doors[i + 1].zoneStart;
+      if (end > start + 0.5) ctx.strokeRect(start, oy+sD-st, end - start, st);
+    }
+    if (ox + sW > doors[doors.length - 1].zoneEnd + 0.5) ctx.strokeRect(doors[doors.length - 1].zoneEnd, oy+sD-st, ox + sW - doors[doors.length - 1].zoneEnd, st);
+  }
+  if (!c.hasRight) {
+    ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
+    ctx.strokeRect(ox + sW - st, oy, st, Math.max(1, sD - st));
+  }
+  doors.forEach(door => {
+    drawDoorSwing(door, oy+sD, st, p);
+  });
+  const boardModel = buildBoardModel(p, c, doors, ox, sW, scale);
+  drawPlanRebateDetails(p, ox, oy, sW, sD, st, scale, boardModel);
+
+  const edge = c.edge;
+  const middle = c.middle;
+  if (options.showTopDims !== false) {
+    const totalY = oy - swt - (options.totalDimGap ?? 12);
+    drawDim(ox, totalY, ox+sW, totalY, `${c.adjustedLength ? '展开总长' : '总长'} ${fmtMm(W)}mm`, 10);
+  }
+  drawPlanWarnings(c, ox + sW + swt + 18, oy - swt + 4);
+  if (options.showBoothDim !== false) {
+    const boothY = oy + Math.max(26, sD * 0.18);
+    let boothDimX = ox;
+    for (let i = 0; i < p.count; i++) {
+      const boothMm = c.boothWidths[i] || c.boothW;
+      const boothPx = boothMm * scale;
+      drawDim(boothDimX, boothY, boothDimX + boothPx, boothY, `${fmtMm(boothMm)}mm`, -10);
+      boothDimX += boothPx;
+    }
+  }
+  const depthX = ox + sW + swt + (options.depthDimGap ?? 18);
+  drawDim(depthX, oy, depthX, oy+sD, `深 ${p.depth}mm`, 14);
+
+  const segments = [];
+  boardModel.panels.forEach(panel => {
+    const cutSides = (panel.leftRebate ? 1 : 0) + (panel.rightRebate ? 1 : 0);
+    const label = panel.mixed
+      ? {top: fmtMm(Math.max(0, Math.round(panel.bigMm - (p.rebateDepth || 0)))), bottom: fmtMm(panel.bigMm)}
+      : boardDimLabel(panel.bigMm, p, cutSides, panel.leftTopIsSmall);
+    segments.push({x1: panel.bigX1, x2: panel.bigX2, label});
+  });
+  boardModel.doors.forEach(door => {
+    const sourceDoor = doors[door.index];
+    segments.push({x1: sourceDoor.zoneStart, x2: sourceDoor.zoneEnd, label: boardDimLabel(door.bigMm, p, 2, door.topIsSmall)});
+  });
+  segments.sort((a, b) => a.x1 - b.x1);
+  drawChainDim(oy + sD + (options.bottomDimOffset || (p.rebate ? 52 : 42)), segments);
+}
+
+function drawPlan(p) {
+  const P = getSheetLayout(p).plot;
+  const rows = drawableGroupRows();
+  if (!rows.length && activeRow()?.enabled !== true) return;
+  if (rows.length > 1) {
+    const maxRun = rows.reduce((max, item) => Math.max(max, compute(item.row).totalRun), 0);
+    const maxDepth = rows.reduce((max, item) => Math.max(max, item.row.depth), 0);
+    const rowGap = 150;
+    const rowTopDim = 42;
+    const availableH = P.h - 70 - rowGap * (rows.length - 1) - rowTopDim * rows.length;
+    const scale = Math.max(0.03, Math.min((P.w - 190) / maxRun, availableH / rows.reduce((sum, item) => sum + item.row.depth, 0)));
+    let y = P.y + 86;
+    let labelStart = 0;
+    rows.forEach(item => {
+      const g = item.row;
+      const c = compute(g);
+      const x = P.x + (P.w - c.totalRun * scale) / 2;
+      const rowY = y + rowTopDim;
+      const rowLabelX = Math.max(P.x + 18, x - 104);
+      drawPlanRow(g, x, rowY, scale, item.group.name.replace('组', ''), `${item.group.name}-${item.index + 1}排`, {showTopDims:true, showBoothDim:true, totalDimGap:12, depthDimGap:18, bottomDimOffset:52, groupColor: groupColor(groups.indexOf(item.group)), labelX:rowLabelX, labelY:rowY - 22, labelStart, groupId:item.group.id, rowId:g.id});
+      y += rowTopDim + g.depth * scale + rowGap;
+      labelStart += Math.max(1, Number(g.count) || 1);
+    });
+    return;
+  }
+  const c = compute(p);
+  const W = c.totalRun, D = p.depth;
+  const wt = c.wallT;
+  const leftWall = c.hasLeft ? wt : 0;
+  const rightWall = c.hasRight ? wt : 0;
+  const backWall = c.hasBack ? wt : 0;
+  const scale = Math.min((P.w - 160) / (W + leftWall + rightWall), (P.h - 185) / (D + backWall));
+  const ox = P.x + (P.w - (W + leftWall + rightWall) * scale) / 2 + leftWall * scale;
+  const oy = P.y + 118 + backWall * scale;
+  drawPlanRow(p, ox, oy, scale, activeGroup().name.replace('组', ''), '', {labelX:Math.max(P.x + 18, ox - 104), labelY:oy - 22, groupId:activeGroupId, rowId:activeRowId});
+}
+
+function drawFront(p) {
+  const c = compute(p);
+  const P = getSheetLayout(p).plot;
+  const W = c.totalRun;
+  const H = Math.max(p.hUpright, p.hMid);
+  const t = p.tPanel, wt = c.wallT;
+  const scale = Math.min((P.w - 170) / (W + (c.hasLeft?wt:0) + (c.hasRight?wt:0)), (P.h - 180) / H);
+  const ox = P.x + (P.w - (W + (c.hasLeft?wt:0) + (c.hasRight?wt:0)) * scale) / 2 + (c.hasLeft?wt:0) * scale;
+  const floor = P.y + 118 + (P.h - 180 + H * scale) / 2;
+  const oy = floor - H * scale;
+  const sW = W * scale, sH = H * scale, st = Math.max(1.5, t * scale), swt = wt * scale;
+  const hU = p.hUpright * scale, hDp = (p.hDoor || 1750) * scale, hM = p.hMid * scale, vis = p.hVis * scale;
+
+  ctx.strokeStyle='#888'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
+  if (c.hasLeft) { drawHatch(ox-swt, oy, swt, sH, 18); ctx.strokeStyle='#666'; ctx.strokeRect(ox-swt, oy, swt, sH); }
+  if (c.hasRight) { drawHatch(ox+sW, oy, swt, sH, 18); ctx.strokeStyle='#666'; ctx.strokeRect(ox+sW, oy, swt, sH); }
+
+  let x = ox;
+  for (let i=0; i<=p.count; i++) {
+    const isEdge = (i===0 && !c.hasLeft)||(i===p.count && !c.hasRight);
+    if (isEdge || (i>0 && i<p.count)) {
+      ctx.strokeStyle='#222'; ctx.lineWidth=0.8; ctx.strokeRect(x, floor-hU, st, hU);
+      x += st;
+    }
+    if (i < p.count) {
+      const bw = c.boothW * scale;
+      const doorOff = (c.boothW - p.doorW) / 2 * scale;
+      const dsx = x + doorOff, dsw = p.doorW * scale;
+      ctx.strokeStyle='#185FA5'; ctx.lineWidth=1; ctx.strokeRect(dsx, floor-hDp, dsw, hDp);
+      ctx.strokeStyle='#6a9bcc'; ctx.lineWidth=0.6; ctx.strokeRect(x, floor-hM, bw, vis);
+      ctx.fillStyle='#185FA5'; ctx.font=`14px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(`${p.hDoor || 1750}`, dsx+dsw/2, floor-hDp/2);
+      x += bw;
+    }
+  }
+  ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
+  drawDim(ox, oy-58, ox+sW, oy-58, `${c.adjustedLength ? '展开总长' : '总长'} ${W}mm`, 14);
+  drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14);
+  drawDim(ox+sW+58, floor-vis, ox+sW+58, floor, `见光板 ${p.hVis}mm`, 14);
+}
+
+function drawStandardFrontModule(p, c) {
+  const W = c.boothW;
+  const H = Math.max(p.hUpright, p.hMid);
+  const scale = Math.min((PLOT.w - 360) / W, (PLOT.h - 180) / H);
+  const ox = PLOT.x + 120;
+  const floor = PLOT.y + 118 + (PLOT.h - 180 + H * scale) / 2;
+  const oy = floor - H * scale;
+  const sW = W * scale, sH = H * scale;
+  const hDoor = (p.hDoor || 1750) * scale;
+  const hMid = p.hMid * scale;
+  const vis = p.hVis * scale;
+  const doorW = p.doorW * scale;
+  const dx = ox + (sW - doorW) / 2;
+
+  ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
+  ctx.strokeStyle='#185FA5'; ctx.strokeRect(dx, floor-hDoor, doorW, hDoor);
+  ctx.strokeStyle='#6a9bcc'; ctx.strokeRect(ox, floor-hMid, sW, vis);
+  ctx.strokeStyle='#888'; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
+  drawDim(ox, oy-58, ox+sW, oy-58, `标准间宽 ${fmtMm(c.boothW)}mm`, 14);
+  drawDim(ox+sW+58, floor-hDoor, ox+sW+58, floor, `门高 ${p.hDoor||1750}mm`, 14);
+
+  drawProjectStats(ox+sW+115, oy+20, p, c, Math.min(12, Math.ceil(Math.sqrt(p.count * 1.35))), Math.ceil(p.count / Math.min(12, Math.ceil(Math.sqrt(p.count * 1.35)))));
+}
+
+function drawSide(p) {
+  const c = compute(p);
+  const P = getSheetLayout(p).plot;
+  const W = p.depth;
+  const H = Math.max(p.hUpright, p.hMid);
+  const t = p.tPanel, wt = c.wallT;
+  const scale = Math.min((P.w - 300) / (W + wt), (P.h - 180) / H);
+  const ox = P.x + (P.w - W * scale) / 2;
+  const floor = P.y + 118 + (P.h - 180 + H * scale) / 2;
+  const oy = floor - H * scale;
+  const sW = W * scale, sH = H * scale, st = Math.max(1.5, t * scale), swt = wt * scale;
+  const hU = p.hUpright * scale, hD = (p.hDoor || 1750) * scale, hM = p.hMid * scale, vis = p.hVis * scale;
+  const doorH = p.doorW * scale;
+
+  if (c.hasBack) {
+    drawHatch(ox, oy-swt, sW, swt, 18);
+    ctx.strokeStyle='#666'; ctx.lineWidth=1; ctx.strokeRect(ox, oy-swt, sW, swt);
+  }
+
+  ctx.strokeStyle='#222'; ctx.lineWidth=0.8; ctx.strokeRect(ox, floor-hU, st, hU);
+  ctx.strokeStyle='#6a9bcc'; ctx.lineWidth=0.6; ctx.strokeRect(ox+st, floor-hM, sW-st*2, vis);
+  ctx.fillStyle='#185FA5'; ctx.font=`14px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('见光板', ox+st+(sW-st*2)/2, floor-hM+vis/2);
+
+  const doorStartY = floor - doorH;
+  ctx.strokeStyle='#185FA5'; ctx.lineWidth=1; ctx.strokeRect(ox+sW-st, doorStartY, st, doorH);
+  ctx.fillStyle='#185FA5'; ctx.fillText('门', ox+sW-st/2, doorStartY+doorH/2);
+  ctx.strokeStyle='#222'; ctx.lineWidth=0.8; ctx.strokeRect(ox+sW-st, floor-hU, st, hU-doorH);
+  ctx.strokeStyle='#888'; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
+  ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
+
+  drawDim(ox, oy-58, ox+sW, oy-58, `深度 ${p.depth}mm`, 14);
+  drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14);
+  drawDim(ox+sW+58, floor-hD, ox+sW+58, floor, `门高 ${p.hDoor||1750}mm`, 14);
+}
+
+function renderBOM(p) {
+  const rows = drawableGroupRows();
+  if (!rows.length && activeRow()?.enabled !== true) {
+    document.getElementById('bom').innerHTML = `
+      <div class="bom-card">
+        <div class="name">当前图纸</div>
+        <div class="val">空白</div>
+        <div class="sub">输入参数或点击生成后显示</div>
+      </div>`;
+    return;
+  }
+  if (rows.length > 1) {
+    const totalCount = rows.reduce((sum, item) => sum + item.row.count, 0);
+    const totalRun = rows.reduce((sum, item) => sum + compute(item.row).totalRun, 0);
+    const active = activeGroup();
+    const row = activeRow();
+    const items = [
+      {name:'当前组', val:active.name, sub:`共 ${rows.length} 排`},
+      {name:'总间数', val:`${totalCount} 间`, sub:'当前组合计'},
+      {name:'门板', val:`${totalCount} 块`, sub:'按每间 1 块估算'},
+      {name:'中隔板（顶板）', val:`${totalCount} 块`, sub:'按每间 1 块估算'},
+      {name:'估算总长度', val:`${Math.round(totalRun/1000*10)/10} m`, sub:'当前组合计'},
+      {name:'当前排净间宽', val:`${fmtMm(compute(row).boothW)} mm`, sub:`${active.name} · ${row.count} 间`},
+    ];
+    document.getElementById('bom').innerHTML = items.map(i=>`
+      <div class="bom-card">
+        <div class="name">${i.name}</div>
+        <div class="val">${i.val}</div>
+        <div class="sub">${i.sub}</div>
+      </div>`).join('');
+    return;
+  }
+  const c = compute(p);
+  const uniqueDoorWidths = [...new Set(c.doorWidths.map(w => fmtMm(w)))];
+  const doorWidthText = uniqueDoorWidths.length === 1 ? rebateText(c.doorWidths[0], p, 'double') : uniqueDoorWidths.map(w => rebateText(Number(w), p, 'double')).join(' / ');
+  const edgeWidths = [c.sidePairs[0]?.[0] || 0, c.sidePairs[p.count - 1]?.[1] || 0];
+  const uprightWidths = c.sidePairs.slice(0, -1).map((pair, i) => pair[1] + c.sidePairs[i + 1][0]);
+  const edgeWidthText = uniqueRebateTexts(edgeWidths, p, 'single');
+  const uprightWidthText = uprightWidths.length ? uniqueRebateTexts(uprightWidths, p, 'double') : '无';
+  const hasSmallDoor = c.insufficientDoors.some(Boolean);
+  const hasSmallEdge = c.insufficientEdges.some(Boolean);
+  const hasSmallMiddle = c.insufficientMiddles.some(Boolean);
+  const guardText = [hasSmallDoor ? `门小于${c.minDoorW}` : '', hasSmallEdge ? `边板小于${c.minEdgePanel}` : '', hasSmallMiddle ? `立板小于${c.minMiddlePanel}` : ''].filter(Boolean).join(' · ');
+  const swingCounts = normalizeBoothSwings(p.boothSwings, p.count, p.swing).reduce((acc, key) => {
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const swingSummary = Object.entries(swingCounts).map(([key, count]) => `${swingLabel(key)}${count}块`).join(' / ');
+  const items = [
+    {name:'图纸模式', val:c.projectMode ? '项目总览' : c.segmentedMode ? '分段详图' : '详细施工图', sub:c.projectMode ? '按标准单间统计' : c.segmentedMode ? `每段最多 ${c.segmentSize} 间` : '逐间绘制'},
+    {name:'边板', val:'2 块', sub:p.rebate ? `${p.tPanel}×宽${edgeWidthText}×高${p.hUpright}mm · 单启口` : `${p.tPanel}×宽${edgeWidths.map(fmtMm).join('/')}×高${p.hUpright}mm`},
+    {name:'立板', val:`${Math.max(0, p.count - 1)} 块`, sub:p.rebate ? `${p.tPanel}×宽${uprightWidthText}×高${p.hUpright}mm · 双启口` : `${p.tPanel}×宽${uprightWidths.length ? uprightWidths.map(fmtMm).join('/') : '无'}×高${p.hUpright}mm`},
+    {name:'门板', val:`${p.count} 块`, sub:`${p.tPanel}×宽${doorWidthText}×高${p.hDoor||1750}mm · ${swingSummary}${p.rebate ? ' · 双启口' : ''}${guardText ? ` · ${guardText}需调整` : ''}${p.doorGap ? ` · 门缝${p.doorGap}mm` : ''}`},
+    {name:'中隔板（顶板）', val:`${p.count} 块`, sub:`${p.tPanel}×深${c.boothD}×高${p.hMid}mm`},
+    {name:'见光板', val:`按未靠墙侧`, sub:`${p.tPanel}×深${c.boothD}×高${p.hVis}mm`},
+    {name:'净间宽', val:`${fmtMm(c.boothW)} mm`, sub:`共 ${p.count} 间`},
+    {name:'估算总长度', val:`${Math.round((c.totalRun || p.total)/1000*10)/10} m`, sub:`板厚 ${p.tPanel}mm`},
+  ];
+  document.getElementById('bom').innerHTML = items.map(i=>`
+    <div class="bom-card">
+      <div class="name">${i.name}</div>
+      <div class="val">${i.val}</div>
+      <div class="sub">${i.sub}</div>
+    </div>`).join('');
+}
+
+function exportImg(name) {
+  const link = document.createElement('a');
+  link.download = `隔断${name||currentTab}.png`;
+  link.href = cv.toDataURL('image/png');
+  link.click();
+}
+
+function exportAll() {
+  ['plan','front','side'].forEach((tab,i)=>{
+    setTimeout(()=>{
+      drawView(lastParams||getParams(), tab);
+      exportImg(['平面图','正立面图','侧立面图'][i]);
+    }, i*300);
+  });
+}
+
+function updateZoomInfo() {
+  document.getElementById('zoom-info').textContent = Math.round(zoomScale*100)+'%';
+}
+
+function resetZoom() {
+  if(lastParams) {
+    autoFit(lastParams);
+    drawView(lastParams, currentTab);
+  }
+}
+
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = cv.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const oldScale = zoomScale;
+  zoomScale *= Math.exp(-e.deltaY * 0.001);
+  zoomScale = Math.max(0.1, Math.min(zoomScale, 5));
+  panX = mx - (mx - panX) * (zoomScale / oldScale);
+  panY = my - (my - panY) * (zoomScale / oldScale);
+  if(lastParams) drawView(lastParams, currentTab);
+}, {passive:false});
+
+cv.addEventListener('mousedown', e => {
+  if(e.button !== 1) return;
+  e.preventDefault();
+  isDragging = true;
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  dragStartPanX = panX;
+  dragStartPanY = panY;
+  cv.style.cursor = 'move';
+});
+
+cv.addEventListener('click', e => {
+  if (currentTab !== 'plan' || isDragging) return;
+  const rect = cv.getBoundingClientRect();
+  const x = (e.clientX - rect.left - panX) / zoomScale;
+  const y = (e.clientY - rect.top - panY) / zoomScale;
+  const hit = [...planHitAreas].reverse().find(area => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
+  if (!hit) return;
+  const group = groups.find(g => g.id === hit.groupId);
+  const row = group ? ensureRows(group).find(r => r.id === hit.rowId) : null;
+  if (!group || !row) return;
+  saveActiveGroup();
+  activeGroupId = group.id;
+  activeRowId = row.id;
+  selectionScope = 'booth';
+  setSelectedBooth(group.id, row.id, hit.index);
+  openGroupIds.add(group.id);
+  loadGroupToForm(group, row);
+  renderGroups(false);
+  revealActiveGroupInList();
+  renderSwingButtons();
+  renderBoothSwingPanel();
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+});
+
+window.addEventListener('mousemove', e => {
+  if(!isDragging) return;
+  panX = dragStartPanX + (e.clientX - dragStartX);
+  panY = dragStartPanY + (e.clientY - dragStartY);
+  if(lastParams) drawView(lastParams, currentTab);
+});
+
+window.addEventListener('mouseup', e => {
+  if(e.button !== 1) return;
+  isDragging = false;
+  cv.style.cursor = 'default';
+});
+
+cv.addEventListener('mouseleave', () => {
+  isDragging = false;
+  cv.style.cursor = 'default';
+});
+
+cv.addEventListener('contextmenu', e => e.preventDefault());
+
+const ro = new ResizeObserver(()=>{ resizeCanvas(); if(lastParams) drawView(lastParams, currentTab); });
+ro.observe(document.getElementById('carea'));
+
+document.getElementById('h-upright').addEventListener('change', function() {
+  document.getElementById('h-vis').value = this.value;
+  refreshDrawing(false);
+});
+
+document.getElementById('p-count').addEventListener('input', () => {
+  syncTotalByCount();
+  syncBoothSwingsByCount();
+  renderBoothSwingPanel();
+  refreshDrawing(false);
+});
+
+document.getElementById('p-count').addEventListener('change', () => {
+  syncTotalByCount();
+  syncBoothSwingsByCount();
+  renderBoothSwingPanel();
+  refreshDrawing(false);
+});
+
+document.getElementById('p-count').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  syncTotalByCount();
+  syncBoothSwingsByCount();
+  renderBoothSwingPanel();
+  refreshDrawing(false);
+});
+
+document.getElementById('p-widths').addEventListener('input', () => {
+  // Editing is staged; press Enter or leave the field to apply the widths.
+});
+
+document.getElementById('p-widths').addEventListener('change', () => {
+  syncCustomWidths();
+  refreshDrawing(false);
+});
+
+document.getElementById('p-widths').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  syncCustomWidths();
+  refreshDrawing(false);
+});
+
+document.getElementById('p-gap').addEventListener('input', () => {
+  refreshDrawing(false);
+});
+
+document.getElementById('p-gap').addEventListener('change', () => {
+  const el = document.getElementById('p-gap');
+  if (el.value === '' || Number(el.value) < 4) el.value = 4;
+  refreshDrawing(false);
+});
+
+document.getElementById('p-gap').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const el = e.currentTarget;
+  if (el.value === '' || Number(el.value) < 4) el.value = 4;
+  refreshDrawing(false);
+});
+
+document.getElementById('p-rebate').addEventListener('change', () => {
+  refreshDrawing(false);
+});
+
+document.querySelectorAll('.field input[type=number], .field select').forEach(el => {
+  if (el.id === 'p-count' || el.id === 'p-widths' || el.id === 'p-gap') return;
+  el.addEventListener('change', () => refreshDrawing(false));
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') refreshDrawing(false);
+  });
+});
+
+setTimeout(()=>{ applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); updateLayoutTargetLabel(); renderGroups(); generate(); }, 100);
+</script>
