@@ -166,7 +166,8 @@ body.theme-dark .bom-card .val{color:#58a6ff}
 body.theme-dark .bom-line{color:#e6edf3}
 .bom-line::before{content:"";width:0.3125rem;height:0.3125rem;margin-top:0.5rem;border-radius:999px;background:#57606a;opacity:.9;flex:0 0 auto}
 body.theme-dark .bom-line::before{background:#d0d7de;opacity:.92}
-.bom-size-line{display:inline-grid;grid-template-columns:3.45em auto;column-gap:0.3em;align-items:baseline}
+.bom-size-line{display:inline-grid;grid-template-columns:auto 3.45em auto;column-gap:0.3em;align-items:baseline}
+.bom-size-process{white-space:nowrap;text-align:left}
 .bom-size-left{white-space:nowrap;text-align:left}
 .bom-size-right{white-space:nowrap;text-align:left}
 .bom-chip{display:inline-block;margin:0 0.1875rem 0.1875rem 0;padding:0.125rem 0.4375rem;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:0.75rem;font-weight:700;line-height:1.45;white-space:nowrap}
@@ -218,7 +219,10 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     <div class="sec">
       <div class="quick-title-row">
         <div class="sec-title">快速布局</div>
-        <button class="switch-toggle" id="quick-ten-toggle" type="button" onclick="toggleQuickTenMode()"><span>10间+</span><span class="switch-track" aria-hidden="true"></span><span class="switch-state">关闭</span></button>
+        <div class="quick-history-actions">
+          <button class="quick-btn" type="button" onclick="selectAllQuickLayoutRows()">全选</button>
+          <button class="switch-toggle" id="quick-ten-toggle" type="button" onclick="toggleQuickTenMode()"><span>10间+</span><span class="switch-track" aria-hidden="true"></span><span class="switch-state">关闭</span></button>
+        </div>
       </div>
       <div class="quick-layout" id="quick-layout"></div>
     </div>
@@ -379,6 +383,7 @@ let urinalSpec = {count:0, width:400, height:900, thick:12, shape:'矩形', hole
 let quickNavKeep = null;
 let lastQuickCellRef = null;
 let autoOpenTotalOnQuickFocus = false;
+let quickSelectAllActive = false;
 let noteInputValue = '';
 let sheetHeaderText = '';
 const GROUP_NAME_PLACEHOLDER = '备注标签';
@@ -1077,7 +1082,7 @@ function saveActiveGroup(enable = false) {
 function applyGroupParamsToRow(row, params, enable = false) {
   const keep = {
     count: row.count,
-    total: row.total,
+    total: quickSelectAllActive && canBatchEditTotal() ? params.total : row.total,
     widthsText: row.widthsText,
     layoutType: row.layoutType,
     layoutRow: row.layoutRow,
@@ -1564,6 +1569,7 @@ function handleQuickInput(input) {
 }
 
 function syncQuickCellToLayout(rowIndex, colIndex, value) {
+  quickSelectAllActive = false;
   const count = parseInt(value, 10);
   if (!Number.isFinite(count) || count <= 0) return false;
   lastQuickCellRef = {page:activeQuickPage, row:rowIndex, col:colIndex};
@@ -1584,6 +1590,12 @@ function syncQuickCellToLayout(rowIndex, colIndex, value) {
   refreshDrawing(false, false, false);
   if (target) focusTotalInputForQuickCell();
   return Boolean(target);
+}
+
+function selectAllQuickLayoutRows() {
+  selectionScope = 'group';
+  quickSelectAllActive = true;
+  clearSelectedBooth();
 }
 
 function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
@@ -1631,15 +1643,6 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
   if (!generated.length) return null;
   group.rows = generated;
   return activeTarget || generated[0];
-}
-
-function commitQuickLayoutForFreeCanvas() {
-  if (!(currentTab === 'plan' && canvasMode === 'free')) return;
-  if (!quickLayoutHasValues()) return;
-  const group = activeGroup();
-  const activeCell = activeRow() ? {page: activeRow().sheetPage || 0, row: activeRow().layoutRow || 1, col: activeRow().layoutCol || 1} : null;
-  const target = buildRowsFromQuickLayout(group, activeCell);
-  if (target) activeRowId = target.id;
 }
 
 function handleQuickKey(e) {
@@ -1822,7 +1825,7 @@ function revealActiveGroupInList() {
 }
 
 function selectGroup(id) {
-  commitQuickLayoutForFreeCanvas();
+  quickSelectAllActive = false;
   saveActiveGroup();
   activeGroupId = id;
   setGroupCardActiveNow(id);
@@ -1857,6 +1860,7 @@ function toggleGroup(id) {
 }
 
 function selectRow(groupId, rowId) {
+  quickSelectAllActive = false;
   saveActiveGroup();
   activeGroupId = groupId;
   activeRowId = rowId;
@@ -2014,6 +2018,16 @@ function setWall(btn) {
   document.querySelectorAll('[data-wall]').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   wallMode = btn.dataset.wall;
+  if (selectionScope === 'group') {
+    ensureRows(activeGroup()).forEach(row => { row.wall = wallMode; });
+    quickSelectAllActive = false;
+    const p = getParams();
+    lastParams = p;
+    drawView(p, currentTab);
+    renderBOM(p);
+    updateGroupListState();
+    return;
+  }
   refreshDrawing(false);
 }
 
@@ -2029,6 +2043,17 @@ function setSwing(btn) {
   } else if (selectionScope === 'group') {
     setGroupSwing(activeGroup(), nextSwing);
     swingMode = activeRow()?.swing || nextSwing;
+    quickSelectAllActive = false;
+    renderSwingButtons();
+    renderBoothSwingPanel();
+    renderDepthPanelSpecialPanel();
+    updateLayoutTargetLabel();
+    const p = getParams();
+    lastParams = p;
+    drawView(p, currentTab);
+    renderBOM(p);
+    updateGroupListState();
+    return;
   } else {
     swingMode = nextSwing;
     setRowSwing(row, nextSwing);
@@ -2076,7 +2101,6 @@ function clearBoothSelection() {
 }
 
 function refreshDrawing(refit = false, renderList = true, enableRow = true) {
-  commitQuickLayoutForFreeCanvas();
   const doorInput = document.getElementById('p-door');
   if (selectionScope === 'booth' && selectedBoothRef && doorInput && document.activeElement === doorInput) {
     applySelectedBoothDoorWidth(doorInput.value);
@@ -2178,6 +2202,12 @@ function rebateText(size, p, type = 'double') {
   const big = label.topName === '大' ? label.top : label.bottom;
   const small = label.topName === '小' ? label.top : label.bottom;
   return `大${big}/小${small}`;
+}
+
+function rebateBomSizeText(size, p) {
+  const label = rebateLabel(size, p);
+  if (typeof label !== 'object') return label;
+  return label.topName === '大' ? label.top : label.bottom;
 }
 
 function boardDimLabel(bigMm, p, cutSides, topIsSmall) {
@@ -2316,7 +2346,6 @@ function resizeCanvas() {
 }
 
 function generate() {
-  commitQuickLayoutForFreeCanvas();
   saveActiveGroup(true);
   const p = getParams();
   lastParams = p;
@@ -3414,7 +3443,10 @@ function drawPlanWalls(ox, oy, sW, sD, swt, c, extras = {}) {
 function drawDoorSwing(door, baseY, st, p) {
   const swing = swingDefs[door.swing || p.swing || 'in-right'] || swingDefs['in-right'];
   const isRight = swing.hinge === 'right';
+  const closedStart = Number.isFinite(door.bigStart) ? door.bigStart : door.start;
+  const closedEnd = Number.isFinite(door.bigEnd) ? door.bigEnd : door.end;
   const hingeX = isRight ? door.end : door.start;
+  const closedHingeX = isRight ? closedEnd : closedStart;
   const closedY = baseY + st / 2;
   const openDir = swing.opensUp ? -1 : 1;
   const openEndY = closedY + openDir * door.width;
@@ -3429,8 +3461,10 @@ function drawDoorSwing(door, baseY, st, p) {
     const uy = dy / len;
     const nx = -uy;
     const ny = ux;
-    const t = Math.max(st, Number(p.tPanel) || 12);
-    const rebate = p.rebate ? Math.min(Math.max(0, Number(p.rebateDepth) || 0), len / 3) : 0;
+    const t = st;
+    const panelMm = Math.max(1, Number(p.tPanel) || 12);
+    const pxPerMm = st / panelMm;
+    const rebate = p.rebate ? Math.min(Math.max(0, Number(p.rebateDepth) || 0) * pxPerMm, len / 3) : 0;
     const leftCut = p.rebate ? rebate : 0;
     const rightCut = p.rebate ? rebate : 0;
     const topA = topIsSmall ? leftCut : 0;
@@ -3456,7 +3490,7 @@ function drawDoorSwing(door, baseY, st, p) {
   ctx.lineJoin = 'miter';
   ctx.strokeStyle = '#185FA5';
   ctx.lineWidth = Math.max(0.45, anno(0.75));
-  drawDoorBoard(door.start, closedY, door.end, closedY, doorSmallOnTopForSwing(door.swing));
+  drawDoorBoard(closedStart, closedY, closedEnd, closedY, doorSmallOnTopForSwing(door.swing));
   drawDoorBoard(hingeX, closedY, hingeX, openEndY, doorSmallOnTopForSwing(door.swing));
   ctx.strokeStyle = '#8EC5FF';
   ctx.lineWidth = Math.max(0.8, anno(5));
@@ -3469,7 +3503,7 @@ function drawDoorSwing(door, baseY, st, p) {
     'out-right': [Math.PI, Math.PI / 2, true]
   };
   const arc = arcMap[door.swing || p.swing || 'in-right'] || arcMap['in-right'];
-  ctx.arc(hingeX, closedY, door.width, arc[0], arc[1], arc[2]);
+  ctx.arc(closedHingeX, closedY, door.width, arc[0], arc[1], arc[2]);
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.restore();
@@ -3495,13 +3529,14 @@ function doorSmallOnTopForSwing(swing) {
 }
 
 function buildBoardModel(p, c, doors, ox, sW, scale) {
-  const rebate = Math.max(0, Number(p.rebateDepth) || 0);
   const panels = [];
   const doorBoards = doors.filter(door => door.hasDoor !== false).map((door, i) => ({
     kind: 'door',
     index: door.index ?? i,
-    bigX1: door.start - Math.min(rebate * scale, door.gapLeft || 0),
-    bigX2: door.end + Math.min(rebate * scale, door.gapRight || 0),
+    bigX1: Number.isFinite(door.bigStart) ? door.bigStart : door.start,
+    bigX2: Number.isFinite(door.bigEnd) ? door.bigEnd : door.end,
+    smallX1: door.start,
+    smallX2: door.end,
     bigMm: c.doorWidths[door.index ?? i] || p.doorW,
     smallMm: c.doorInstallWidths[door.index ?? i] || c.doorWidths[door.index ?? i] || p.doorW,
     leftRebate: true,
@@ -3555,8 +3590,8 @@ function drawPlanRebateDetails(p, ox, oy, sW, sD, st, scale, boardModel) {
   ctx.save();
   const rebatePx = Math.max(1.5, (p.rebateDepth || 0) * scale);
   const profileH = st;
-  const yTop = oy + sD - profileH;
-  const yBot = oy + sD;
+  const yTop = oy + sD;
+  const yBot = oy + sD + profileH;
   const yMid = yTop + profileH * 0.5;
   ctx.strokeStyle = '#222';
   ctx.lineWidth = 0.75;
@@ -3586,7 +3621,6 @@ function drawPlanRebateDetails(p, ox, oy, sW, sD, st, scale, boardModel) {
   };
 
   boardModel.panels.forEach(panel => drawBoardProfile(panel.bigX1, panel.bigX2, panel.leftRebate, panel.rightRebate, panel.leftTopIsSmall, panel.rightTopIsSmall));
-  boardModel.doors.forEach(door => drawBoardProfile(door.bigX1, door.bigX2, door.leftRebate, door.rightRebate, door.topIsSmall));
   ctx.restore();
 }
 
@@ -3847,6 +3881,9 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     const zoneStart = bx + (c.sidePairs[i]?.[0] || 0) * scale;
     const dsx = zoneStart + gapLeft * scale, dsw = doorW;
     const zoneEnd = dsx + dsw + gapRight * scale;
+    const rebatePx = p.rebate ? Math.max(0, Number(p.rebateDepth) || 0) * scale : 0;
+    const bigStart = dsx - rebatePx;
+    const bigEnd = dsx + dsw + rebatePx;
     if (options.groupId && options.rowId) {
       const hitScale = options.hitScale || 1;
       const hitX = options.hitX || 0;
@@ -3859,7 +3896,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
       const doorHitH = doorHitSize;
       planHitAreas.push({type:'booth', x:hitX + doorHitX * hitScale, y:hitY + doorHitY * hitScale, w:doorHitW * hitScale, h:doorHitH * hitScale, groupId:options.groupId, rowId:options.rowId, index:i});
     }
-    doors.push({start: dsx, end: dsx + dsw, zoneStart, zoneEnd, gapLeft: gapLeft * scale, gapRight: gapRight * scale, width: dsw, boothX: bx, boothW: bw, swing: boothSwingAt(p, i), index:i, hasDoor});
+    doors.push({start: dsx, end: dsx + dsw, bigStart, bigEnd, zoneStart, zoneEnd, gapLeft: gapLeft * scale, gapRight: gapRight * scale, width: dsw, boothX: bx, boothW: bw, swing: boothSwingAt(p, i), index:i, hasDoor});
     const currentLabelNo = (options.labelStart || 0) + i + 1;
     ctx.fillStyle='#185FA5'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.font=planFont(95);
@@ -3941,7 +3978,13 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   });
   boardModel.doors.forEach(door => {
     const sourceDoor = doors[door.index];
-    segments.push({x1: sourceDoor.start, x2: sourceDoor.end, label: p.rebate ? boardDimLabel(door.bigMm, p, 2, door.topIsSmall) : fmtMm(door.bigMm)});
+    const label = p.rebate
+      ? {
+        top: fmtMm(door.topIsSmall ? door.smallMm : door.bigMm),
+        bottom: fmtMm(door.topIsSmall ? door.bigMm : door.smallMm)
+      }
+      : fmtMm(door.bigMm);
+    segments.push({x1: sourceDoor.bigStart, x2: sourceDoor.bigEnd, label});
   });
   segments.sort((a, b) => a.x1 - b.x1);
   drawChainDim(oy + sD + st + (options.bottomDimOffset || PLAN_ANCHOR.bottomDimOffset), segments);
@@ -4257,7 +4300,7 @@ function renderBOM(p) {
     renderBomItems([{name:'当前图纸', val:'空白', sub:'输入参数或点击生成后显示'}]);
     return;
   }
-  if (rows.length > 1) {
+  if (rows.length) {
     renderBomItems(buildMaterialListItems(rows.map(item => item.row)));
     return;
   }
@@ -4278,8 +4321,8 @@ function buildMaterialListItems(rows) {
     const middleWidths = c.sidePairs.slice(0, -1).map((pair, i) => pair[1] + c.sidePairs[i + 1][0]);
     const frontHeight = Number(row.hUpright) || 1830;
     if (row.rebate) {
-      edgeWidths.forEach(width => addBomPiece(front, frontHeight, rebateText(width, row, 'single'), '单启口'));
-      middleWidths.forEach(width => addBomPiece(front, frontHeight, rebateText(width, row, 'double'), '双启口'));
+      edgeWidths.forEach(width => addBomPiece(front, frontHeight, rebateBomSizeText(width, row), '单启口'));
+      middleWidths.forEach(width => addBomPiece(front, frontHeight, rebateBomSizeText(width, row), '双启口'));
     } else {
       [...edgeWidths, ...middleWidths].forEach(width => addBomPiece(front, frontHeight, fmtMm(width), ''));
     }
@@ -4290,7 +4333,7 @@ function buildMaterialListItems(rows) {
         continue;
       }
       const width = Math.round(Number(c.doorWidths?.[i]) || Number(row.doorW) || 0);
-      if (width) addBomPiece(doors, Number(row.hDoor) || 1750, rebateText(width, row, 'double'), row.rebate ? '双启口' : '');
+      if (width) addBomPiece(doors, Number(row.hDoor) || 1750, row.rebate ? rebateBomSizeText(width, row) : fmtMm(width), row.rebate ? '双启口' : '');
     }
 
     const specialDepths = specialDepthPanelItems(row);
@@ -4332,13 +4375,15 @@ function addBomPiece(bucket, height, sizeText, process = '') {
 
 function formatBomBucket(bucket) {
   if (!bucket?.pieces?.size) return '';
-  let lastHeight = null;
+  const lastHeightByProcess = new Map();
   return [...bucket.pieces.values()]
     .sort((a, b) => a.height - b.height || bomSizeSortValue(a.size) - bomSizeSortValue(b.size) || a.size.localeCompare(b.size, 'zh-Hans-CN') || a.process.localeCompare(b.process, 'zh-Hans-CN'))
     .map(item => {
+      const processKey = item.process || '';
+      const lastHeight = lastHeightByProcess.get(processKey);
       const prefix = item.height === lastHeight ? `[size-cont]${item.size}` : `[size-head:${item.height}]${item.size}`;
-      lastHeight = item.height;
-      return `${prefix}${item.process ? ` ${item.process}` : ''}=${item.count}`;
+      lastHeightByProcess.set(processKey, item.height);
+      return `${item.process ? `${item.process} ` : ''}${prefix}=${item.count}`;
     })
     .join(' / ');
 }
@@ -4378,10 +4423,14 @@ function formatBomChips(value) {
 function formatBomLines(value) {
   const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
   return (lines.length ? lines : ['无']).map(line => {
+    const processHeadMatch = line.match(/^(.+?)\s+\[size-head:(\d+)\](.*)$/);
+    if (processHeadMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process">${escapeHtml(processHeadMatch[1])}</span><span class="bom-size-left">${escapeHtml(processHeadMatch[2])} x </span><span class="bom-size-right">${escapeHtml(processHeadMatch[3])}</span></span></div>`;
+    const processContMatch = line.match(/^(.+?)\s+\[size-cont\](.*)$/);
+    if (processContMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process">${escapeHtml(processContMatch[1])}</span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(processContMatch[2])}</span></span></div>`;
     const headMatch = line.match(/^\[size-head:(\d+)\](.*)$/);
-    if (headMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-left">${escapeHtml(headMatch[1])} x</span><span class="bom-size-right">${escapeHtml(headMatch[2])}</span></span></div>`;
+    if (headMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process"></span><span class="bom-size-left">${escapeHtml(headMatch[1])} x </span><span class="bom-size-right">${escapeHtml(headMatch[2])}</span></span></div>`;
     const isContinued = line.startsWith('[size-cont]');
-    if (isContinued) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(line.slice(11))}</span></span></div>`;
+    if (isContinued) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process"></span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(line.slice(11))}</span></span></div>`;
     return `<div class="bom-line">${escapeHtml(line)}</div>`;
   }).join('');
 }
@@ -4863,6 +4912,11 @@ document.getElementById('p-count').addEventListener('keydown', e => {
 function commitTotalInput(selectAfterCommit = false, advanceQuickCell = false) {
   const el = document.getElementById('p-total');
   if (!el) return;
+  if (quickSelectAllActive && selectionScope === 'group' && !canBatchEditTotal()) {
+    el.value = activeRow()?.total || el.value;
+    alert('全选包含不同间数的组，不能批量修改总长度。请单独选择同间数组后再修改总长度。');
+    return;
+  }
   const quickCellBeforeCommit = advanceQuickCell ? activeQuickCellRef() : null;
   const min = Number(el.min) || 600;
   const max = Number(el.max) || 20000;
@@ -4876,6 +4930,13 @@ function commitTotalInput(selectAfterCommit = false, advanceQuickCell = false) {
       el.select();
     }, 0);
   }
+}
+
+function canBatchEditTotal() {
+  const rows = ensureRows(activeGroup()).filter(row => row.enabled === true);
+  if (rows.length <= 1) return true;
+  const counts = new Set(rows.map(row => Math.max(1, Number(row.count) || 1)));
+  return counts.size === 1;
 }
 
 function commitTotalRowOnly() {
