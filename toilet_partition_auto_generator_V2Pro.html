@@ -176,10 +176,6 @@ body.theme-dark .vtab.active{border-bottom-color:#58a6ff;color:#b9dcff}
 .special-card-field{display:grid;grid-template-columns:auto 3.75rem;align-items:center;gap:0.375rem;min-width:0;flex:1}
 .special-card-field label{font-size:0.6875rem;color:var(--color-text-tertiary);white-space:nowrap}
 .special-card-field .width-card{width:3.75rem;height:1.875rem;font-size:0.8125rem}
-.plan-note-field{display:flex;align-items:center;gap:0.375rem;margin-left:0.625rem;min-width:9.5rem;max-width:16rem;flex:0 1 14rem}
-.plan-note-field label{font-size:0.875rem;color:#d64242;white-space:nowrap;font-weight:700}
-.plan-note-field input{height:1.625rem;min-width:0;width:100%;padding:0.125rem 0.5rem;border:0.5px solid #d64242;border-radius:var(--border-radius-md);background:#fff;color:#d64242;font-size:0.75rem;font-weight:600}
-.plan-note-field input:focus{outline:none;box-shadow:0 0 0 2px rgba(214,66,66,.16)}
 .paper-select{display:flex;align-items:center;gap:0.375rem;margin-left:auto;padding-right:0.875rem;white-space:nowrap}
 .paper-select label{font-size:0.75rem;color:var(--color-text-secondary)}
 .paper-select select{height:1.625rem;padding:0.125rem 1.5rem 0.125rem 0.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.75rem}
@@ -201,6 +197,7 @@ body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;backg
 .canvas-area{flex:1;position:relative;background:#eef1f4;overflow:hidden}
 body.theme-dark .canvas-area{background:#202734}
 canvas{display:block;width:100%;height:100%}
+.canvas-text-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;resize:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;overflow:hidden}
 .bom-area{border-top:0.5px solid var(--color-border-tertiary);padding:0.625rem 0.875rem;background:var(--color-background-secondary);max-height:6.25rem;overflow:hidden;transition:max-height .2s ease}
 .bom-area.expanded{max-height:18rem;overflow:auto}
 .bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.375rem}
@@ -340,7 +337,6 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <div class="vtab" id="tab-front" onclick="switchTab('front')">正立面图</div>
       <div class="vtab" id="tab-side" onclick="switchTab('side')">侧立面图</div>
       <div class="top-widths"><label>单间净宽</label><div class="width-card-row" id="width-card-row"></div></div>
-      <div class="plan-note-field"><label for="plan-note-input">内容输入</label><input type="text" id="plan-note-input" placeholder="标题、备注标签"></div>
       <div class="paper-select"><label for="paper-size">纸张</label><select id="paper-size" onchange="setPaperSize(this.value)"><option value="a4">A4</option><option value="a3">A3</option><option value="auto">自适应</option></select></div>
     </div>
     <div class="sheet-actions" id="sheet-actions">
@@ -364,6 +360,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     </div>
     <div class="canvas-area" id="carea">
       <canvas id="cv"></canvas>
+      <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" aria-label="图纸文字输入"></textarea>
       <div class="cv-controls">
         <span class="zoom-info" id="zoom-info">100%</span>
         <button class="cv-btn" onclick="resetZoom()">重置视图</button>
@@ -573,6 +570,48 @@ function specialDepthPanelItems(row) {
   }).filter(Boolean);
 }
 
+function depthPanelGeometry(row, c, ox, oy, scale) {
+  const count = Math.max(1, Number(row?.count) || 1);
+  const panelT = Math.max(3, (Number(row?.tPanel) || 12) * scale);
+  const wallT = (Number(c?.wallT) || 120) * scale;
+  const totalW = (Number(c?.totalRun) || Number(row?.total) || 0) * scale;
+  const depthPx = (Number(row?.depth) || 0) * scale;
+  const widths = Array.from({length: count}, (_, i) => (c?.boothWidths?.[i] || c?.boothW || 0) * scale);
+  const boundaries = [ox];
+  widths.reduce((x, w) => {
+    const next = x + w;
+    boundaries.push(next);
+    return next;
+  }, ox);
+  return Array.from({length: count + 1}, (_, index) => {
+    const protrusion = Math.min(depthPx, depthPanelProtrusion(row, index) * scale);
+    const actualDepth = depthPanelActualDepth(row, index);
+    const boundaryX = index === 0 ? ox : index === count ? ox + totalW : boundaries[index];
+    const panelX = index === 0 ? ox : index === count ? ox + totalW - panelT : boundaryX - panelT / 2;
+    const wallX = index === 0 ? ox - wallT : index === count ? ox + totalW : boundaryX - wallT / 2;
+    return {
+      index,
+      isEdge: index === 0 || index === count,
+      panelX,
+      panelY: oy + protrusion,
+      panelW: panelT,
+      panelH: Math.max(0, depthPx - protrusion),
+      wallX,
+      wallW: wallT,
+      wallH: protrusion,
+      actualDepth,
+      protrusion
+    };
+  });
+}
+
+function resetLocalWallSpecials(row, count = row?.count) {
+  const nextCount = Math.max(1, Number(count) || Number(row?.count) || 1);
+  row.wall = 'three';
+  row.depthPanelSpecials = normalizeDepthPanelSpecials([], nextCount + 1);
+  return row;
+}
+
 function normalizeBoothDoorWidths(values, count, fallback = 0) {
   const source = Array.isArray(values) ? values : [];
   return Array.from({length: Math.max(1, count || 1)}, (_, i) => {
@@ -685,9 +724,41 @@ function selectedNoteTarget() {
 
 function syncPlanNoteInputFromSelection() {
   const target = selectedNoteTarget();
-  noteInputValue = target.text || '';
+  noteInputValue = normalizeTwoLineText(target.text || '');
   const input = document.getElementById('plan-note-input');
   if (input) input.value = noteInputValue;
+}
+
+function activeCanvasTextEditable() {
+  return currentTab === 'plan' && (selectionScope === 'sheet-note' || selectionScope === 'tag');
+}
+
+function focusCanvasTextEditor() {
+  const editor = document.getElementById('canvas-text-editor');
+  if (!editor) return;
+  if (!activeCanvasTextEditable()) {
+    editor.blur();
+    editor.value = '';
+    return;
+  }
+  const target = selectedNoteTarget();
+  const value = normalizeTwoLineText(target.text || '');
+  editor.value = value;
+  window.setTimeout(() => {
+    if (!activeCanvasTextEditable()) return;
+    editor.focus({preventScroll:true});
+    editor.setSelectionRange(editor.value.length, editor.value.length);
+  }, 0);
+}
+
+function applyCanvasTextEditorValue(value) {
+  if (!activeCanvasTextEditable()) return;
+  const normalized = normalizeTwoLineText(value);
+  const editor = document.getElementById('canvas-text-editor');
+  if (editor && editor.value !== normalized) editor.value = normalized;
+  noteInputValue = normalized;
+  selectedNoteTarget().set(normalized);
+  if (lastParams) drawView(lastParams, currentTab);
 }
 
 function clearSelectedBooth() {
@@ -787,6 +858,46 @@ function layoutGridSummary(rows) {
 
 function escapeAttr(value) {
   return String(value ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+
+function normalizeTwoLineText(value) {
+  const parts = String(value ?? '').replace(/\r/g, '').split('\n');
+  return parts.slice(0, 2).join('\n').trim();
+}
+
+function wrapCanvasTextLines(text, maxWidth, maxLines = 2) {
+  const explicit = String(text || '').replace(/\r/g, '').split('\n').slice(0, maxLines);
+  const lines = [];
+  explicit.forEach(part => {
+    let line = '';
+    Array.from(part).forEach(ch => {
+      const next = line + ch;
+      if (line && ctx.measureText(next).width > maxWidth && lines.length < maxLines - 1) {
+        lines.push(line);
+        line = ch;
+      } else {
+        line = next;
+      }
+    });
+    if (lines.length < maxLines) lines.push(line);
+  });
+  return lines.slice(0, maxLines).filter(line => line.trim() || lines.length === 1);
+}
+
+function canvasTextCaretVisible(scope) {
+  const editor = document.getElementById('canvas-text-editor');
+  return !drawingForExport && editor && document.activeElement === editor && selectionScope === scope && Math.floor(Date.now() / 530) % 2 === 0;
+}
+
+function drawCanvasTextCaret(x, y, h, color = '#111') {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1, anno(4));
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, y + h);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function groupDisplayName(group) {
@@ -1026,6 +1137,7 @@ function applyGroupParamsToRow(row, params, enable = false) {
     boothDoorWidths: row.boothDoorWidths,
     noDoorBooths: row.noDoorBooths,
     boothNotes: row.boothNotes,
+    wall: row.wall,
     depthPanelSpecials: row.depthPanelSpecials,
     note: row.note
   };
@@ -1453,7 +1565,7 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
       const layoutRow = rowIndex + 1;
       const layoutCol = colIndex + 1;
       const existing = byCell.get(`${pageIndex}:${layoutRow}:${layoutCol}`);
-      const base = existing || template;
+      const base = existing || resetLocalWallSpecials({...template}, count);
       const next = {
         ...base,
         id: id++,
@@ -1468,9 +1580,10 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
         doorInstallWidths: undefined,
         doorWidths: undefined,
         boothDoorWidths: Array.from({length: count}, () => 0),
+        wall: existing ? base.wall : 'three',
         noDoorBooths: normalizeNoDoorBooths(base.noDoorBooths, count),
         boothNotes: normalizeBoothNotes(base.boothNotes, count),
-        depthPanelSpecials: normalizeDepthPanelSpecials(base.depthPanelSpecials, count + 1)
+        depthPanelSpecials: existing ? normalizeDepthPanelSpecials(base.depthPanelSpecials, count + 1) : normalizeDepthPanelSpecials([], count + 1)
       };
       next.boothSwings = normalizeBoothSwings(base.boothSwings, count, next.swing || swingMode);
       generated.push(next);
@@ -1797,7 +1910,7 @@ function addGroup() {
   const base = {...activeGroup()};
   delete base.rows;
   const id = Math.max(...groups.map(g => g.id)) + 1;
-  const row = {...blankRow, id:1, boothSwings:[...blankRow.boothSwings]};
+  const row = resetLocalWallSpecials({...blankRow, id:1, boothSwings:[...blankRow.boothSwings]}, blankRow.count);
   const baseGroup = {id, name:`${String.fromCharCode(64 + Math.min(id, 26))}组`, rows:[row]};
   groups.push(baseGroup);
   activeGroupId = id;
@@ -1839,7 +1952,7 @@ function addRow(groupId = activeGroupId) {
   normalizeLayoutGrid(group);
   const id = nextLayoutId(rows);
   const nextRowNo = Math.max(...rows.map(r => Number(r.layoutRow) || 1)) + 1;
-  const row = {...blankRow, id, layoutType:'cell', layoutRow:nextRowNo, layoutCol:1, boothSwings:[...blankRow.boothSwings]};
+  const row = resetLocalWallSpecials({...blankRow, id, layoutType:'cell', layoutRow:nextRowNo, layoutCol:1, boothSwings:[...blankRow.boothSwings]}, blankRow.count);
   rows.push(row);
   activeRowId = id;
   selectionScope = 'row';
@@ -1873,6 +1986,7 @@ function addColumn(groupId = activeGroupId) {
     enabled: source.enabled === true,
     boothSwings: normalizeBoothSwings(source.boothSwings, inheritedCount, source.swing || swingMode)
   };
+  resetLocalWallSpecials(row, inheritedCount);
   rows.push(row);
   group.rows = rows.sort((a, b) => (a.layoutRow - b.layoutRow) || (a.layoutCol - b.layoutCol) || (a.id - b.id));
   activeRowId = id;
@@ -2567,7 +2681,8 @@ function planBlockMetrics(row) {
   const safeLeft = 220;
   const safeTop = PLAN_ANCHOR.totalDimGap + PLAN_ANCHOR.noteTagH + PLAN_ANCHOR.noteTagGap + 130;
   const safeRight = PLAN_ANCHOR.depthDimGap + 325;
-  const safeBottom = Math.max(PLAN_ANCHOR.bottomDimOffset + 90, maxOutDoor + 120);
+  const frontPanelDepth = Number(row.tPanel) || 12;
+  const safeBottom = frontPanelDepth + Math.max(PLAN_ANCHOR.bottomDimOffset + 90, maxOutDoor + 120);
   return {
     c,
     safeLeft,
@@ -3027,7 +3142,16 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
     ctx.font = `22px 'Microsoft YaHei', Arial, sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(sheetHeaderText, x + 18, y + h / 2);
+    const lines = wrapCanvasTextLines(sheetHeaderText, w - 36, 2);
+    const lineH = 26;
+    const startY = lines.length > 1 ? y + h / 2 - lineH / 2 : y + h / 2;
+    lines.forEach((line, index) => ctx.fillText(line, x + 18, startY + index * lineH));
+    if (canvasTextCaretVisible('sheet-note')) {
+      const lastLine = lines[lines.length - 1] || '';
+      const caretX = x + 18 + ctx.measureText(lastLine).width + 2;
+      const caretY = startY + (lines.length - 1) * lineH - 11;
+      drawCanvasTextCaret(caretX, caretY, 22, '#1f2328');
+    }
   }
   ctx.restore();
 }
@@ -3325,7 +3449,7 @@ function drawDoorSwing(door, baseY, st, p) {
   const swing = swingDefs[door.swing || p.swing || 'in-right'] || swingDefs['in-right'];
   const isRight = swing.hinge === 'right';
   const hingeX = isRight ? door.end : door.start;
-  const closedY = baseY - st / 2;
+  const closedY = baseY + st / 2;
   const openDir = swing.opensUp ? -1 : 1;
   const openEndY = closedY + openDir * door.width;
   const dash = anno(34);
@@ -3635,29 +3759,12 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   const t = p.tPanel, wt = c.wallT;
   const wtPx = wt * scale;
   const sW = W * scale, sD = D * scale, st = Math.max(3, t * scale), swt = wt * scale;
+  const panelGeoms = depthPanelGeometry(p, c, ox, oy, scale);
 
-  ctx.strokeStyle = '#222222'; ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  ctx.moveTo(ox, oy + sD);
-  ctx.lineTo(ox, oy);
-  ctx.lineTo(ox + sW, oy);
-  ctx.lineTo(ox + sW, oy + sD);
-  ctx.stroke();
-
-  const middleWallExtras = [];
-  let depthBoundaryX = ox;
-  for (let i = 0; i < Math.max(0, p.count - 1); i++) {
-    depthBoundaryX += (c.boothWidths[i] || c.boothW) * scale;
-    const protrusion = depthPanelProtrusion(p, i + 1) * scale;
-    if (protrusion > 0) {
-      const wallX = depthBoundaryX - swt / 2;
-      middleWallExtras.push({x1:wallX, x2:wallX + swt, h:protrusion});
-    }
-  }
   const sideWallExtras = {
-    left: depthPanelProtrusion(p, 0) * scale,
-    right: depthPanelProtrusion(p, Math.max(1, Number(p.count) || 1)) * scale,
-    middle: middleWallExtras
+    left: panelGeoms[0]?.wallH || 0,
+    right: panelGeoms[Math.max(1, Number(p.count) || 1)]?.wallH || 0,
+    middle: panelGeoms.filter(item => !item.isEdge && item.wallH > 0).map(item => ({x1:item.wallX, x2:item.wallX + item.wallW, h:item.wallH}))
   };
   drawPlanWalls(ox, oy, sW, sD, swt, c, sideWallExtras);
   const rowSelected = options.groupId === activeGroupId && (
@@ -3716,29 +3823,37 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     ctx.fillText(tagText, tagX + tagW / 2, tagY + tagH / 2);
     const tagSelected = !drawingForExport && selectionScope === 'tag' && options.groupId === activeGroupId && options.rowId === activeRowId;
     if (tagSelected) drawPlanSelectionBox(tagX, tagY, tagW, tagH, anno(10));
+    if (canvasTextCaretVisible('tag') && options.groupId === activeGroupId && options.rowId === activeRowId) {
+      const textW = ctx.measureText(tagText).width;
+      const caretX = tagX + tagW / 2 + textW / 2 + anno(10);
+      drawCanvasTextCaret(caretX, tagY + tagH / 2 - anno(42), anno(84), '#d64242');
+    }
     ctx.restore();
   }
 
-  const drawDepthPanel = (panelIndex, x, y, w, h) => {
+  const drawDepthPanel = (geom, x, y, w, h) => {
+    if (!geom) return;
+    const panelIndex = geom.index;
     const selected = isSelectedDepthPanel(options.groupId ?? activeGroupId, options.rowId ?? activeRowId, panelIndex);
-    const protrusion = depthPanelProtrusion(p, panelIndex) * scale;
-    const actualDepth = depthPanelActualDepth(p, panelIndex);
-    const actualH = Math.max(st, h - protrusion);
+    const protrusion = geom.protrusion;
+    const actualDepth = geom.actualDepth;
+    const actualH = Math.max(1, geom.panelH);
     const count = Math.max(1, Number(p.count) || 1);
-    const drawX = panelIndex === count ? x + w - st : x;
-    const drawW = st;
+    const drawX = geom.panelX;
+    const drawY = geom.panelY;
+    const drawW = geom.panelW;
     ctx.strokeStyle = selected ? '#d64242' : '#222';
     ctx.lineWidth = selected ? Math.max(1.2, anno(3)) : 0.8;
-    ctx.strokeRect(drawX, y + protrusion, drawW, Math.max(1, actualH));
+    ctx.strokeRect(drawX, drawY, drawW, actualH);
     if (protrusion > 0 && actualDepth > 0) {
       if (panelIndex === 0) {
-        drawLeftOuterDepthDim(drawX - anno(70), y + protrusion, y + protrusion + actualH, `${fmtMm(actualDepth)}mm`);
+        drawLeftOuterDepthDim(drawX - anno(70), drawY, drawY + actualH, `${fmtMm(actualDepth)}mm`);
       } else {
         const dimX = drawX + drawW + anno(panelIndex === count ? 70 : 54);
-        drawDim(dimX, y + protrusion, dimX, y + protrusion + actualH, `${fmtMm(actualDepth)}mm`, 12);
+        drawDim(dimX, drawY, dimX, drawY + actualH, `${fmtMm(actualDepth)}mm`, 12);
       }
     }
-    if (selected && !drawingForExport) drawPlanSelectionBox(drawX, y + protrusion, drawW, Math.max(1, actualH), anno(10));
+    if (selected && !drawingForExport) drawPlanSelectionBox(drawX, drawY, drawW, actualH, anno(10));
     if (!drawingForExport && options.groupId && options.rowId && depthPanelSelectable(p, panelIndex)) {
       const hitScale = options.hitScale || 1;
       const hitX = options.hitX || 0;
@@ -3750,7 +3865,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
 
   let x = ox;
   if (!c.hasLeft) {
-    drawDepthPanel(0, x, oy, st, Math.max(1, sD - st));
+    drawDepthPanel(panelGeoms[0], x, oy, st, Math.max(1, sD - st));
   }
   const doors = [];
   let boothX = ox;
@@ -3804,22 +3919,22 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     }
     if (i < p.count - 1) {
       const panelX = bx + bw - st / 2;
-      drawDepthPanel(i + 1, panelX, oy, st, Math.max(1, sD - st));
+      drawDepthPanel(panelGeoms[i + 1], panelX, oy, st, Math.max(1, sD - st));
     }
     boothX += bw;
   }
   ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
   if (doors.length && !p.rebate) {
-    if (doors[0].zoneStart > ox + 0.5) ctx.strokeRect(ox, oy+sD-st, doors[0].zoneStart - ox, st);
+    if (doors[0].zoneStart > ox + 0.5) ctx.strokeRect(ox, oy+sD, doors[0].zoneStart - ox, st);
     for (let i = 0; i < doors.length - 1; i++) {
       const start = doors[i].zoneEnd;
       const end = doors[i + 1].zoneStart;
-      if (end > start + 0.5) ctx.strokeRect(start, oy+sD-st, end - start, st);
+      if (end > start + 0.5) ctx.strokeRect(start, oy+sD, end - start, st);
     }
-    if (ox + sW > doors[doors.length - 1].zoneEnd + 0.5) ctx.strokeRect(doors[doors.length - 1].zoneEnd, oy+sD-st, ox + sW - doors[doors.length - 1].zoneEnd, st);
+    if (ox + sW > doors[doors.length - 1].zoneEnd + 0.5) ctx.strokeRect(doors[doors.length - 1].zoneEnd, oy+sD, ox + sW - doors[doors.length - 1].zoneEnd, st);
   }
   if (!c.hasRight) {
-    drawDepthPanel(p.count, ox + sW - st, oy, st, Math.max(1, sD - st));
+    drawDepthPanel(panelGeoms[p.count], ox + sW - st, oy, st, Math.max(1, sD - st));
   }
   doors.filter(door => door.hasDoor !== false).forEach(door => {
     drawDoorSwing(door, oy+sD, st, p);
@@ -3862,7 +3977,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     segments.push({x1: sourceDoor.start, x2: sourceDoor.end, label: p.rebate ? boardDimLabel(door.bigMm, p, 2, door.topIsSmall) : fmtMm(door.bigMm)});
   });
   segments.sort((a, b) => a.x1 - b.x1);
-  drawChainDim(oy + sD + (options.bottomDimOffset || PLAN_ANCHOR.bottomDimOffset), segments);
+  drawChainDim(oy + sD + st + (options.bottomDimOffset || PLAN_ANCHOR.bottomDimOffset), segments);
 }
 
 function drawPlanBlock(block, x, y, fit, pageOffsetX, pageOffsetY) {
@@ -4562,6 +4677,7 @@ cv.addEventListener('click', e => {
     renderSwingButtons();
     renderBoothSwingPanel();
     renderDepthPanelSpecialPanel();
+    focusCanvasTextEditor();
     drawView(lastParams || getParams(), currentTab);
     return;
   }
@@ -4572,6 +4688,7 @@ cv.addEventListener('click', e => {
     clearSelectedDepthPanel();
     syncPlanNoteInputFromSelection();
     renderDepthPanelSpecialPanel();
+    focusCanvasTextEditor();
     drawView(lastParams || getParams(), currentTab);
     return;
   }
@@ -4605,6 +4722,7 @@ cv.addEventListener('click', e => {
   renderBoothSwingPanel();
   renderDepthPanelSpecialPanel();
   syncPlanNoteInputFromSelection();
+  focusCanvasTextEditor();
   lastParams = getParams();
   drawView(lastParams, currentTab);
 });
@@ -4763,11 +4881,27 @@ document.querySelectorAll('.field input[type=number], .field select').forEach(el
   });
 });
 
-document.getElementById('plan-note-input')?.addEventListener('input', e => {
-  noteInputValue = e.currentTarget.value.trim();
-  selectedNoteTarget().set(noteInputValue);
-  if (lastParams) drawView(lastParams, currentTab);
+document.getElementById('canvas-text-editor')?.addEventListener('input', e => {
+  applyCanvasTextEditorValue(e.currentTarget.value);
 });
+
+document.getElementById('canvas-text-editor')?.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    e.currentTarget.blur();
+    return;
+  }
+  if (e.key === 'Enter') {
+    const value = e.currentTarget.value.replace(/\r/g, '');
+    if (selectionScope === 'tag' || value.includes('\n')) e.preventDefault();
+  }
+});
+
+window.setInterval(() => {
+  if (activeCanvasTextEditable() && document.activeElement === document.getElementById('canvas-text-editor') && lastParams) {
+    drawView(lastParams, currentTab);
+  }
+}, 530);
 
 setTimeout(()=>{ applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindExportButtons(); generate(); }, 100);
 </script>
