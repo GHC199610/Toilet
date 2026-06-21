@@ -109,8 +109,6 @@ body.theme-dark .wall-btn.active{background:#102a43;border-color:#58a6ff;color:#
 .booth-pick-clear{height:2rem;padding:0 0.625rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;cursor:pointer}
 .booth-pick-clear:hover{border-color:#378ADD;color:#185FA5}
 .booth-pick-clear:disabled{opacity:.45;cursor:not-allowed}
-.gen-btn{width:calc(100% - 2rem);margin:0.875rem 1rem;padding:0.625rem 0.75rem;background:#185FA5;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:0.875rem;line-height:1.4;cursor:pointer;font-weight:600;transition:background 0.15s}
-.gen-btn:hover{background:#0C447C}
 .right{flex:1;display:flex;flex-direction:column;min-width:0}
 .view-tabs{display:flex;align-items:center;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
 .vtab{padding:0.5rem 1rem;font-size:0.75rem;cursor:pointer;border-bottom:2px solid transparent;color:var(--color-text-secondary);transition:all 0.15s}
@@ -123,10 +121,10 @@ body.theme-dark .vtab.active{border-bottom-color:#58a6ff;color:#b9dcff}
 .width-card::placeholder{color:var(--color-text-tertiary);opacity:.72;font-weight:500}
 .width-card:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,.16)}
 .width-card:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);border-style:dashed;cursor:not-allowed;font-weight:500}
-.special-card-row{display:flex;align-items:center;gap:0.375rem;min-width:0}
-.special-card-field{display:grid;grid-template-columns:auto 3.75rem;align-items:center;gap:0.375rem;min-width:0;flex:1}
-.special-card-field label{font-size:0.6875rem;color:var(--color-text-tertiary);white-space:nowrap}
-.special-card-field .width-card{width:3.75rem;height:1.875rem;font-size:0.8125rem}
+.special-card-row{display:grid;grid-template-columns:1fr;gap:0.5rem;min-width:0}
+.special-card-field{display:grid;grid-template-columns:minmax(4.5rem,1fr) 4.25rem;align-items:center;gap:0.5rem;min-width:0}
+.special-card-field label{font-size:0.8125rem;color:var(--color-text-tertiary);white-space:nowrap}
+.special-card-field .width-card{width:4.25rem;height:1.875rem;font-size:0.8125rem}
 .paper-select{display:flex;align-items:center;gap:0.375rem;margin-left:auto;padding-right:0.875rem;white-space:nowrap}
 .paper-select label{font-size:0.75rem;color:var(--color-text-secondary)}
 .paper-select select{height:1.625rem;padding:0.125rem 1.5rem 0.125rem 0.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.75rem}
@@ -211,9 +209,9 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     <div class="sb-head">
       <div class="sb-title">
         <p>隔断参数设置</p>
-        <span>填写后点击生成图纸</span>
+        <span>填写后自动生成图纸</span>
       </div>
-      <button class="theme-btn" id="theme-toggle" type="button" onclick="toggleTheme()" title="切换深色主题" aria-label="切换深色主题">?</button>
+      <button class="theme-btn" id="theme-toggle" type="button" onclick="toggleTheme()" title="切换深色主题" aria-label="切换深色主题">&#9790;</button>
     </div>
 
     <div class="sec">
@@ -280,8 +278,6 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       </div>
       <div class="booth-swing-panel" id="depth-panel-special-panel"></div>
     </div>
-
-    <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> 生成图纸</button>
   </div>
 
   <div class="right">
@@ -355,6 +351,7 @@ let selectionScope = 'row';
 let selectedBoothIndex = null;
 let selectedBoothRef = null;
 let selectedDepthPanelRef = null;
+let multiSelections = new Set();
 let rowAnimation = null;
 let planHitAreas = [];
 let openGroupIds = new Set([1]);
@@ -410,7 +407,7 @@ function applyTheme(theme) {
   document.body.classList.toggle('theme-dark', isDark);
   const btn = document.getElementById('theme-toggle');
   if (btn) {
-    btn.textContent = isDark ? '?' : '?';
+    btn.innerHTML = isDark ? '&#9728;' : '&#9790;';
     btn.title = isDark ? '切换浅色主题' : '切换深色主题';
     btn.setAttribute('aria-label', btn.title);
   }
@@ -720,10 +717,37 @@ function clearSelectedBooth() {
   selectedBoothIndex = null;
   selectedBoothRef = null;
   clearSelectedDepthPanel();
+  clearMultiSelections();
 }
 
 function clearSelectedDepthPanel() {
   selectedDepthPanelRef = null;
+}
+
+function selectionKey(type, groupId, rowId, index = '') {
+  return `${type}:${groupId}:${rowId}:${index}`;
+}
+
+function clearMultiSelections() {
+  multiSelections.clear();
+}
+
+function toggleMultiSelection(type, groupId, rowId, index = '') {
+  const key = selectionKey(type, groupId, rowId, index);
+  if (multiSelections.has(key)) multiSelections.delete(key);
+  else multiSelections.add(key);
+}
+
+function isMultiSelected(type, groupId, rowId, index = '') {
+  return multiSelections.has(selectionKey(type, groupId, rowId, index));
+}
+
+function hitSelectionIndex(hit) {
+  return hit.type === 'booth' || hit.type === 'depth-panel' ? hit.index : '';
+}
+
+function hitCanMultiSelect(hit) {
+  return ['booth', 'depth-panel', 'tag', 'block', 'sheet-note'].includes(hit?.type);
 }
 
 function setSelectedDepthPanel(groupId, rowId, index) {
@@ -731,10 +755,10 @@ function setSelectedDepthPanel(groupId, rowId, index) {
 }
 
 function isSelectedDepthPanel(groupId, rowId, index) {
-  return selectionScope === 'depth-panel'
+  return isMultiSelected('depth-panel', groupId, rowId, index) || (selectionScope === 'depth-panel'
     && selectedDepthPanelRef?.groupId === groupId
     && selectedDepthPanelRef?.rowId === rowId
-    && selectedDepthPanelRef?.index === index;
+    && selectedDepthPanelRef?.index === index);
 }
 
 function selectedDepthPanelRow() {
@@ -770,10 +794,10 @@ function setSelectedBooth(groupId, rowId, index) {
 }
 
 function isSelectedBooth(groupId, rowId, index) {
-  return selectionScope === 'booth'
+  return isMultiSelected('booth', groupId, rowId, index) || (selectionScope === 'booth'
     && selectedBoothRef?.groupId === groupId
     && selectedBoothRef?.rowId === rowId
-    && selectedBoothRef?.index === index;
+    && selectedBoothRef?.index === index);
 }
 
 function toggleSelectedBoothDoor() {
@@ -902,7 +926,15 @@ function renderDepthPanelSpecialPanel() {
   if (!panel) return;
   const target = selectedDepthPanelRow();
   if (!target || selectionScope !== 'depth-panel') {
-    panel.innerHTML = `<div class="booth-swing-hint">选中图纸中的深度板后，可设置墙体凸出或板实际深度</div>`;
+    panel.innerHTML = `
+      <div class="booth-swing-hint">选择深度板后可自定义墙凸或指定板深度</div>
+      <div class="special-card-row">
+        <div class="special-card-field"><label>墙凸</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" disabled></div>
+        <div class="special-card-field"><label>指定板深度</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" disabled></div>
+      </div>
+      <div class="booth-pick-line">
+        <button class="booth-pick-clear" type="button" disabled>恢复默认深度</button>
+      </div>`;
     return;
   }
   const {group, row} = target;
@@ -915,10 +947,10 @@ function renderDepthPanelSpecialPanel() {
   const baseDepth = Number(row.depth) || 0;
   const disabled = depthPanelSelectable(row, index) ? '' : 'disabled';
   panel.innerHTML = `
-    <div class="booth-swing-hint">${escapeAttr(groupDisplayName(group))} · ${escapeAttr(depthPanelName(row, index))}：实际深 ${fmtMm(actualDepth)}mm${protrusion ? ` · 墙凸 ${fmtMm(protrusion)}mm` : ''}</div>
+    <div class="booth-swing-hint">${escapeAttr(depthPanelName(row, index))}</div>
     <div class="special-card-row">
-      <div class="special-card-field"><label>墙体凸出</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="0000" value="${item.protrusion || ''}" oninput="limitDepthPanelCardInput(this)" onkeydown="handleDepthPanelCardKey(event,'protrusion')" ${disabled}></div>
-      <div class="special-card-field"><label>板实际深度</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="0000" value="${item.depth || ''}" oninput="limitDepthPanelCardInput(this)" onkeydown="handleDepthPanelCardKey(event,'depth')" ${disabled}></div>
+      <div class="special-card-field"><label>墙凸</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" value="${item.protrusion || ''}" oninput="limitDepthPanelCardInput(this)" onkeydown="handleDepthPanelCardKey(event,'protrusion')" ${disabled}></div>
+      <div class="special-card-field"><label>指定板深度</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" value="${item.depth || ''}" oninput="limitDepthPanelCardInput(this)" onkeydown="handleDepthPanelCardKey(event,'depth')" ${disabled}></div>
     </div>
     <div class="booth-pick-line">
       <button class="booth-pick-clear" type="button" onclick="resetSelectedDepthPanelSpecial()" ${disabled}>恢复默认深度</button>
@@ -1006,10 +1038,10 @@ function updateLayoutTargetLabel() {
   const group = activeGroup();
   const row = activeRow();
   const text = selectionScope === 'group' ? `${group?.name || ''}` : layoutUnitName(group, row);
-  ['layout-target-label', 'wall-target-label'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = text;
-  });
+  const layoutLabel = document.getElementById('layout-target-label');
+  if (layoutLabel) layoutLabel.textContent = text;
+  const wallLabelEl = document.getElementById('wall-target-label');
+  if (wallLabelEl) wallLabelEl.textContent = '';
 }
 
 function activeGroup() {
@@ -1310,6 +1342,7 @@ function cloneState() {
     selectedBoothIndex,
     selectedBoothRef: selectedBoothRef ? {...selectedBoothRef} : null,
     selectedDepthPanelRef: selectedDepthPanelRef ? {...selectedDepthPanelRef} : null,
+    multiSelections: [...multiSelections],
     quickLayoutRows: JSON.parse(JSON.stringify(quickLayoutRows)),
     quickLayoutPages: JSON.parse(JSON.stringify(quickLayoutPages)),
     activeQuickPage,
@@ -1327,6 +1360,7 @@ function restoreState(state) {
   selectedBoothIndex = state.selectedBoothIndex;
   selectedBoothRef = state.selectedBoothRef ? {...state.selectedBoothRef} : null;
   selectedDepthPanelRef = state.selectedDepthPanelRef ? {...state.selectedDepthPanelRef} : null;
+  multiSelections = new Set(state.multiSelections || []);
   quickLayoutPages = JSON.parse(JSON.stringify(state.quickLayoutPages || [state.quickLayoutRows || [['','','']]]));
   activeQuickPage = Math.max(0, Math.min(Number(state.activeQuickPage) || 0, quickLayoutPages.length - 1));
   quickLayoutRows = quickLayoutPages[activeQuickPage] || [['','','']];
@@ -2951,6 +2985,25 @@ function minZoomScale(p = lastParams || getParams()) {
   return Math.max(0.01, Math.min(0.1, fit * 0.85));
 }
 
+function wheelMaxZoomScale(p = lastParams || getParams()) {
+  if (!(currentTab === 'plan' && canvasMode === 'sheets')) return 5;
+  const layout = getSheetLayout(p);
+  const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), layout);
+  const fits = pages.map((page, index) => {
+    const P = layout.plot;
+    const gaps = sheetContentGaps(index);
+    const availableW = Math.max(1, P.w - gaps.left - gaps.right);
+    const availableH = Math.max(1, P.h - gaps.top - gaps.bottom);
+    const rawContentW = Math.max(1, page.usedW);
+    const rawContentH = Math.max(1, page.usedH);
+    const autoFitScale = Math.min(availableW / rawContentW, availableH / rawContentH, 1);
+    const singleBoothPage = page.blocks.length === 1 && Math.max(1, Number(page.blocks[0]?.row?.count) || 1) === 1;
+    return singleBoothPage ? autoFitScale * 0.75 : autoFitScale;
+  }).filter(fit => fit > 0);
+  const minFit = Math.min(...fits, 1);
+  return Math.max(5, 5 / Math.max(0.01, minFit));
+}
+
 function sheetPreviewContentSize(p = lastParams || getParams(), layout = getSheetLayout(p)) {
   const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), layout);
   const gap = Math.max(80, layout.sheetW * 0.12);
@@ -3129,7 +3182,7 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
   ctx.strokeStyle = '#c7cbd1';
   ctx.lineWidth = 1;
   ctx.strokeRect(x, y, w, h);
-  if (selectionScope === 'sheet-note') drawPlanSelectionBox(x, y, w, h, 6, true);
+  if (selectionScope === 'sheet-note' || isMultiSelected('sheet-note', 'sheet', 'header')) drawPlanSelectionBox(x, y, w, h, 6, true);
   if (sheetHeaderText) {
     ctx.fillStyle = '#1f2328';
     ctx.font = `22px 'Microsoft YaHei', Arial, sans-serif`;
@@ -3771,7 +3824,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   const rowSelected = options.groupId === activeGroupId && (
     selectionScope === 'group' ||
     (selectionScope === 'row' && options.rowId === activeRowId)
-  );
+  ) || isMultiSelected('block', options.groupId, options.rowId);
   if (rowSelected && !drawingForExport) {
     ctx.save();
     const selPad = anno(22);
@@ -3822,7 +3875,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     ctx.fillStyle = '#d64242';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(tagText, tagX + tagW / 2, tagY + tagH / 2);
-    const tagSelected = !drawingForExport && selectionScope === 'tag' && options.groupId === activeGroupId && options.rowId === activeRowId;
+    const tagSelected = !drawingForExport && ((selectionScope === 'tag' && options.groupId === activeGroupId && options.rowId === activeRowId) || isMultiSelected('tag', options.groupId, options.rowId));
     if (tagSelected) drawPlanSelectionBox(tagX, tagY, tagW, tagH, anno(10));
     if (canvasTextCaretVisible('tag') && options.groupId === activeGroupId && options.rowId === activeRowId) {
       const textW = ctx.measureText(tagText).width;
@@ -4690,7 +4743,7 @@ cv.addEventListener('wheel', e => {
   const my = e.clientY - rect.top;
   const oldScale = zoomScale;
   zoomScale *= Math.exp(-e.deltaY * 0.001);
-  zoomScale = Math.max(minZoomScale(), Math.min(zoomScale, 5));
+  zoomScale = Math.max(minZoomScale(), Math.min(zoomScale, wheelMaxZoomScale()));
   panX = mx - (mx - panX) * (zoomScale / oldScale);
   panY = my - (my - panY) * (zoomScale / oldScale);
   if(lastParams) drawView(lastParams, currentTab);
@@ -4739,6 +4792,50 @@ cv.addEventListener('click', e => {
     drawView(lastParams || getParams(), currentTab);
     return;
   }
+  if (e.shiftKey && hitCanMultiSelect(hit)) {
+    if (hit.type === 'sheet-note') toggleMultiSelection('sheet-note', 'sheet', 'header');
+    else toggleMultiSelection(hit.type, hit.groupId, hit.rowId, hitSelectionIndex(hit));
+    if (hit.type === 'sheet-note') {
+      selectionScope = 'sheet-note';
+      selectedBoothIndex = null;
+      selectedBoothRef = null;
+      selectedDepthPanelRef = null;
+    } else {
+      const group = groups.find(g => g.id === hit.groupId);
+      const row = group ? ensureRows(group).find(r => r.id === hit.rowId) : null;
+      if (!group || !row) return;
+      activeGroupId = group.id;
+      activeRowId = row.id;
+      if (hit.type === 'booth') {
+        selectionScope = 'booth';
+        selectedBoothIndex = hit.index;
+        selectedBoothRef = {groupId:group.id, rowId:row.id, index:hit.index};
+        selectedDepthPanelRef = null;
+      } else if (hit.type === 'depth-panel') {
+        selectionScope = 'depth-panel';
+        selectedBoothIndex = null;
+        selectedBoothRef = null;
+        selectedDepthPanelRef = {groupId:group.id, rowId:row.id, index:hit.index};
+      } else if (hit.type === 'tag') {
+        selectionScope = 'tag';
+        selectedBoothIndex = null;
+        selectedBoothRef = null;
+        selectedDepthPanelRef = null;
+      } else if (hit.type === 'block') {
+        selectionScope = 'row';
+        selectedBoothIndex = null;
+        selectedBoothRef = null;
+        selectedDepthPanelRef = null;
+      }
+    }
+    renderSwingButtons();
+    renderBoothSwingPanel();
+    renderDepthPanelSpecialPanel();
+    syncPlanNoteInputFromSelection();
+    focusCanvasTextEditor();
+    drawView(lastParams || getParams(), currentTab);
+    return;
+  }
   if (hit.type === 'sheet-note') {
     saveActiveGroup();
     selectionScope = 'sheet-note';
@@ -4753,6 +4850,7 @@ cv.addEventListener('click', e => {
   const group = groups.find(g => g.id === hit.groupId);
   const row = group ? ensureRows(group).find(r => r.id === hit.rowId) : null;
   if (!group || !row) return;
+  clearMultiSelections();
   saveActiveGroup();
   activeGroupId = group.id;
   activeRowId = row.id;
@@ -4950,6 +5048,16 @@ function commitTotalRowOnly() {
 
 function commitFieldAndAdvance(fieldId) {
   const currentRef = activeQuickCellRef();
+  if (quickSelectAllActive && selectionScope === 'group' && applyBatchFieldOnly(fieldId)) {
+    const p = getParams();
+    lastParams = p;
+    drawView(p, currentTab);
+    renderBOM(p);
+    updateGroupListState();
+    quickSelectAllActive = false;
+    selectNextQuickCellAndFocusField(currentRef, fieldId);
+    return;
+  }
   saveActiveGroup(false);
   const p = getParams();
   lastParams = p;
@@ -4957,6 +5065,41 @@ function commitFieldAndAdvance(fieldId) {
   renderBOM(p);
   updateGroupListState();
   selectNextQuickCellAndFocusField(currentRef, fieldId);
+}
+
+function applyBatchFieldOnly(fieldId) {
+  const rows = ensureRows(activeGroup()).filter(row => row.enabled === true);
+  if (!rows.length) return false;
+  const valueByField = {
+    'p-depth': () => ({depth: parseInt(document.getElementById('p-depth').value) || 1220}),
+    'p-door': () => ({doorW: parseInt(document.getElementById('p-door').value) || 600}),
+    'p-gap': () => ({doorGap: Math.max(4, parseInt(document.getElementById('p-gap').value) || 10)}),
+    'p-rebate': () => ({rebate: document.getElementById('p-rebate').checked}),
+    'p-rebate-depth': () => ({rebateDepth: Math.max(0, parseInt(document.getElementById('p-rebate-depth').value) || 0)}),
+    't-panel': () => ({tPanel: parseInt(document.getElementById('t-panel').value) || 12}),
+    'h-upright': () => ({hUpright: parseInt(document.getElementById('h-upright').value) || 1830}),
+    'h-door': () => ({hDoor: parseInt(document.getElementById('h-door').value) || 1750}),
+    'h-mid': () => ({hMid: parseInt(document.getElementById('h-mid').value) || 1800}),
+    'h-vis': () => ({hVis: parseInt(document.getElementById('h-vis').value) || 1830})
+  };
+  const makePatch = valueByField[fieldId];
+  if (!makePatch) return false;
+  const patch = makePatch();
+  rows.forEach(row => Object.assign(row, patch));
+  return true;
+}
+
+function commitFieldChange(fieldId) {
+  if (quickSelectAllActive && selectionScope === 'group' && applyBatchFieldOnly(fieldId)) {
+    const p = getParams();
+    lastParams = p;
+    drawView(p, currentTab);
+    renderBOM(p);
+    updateGroupListState();
+    quickSelectAllActive = false;
+    return;
+  }
+  refreshDrawing(false);
 }
 
 document.getElementById('p-total').addEventListener('change', () => commitTotalInput(false));
@@ -4968,13 +5111,14 @@ document.getElementById('p-total').addEventListener('keydown', e => {
 });
 
 document.getElementById('p-gap').addEventListener('input', () => {
+  if (quickSelectAllActive && selectionScope === 'group') return;
   refreshDrawing(false);
 });
 
 document.getElementById('p-gap').addEventListener('change', () => {
   const el = document.getElementById('p-gap');
   if (el.value === '' || Number(el.value) < 4) el.value = 4;
-  refreshDrawing(false);
+  commitFieldChange('p-gap');
 });
 
 document.getElementById('p-gap').addEventListener('keydown', e => {
@@ -4987,12 +5131,12 @@ document.getElementById('p-gap').addEventListener('keydown', e => {
 
 document.getElementById('p-rebate').addEventListener('change', () => {
   renderRebateToggle();
-  refreshDrawing(false);
+  commitFieldChange('p-rebate');
 });
 
 document.querySelectorAll('.field input[type=number], .field select').forEach(el => {
   if (el.id === 'p-count' || el.id === 'p-total' || el.id === 'p-gap') return;
-  el.addEventListener('change', () => refreshDrawing(false));
+  el.addEventListener('change', () => commitFieldChange(el.id));
   el.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     e.preventDefault();
