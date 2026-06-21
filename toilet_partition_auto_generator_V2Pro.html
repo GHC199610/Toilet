@@ -1,5 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -72,6 +71,8 @@ body.theme-dark .group-item.group-color.open.active{background:color-mix(in srgb
 .group-item.row-item.active{border-color:var(--group-color);color:var(--group-color)}
 body.theme-dark .group-item.row-item.active{border-color:var(--group-color);color:var(--group-color)}
 .group-name{font-size:0.8125rem;font-weight:600;color:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.group-name-input{min-width:0;width:100%;height:1.625rem;border:0.5px solid transparent;border-radius:var(--border-radius-sm);background:transparent;color:inherit;font-size:0.8125rem;font-weight:600;padding:0.125rem 0.25rem}
+.group-name-input:focus{outline:none;border-color:currentColor;background:var(--color-background-primary);box-shadow:0 0 0 2px rgba(55,138,221,.12)}
 .group-meta{font-size:0.6875rem;color:var(--color-text-tertiary);grid-column:1 / -1}
 .group-actions-inline{display:flex;gap:0.375rem;align-items:center;justify-content:flex-end}
 .group-toggle{width:2rem;height:1.125rem;border:0.5px solid var(--color-border-secondary);border-radius:999px;background:var(--color-border-secondary);cursor:pointer;position:relative;flex:0 0 auto;transition:background .18s,border-color .18s}
@@ -111,12 +112,15 @@ body.theme-dark .switch-toggle.active .switch-track{background:#58a6ff;border-co
 .quick-cell.active{border-color:#378ADD;background:#E6F1FB;color:#185FA5;box-shadow:0 0 0 2px rgba(55,138,221,.16)}
 body.theme-dark .quick-cell.active{background:#102a43;color:#b9dcff;border-color:#58a6ff}
 .quick-actions{display:grid;gap:0.5rem}
-.quick-bottom-actions{display:grid;grid-template-columns:1fr auto;align-items:center;gap:0.5rem}
+.quick-page-actions{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}
+.quick-bottom-actions{display:grid;grid-template-columns:1fr;align-items:center;gap:0.5rem}
 .quick-btn{height:2rem;padding:0 0.625rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);font-size:0.75rem;cursor:pointer;white-space:nowrap}
 .quick-btn:hover{border-color:#378ADD;color:#185FA5;background:var(--color-background-primary)}
+.quick-btn:disabled{opacity:.45;cursor:not-allowed;background:transparent;color:var(--color-text-tertiary);border-color:var(--color-border-tertiary)}
 .quick-btn.primary{width:100%;height:2.25rem;background:#185FA5;border-color:#185FA5;color:#fff;font-weight:600;font-size:0.8125rem}
 .quick-btn.primary:hover{background:#0C447C;border-color:#0C447C;color:#fff}
 .quick-history-actions{display:flex;gap:0.375rem;align-items:center}
+.global-history-actions{margin-right:0.125rem;padding-right:0.5rem;border-right:0.5px solid var(--color-border-tertiary)}
 .quick-icon-btn{width:2rem;height:2.25rem;padding:0;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 .quick-icon-btn svg{width:1.125rem;height:1.125rem;display:block;stroke:currentColor;stroke-width:2.25;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .quick-icon-btn:hover{border-color:#378ADD;color:#185FA5;background:#fff}
@@ -149,8 +153,11 @@ body.theme-dark .wall-btn.active{background:#102a43;border-color:#58a6ff;color:#
 .booth-pick-line{display:flex;gap:0.375rem;align-items:center}
 .booth-pick-input{height:2rem;min-width:0;flex:1;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.8125rem;padding:0.375rem 0.625rem;text-transform:uppercase}
 .booth-pick-input:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,.16)}
+.booth-pick-input.is-override{border-color:#d64242;background:#fff7f7;color:#9f2222}
+.booth-pick-input:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:not-allowed}
 .booth-pick-clear{height:2rem;padding:0 0.625rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;cursor:pointer}
 .booth-pick-clear:hover{border-color:#378ADD;color:#185FA5}
+.booth-pick-clear:disabled{opacity:.45;cursor:not-allowed}
 .gen-btn{width:calc(100% - 2rem);margin:0.875rem 1rem;padding:0.625rem 0.75rem;background:#185FA5;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:0.875rem;line-height:1.4;cursor:pointer;font-weight:600;transition:background 0.15s}
 .gen-btn:hover{background:#0C447C}
 .right{flex:1;display:flex;flex-direction:column;min-width:0}
@@ -165,8 +172,12 @@ body.theme-dark .vtab.active{border-bottom-color:#58a6ff;color:#b9dcff}
 .width-card::placeholder{color:var(--color-text-tertiary);opacity:.72;font-weight:500}
 .width-card:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,.16)}
 .width-card:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);border-style:dashed;cursor:not-allowed;font-weight:500}
+.special-card-row{display:flex;align-items:center;gap:0.375rem;min-width:0}
+.special-card-field{display:grid;grid-template-columns:auto 3.75rem;align-items:center;gap:0.375rem;min-width:0;flex:1}
+.special-card-field label{font-size:0.6875rem;color:var(--color-text-tertiary);white-space:nowrap}
+.special-card-field .width-card{width:3.75rem;height:1.875rem;font-size:0.8125rem}
 .plan-note-field{display:flex;align-items:center;gap:0.375rem;margin-left:0.625rem;min-width:9.5rem;max-width:16rem;flex:0 1 14rem}
-.plan-note-field label{font-size:0.75rem;color:#d64242;white-space:nowrap;font-weight:600}
+.plan-note-field label{font-size:0.875rem;color:#d64242;white-space:nowrap;font-weight:700}
 .plan-note-field input{height:1.625rem;min-width:0;width:100%;padding:0.125rem 0.5rem;border:0.5px solid #d64242;border-radius:var(--border-radius-md);background:#fff;color:#d64242;font-size:0.75rem;font-weight:600}
 .plan-note-field input:focus{outline:none;box-shadow:0 0 0 2px rgba(214,66,66,.16)}
 .paper-select{display:flex;align-items:center;gap:0.375rem;margin-left:auto;padding-right:0.875rem;white-space:nowrap}
@@ -177,8 +188,7 @@ body.theme-dark .sheet-actions{background:#202734}
 .sheet-action-btn{height:2rem;padding:0 0.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.8125rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.375rem;transition:border-color .15s,color .15s,background .15s}
 .sheet-action-btn:hover{border-color:#378ADD;color:#185FA5;background:#fff}
 body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141a22}
-.sheet-action-btn::before{content:"";width:0.625rem;height:0.625rem;border:0.125rem solid currentColor;border-left:0;border-bottom:0;transform:rotate(45deg)}
-.sheet-action-btn.column::before{transform:rotate(135deg)}
+.sheet-action-btn.expand::after{content:"";width:0.42rem;height:0.42rem;border:0.11rem solid currentColor;border-left:0;border-top:0;transform:rotate(45deg);margin-left:0.125rem;margin-top:-0.125rem;opacity:.82}
 .sheet-page-info{margin-left:auto;font-size:0.75rem;color:var(--color-text-secondary)}
 .urinal-panel{position:absolute;top:7.15rem;left:17rem;z-index:30;width:24rem;padding:0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);box-shadow:0 12px 30px rgba(31,35,40,.18);display:none;grid-template-columns:repeat(3,1fr);gap:0.5rem;align-items:end}
 .urinal-panel.open{display:grid}
@@ -191,8 +201,13 @@ body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;backg
 .canvas-area{flex:1;position:relative;background:#eef1f4;overflow:hidden}
 body.theme-dark .canvas-area{background:#202734}
 canvas{display:block;width:100%;height:100%}
-.bom-area{border-top:0.5px solid var(--color-border-tertiary);padding:0.625rem 0.875rem;background:var(--color-background-secondary)}
-.bom-title{font-size:0.6875rem;font-weight:500;color:var(--color-text-secondary);margin-bottom:0.375rem}
+.bom-area{border-top:0.5px solid var(--color-border-tertiary);padding:0.625rem 0.875rem;background:var(--color-background-secondary);max-height:6.25rem;overflow:hidden;transition:max-height .2s ease}
+.bom-area.expanded{max-height:18rem;overflow:auto}
+.bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.375rem}
+.bom-title{font-size:0.6875rem;font-weight:500;color:var(--color-text-secondary)}
+.bom-toggle{border:none;background:transparent;color:#185FA5;font-size:0.6875rem;font-weight:600;cursor:pointer;padding:0.125rem 0.25rem;white-space:nowrap}
+.bom-toggle::after{content:"";display:inline-block;width:0.38rem;height:0.38rem;margin-left:0.375rem;border:0.1rem solid currentColor;border-left:0;border-top:0;transform:translateY(-0.125rem) rotate(45deg)}
+.bom-area.expanded .bom-toggle::after{transform:translateY(0.125rem) rotate(225deg)}
 .bom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));gap:0.375rem}
 .bom-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.4375rem 0.625rem}
 .bom-card .name{font-size:0.625rem;color:var(--color-text-tertiary)}
@@ -238,7 +253,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
         <p>隔断参数设置</p>
         <span>填写后点击生成图纸</span>
       </div>
-      <button class="theme-btn" id="theme-toggle" type="button" onclick="toggleTheme()" title="切换深色主题" aria-label="切换深色主题">☾</button>
+      <button class="theme-btn" id="theme-toggle" type="button" onclick="toggleTheme()" title="切换深色主题" aria-label="切换深色主题">?</button>
     </div>
 
     <div class="sec">
@@ -255,13 +270,9 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       </div>
       <div class="quick-layout" id="quick-layout"></div>
       <div class="quick-actions" style="margin-top:0.625rem">
-        <button class="quick-btn" type="button" onclick="addQuickLayoutRow()">下一排</button>
+        <div class="quick-page-actions"><button class="quick-btn" id="quick-prev-page" type="button" onclick="goQuickLayoutPage(-1)">上一页</button><button class="quick-btn" type="button" onclick="addQuickLayoutPage()">下一页</button></div>
         <div class="quick-bottom-actions">
           <button class="quick-btn primary" type="button" onclick="applyQuickLayout()">生成布局</button>
-          <div class="quick-history-actions">
-            <button class="quick-icon-btn" type="button" onclick="undoLayout()" title="撤销" aria-label="撤销"><svg viewBox="0 0 24 24"><path d="M9 7 5 11l4 4"/><path d="M5 11h8a5 5 0 0 1 5 5v1"/></svg></button>
-            <button class="quick-icon-btn" type="button" onclick="redoLayout()" title="恢复" aria-label="恢复"><svg viewBox="0 0 24 24"><path d="m15 7 4 4-4 4"/><path d="M19 11h-8a5 5 0 0 0-5 5v1"/></svg></button>
-          </div>
         </div>
       </div>
     </div>
@@ -272,6 +283,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <div class="field"><label>总长度（mm）</label><input type="number" id="p-total" value="3000" min="600" max="20000" step="100"></div>
       <div class="field"><label>隔间深度（mm）</label><input type="number" id="p-depth" value="1220" min="800" max="2000" step="50"></div>
       <div class="field"><label>门宽（mm）</label><input type="number" id="p-door" value="600" min="400" max="1000" step="50"></div>
+      <div class="booth-swing-panel" id="booth-door-width-panel"></div>
       <div class="field"><label>门缝（mm）</label><input type="number" id="p-gap" value="10" min="4" max="100" step="1"></div>
       <label class="check-field"><span>门板/立板子母口</span><input class="switch-source" type="checkbox" id="p-rebate"><span class="switch-toggle" id="rebate-toggle"><span class="switch-track" aria-hidden="true"></span><span class="switch-state">关闭</span></span></label>
       <div class="field"><label>单边启口值（mm）</label><input type="number" id="p-rebate-depth" value="10" min="0" max="100" step="1"></div>
@@ -316,6 +328,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
           只有背墙
         </button>
       </div>
+      <div class="booth-swing-panel" id="depth-panel-special-panel"></div>
     </div>
 
     <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> 生成图纸</button>
@@ -327,12 +340,16 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <div class="vtab" id="tab-front" onclick="switchTab('front')">正立面图</div>
       <div class="vtab" id="tab-side" onclick="switchTab('side')">侧立面图</div>
       <div class="top-widths"><label>单间净宽</label><div class="width-card-row" id="width-card-row"></div></div>
-      <div class="plan-note-field"><label for="plan-note-input">内容输入</label><input type="text" id="plan-note-input" placeholder="输入图纸顶部内容"></div>
+      <div class="plan-note-field"><label for="plan-note-input">内容输入</label><input type="text" id="plan-note-input" placeholder="标题、备注标签"></div>
       <div class="paper-select"><label for="paper-size">纸张</label><select id="paper-size" onchange="setPaperSize(this.value)"><option value="a4">A4</option><option value="a3">A3</option><option value="auto">自适应</option></select></div>
     </div>
     <div class="sheet-actions" id="sheet-actions">
+      <div class="quick-history-actions global-history-actions" aria-label="全局历史操作">
+        <button class="quick-icon-btn" type="button" onclick="undoLayout()" title="撤销" aria-label="撤销"><svg viewBox="0 0 24 24"><path d="M9 7 5 11l4 4"/><path d="M5 11h8a5 5 0 0 1 5 5v1"/></svg></button>
+        <button class="quick-icon-btn" type="button" onclick="redoLayout()" title="恢复" aria-label="恢复"><svg viewBox="0 0 24 24"><path d="m15 7 4 4-4 4"/><path d="M19 11h-8a5 5 0 0 0-5 5v1"/></svg></button>
+      </div>
       <button class="sheet-action-btn" type="button" onclick="autoDistributeSheets()">自动分配图纸</button>
-      <button class="sheet-action-btn" type="button" onclick="toggleUrinalPanel()">小便板</button>
+      <button class="sheet-action-btn expand" type="button" onclick="toggleUrinalPanel()">小便板</button>
       <span class="sheet-page-info" id="sheet-page-info">第 1/1 页</span>
     </div>
     <div class="urinal-panel" id="urinal-panel">
@@ -352,8 +369,8 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
         <button class="cv-btn" onclick="resetZoom()">重置视图</button>
       </div>
     </div>
-    <div class="bom-area">
-      <div class="bom-title">材料清单</div>
+    <div class="bom-area" id="bom-area">
+      <div class="bom-head"><div class="bom-title">材料清单</div><button class="bom-toggle" id="bom-toggle" type="button" onclick="toggleBomArea()">展开更多</button></div>
       <div class="bom-grid" id="bom"></div>
     </div>
     <div class="export-row">
@@ -387,6 +404,7 @@ let activeRowId = 1;
 let selectionScope = 'row';
 let selectedBoothIndex = null;
 let selectedBoothRef = null;
+let selectedDepthPanelRef = null;
 let rowAnimation = null;
 let planHitAreas = [];
 let openGroupIds = new Set([1]);
@@ -404,6 +422,8 @@ const PRINT_RENDER_SCALE = 4;
 let pdfLibPromise = null;
 let svgPrintSeq = 0;
 let quickLayoutRows = [['','','']];
+let quickLayoutPages = [[['','','']]];
+let activeQuickPage = 0;
 let quickTenMode = false;
 let widthCards = ['', '', ''];
 let undoStack = [];
@@ -414,6 +434,7 @@ let urinalSpec = {count:0, width:400, height:900, thick:12, shape:'矩形', hole
 let quickNavKeep = null;
 let noteInputValue = '';
 let sheetHeaderText = '';
+const GROUP_NAME_PLACEHOLDER = '备注标签';
 const swingDefs = {
   'in-left': {label:'左内开', hinge:'left', opensUp:true, vx:8, y1:6, y2:30, arcEndX:32, arcEndY:30, arcSweep:1},
   'in-right': {label:'右内开', hinge:'right', opensUp:true, vx:40, y1:6, y2:30, arcEndX:16, arcEndY:30, arcSweep:0},
@@ -421,15 +442,15 @@ const swingDefs = {
   'out-right': {label:'右外开', hinge:'right', opensUp:false, vx:40, y1:30, y2:6, arcEndX:16, arcEndY:6, arcSweep:1},
 };
 const swingOrder = ['in-left', 'in-right', 'out-left', 'out-right'];
-const defaultRow = {id:1, layoutType:'cell', layoutRow:1, layoutCol:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], noDoorBooths:[], hUpright:1830, hDoor:1750, hMid:1800, hVis:1830, tPanel:12, wall:'three'};
+const defaultRow = {id:1, layoutType:'cell', layoutRow:1, layoutCol:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], noDoorBooths:[], depthPanelSpecials:[], hUpright:1830, hDoor:1750, hMid:1800, hVis:1830, tPanel:12, wall:'three'};
 const blankRow = {...defaultRow, enabled:false};
 let groups = [
-  {id:1, name:'A组', rows:[{...defaultRow}]},
-  {id:2, name:'B组', rows:[{...blankRow}]},
-  {id:3, name:'C组', rows:[{...blankRow}]},
-  {id:4, name:'D组', rows:[{...blankRow}]},
-  {id:5, name:'E组', rows:[{...blankRow}]},
-  {id:6, name:'F组', rows:[{...blankRow}]}
+  {id:1, name:'', rows:[{...defaultRow}]},
+  {id:2, name:'', rows:[{...blankRow}]},
+  {id:3, name:'', rows:[{...blankRow}]},
+  {id:4, name:'', rows:[{...blankRow}]},
+  {id:5, name:'', rows:[{...blankRow}]},
+  {id:6, name:'', rows:[{...blankRow}]}
 ];
 
 function applyTheme(theme) {
@@ -437,7 +458,7 @@ function applyTheme(theme) {
   document.body.classList.toggle('theme-dark', isDark);
   const btn = document.getElementById('theme-toggle');
   if (btn) {
-    btn.textContent = isDark ? '☀' : '☾';
+    btn.textContent = isDark ? '?' : '?';
     btn.title = isDark ? '切换浅色主题' : '切换深色主题';
     btn.setAttribute('aria-label', btn.title);
   }
@@ -492,6 +513,141 @@ function normalizeBoothNotes(values, count) {
   return Array.from({length: Math.max(1, count || 1)}, (_, i) => String(source[i] || ''));
 }
 
+function depthPanelCount(row) {
+  return Math.max(2, (Number(row?.count) || 1) + 1);
+}
+
+function depthPanelName(row, index) {
+  const count = Math.max(1, Number(row?.count) || 1);
+  if (index === 0) return '左见光板';
+  if (index === count) return '右见光板';
+  return `第${index}道中隔板`;
+}
+
+function depthPanelSelectable(row, index) {
+  if (!row) return false;
+  const c = compute(row);
+  const count = Math.max(1, Number(row.count) || 1);
+  if (index === 0) return !c.hasLeft;
+  if (index === count) return !c.hasRight;
+  return index > 0 && index < count;
+}
+
+function normalizeDepthPanelSpecials(values, count) {
+  const source = Array.isArray(values) ? values : [];
+  return Array.from({length: Math.max(1, count || 1)}, (_, i) => {
+    const item = source[i] || {};
+    const protrusion = Math.max(0, Math.round(Number(item.protrusion) || 0));
+    const depth = Math.max(0, Math.round(Number(item.depth) || 0));
+    return {protrusion, depth};
+  });
+}
+
+function depthPanelActualDepth(row, index) {
+  const specials = normalizeDepthPanelSpecials(row?.depthPanelSpecials, depthPanelCount(row));
+  const item = specials[index] || {};
+  const baseDepth = Number(row?.depth) || 0;
+  if (item.depth > 0) return Math.max(0, Math.min(baseDepth, item.depth));
+  if (item.protrusion > 0) return Math.max(0, Math.round(baseDepth - Math.min(baseDepth, item.protrusion)));
+  return baseDepth;
+}
+
+function depthPanelProtrusion(row, index) {
+  const actual = depthPanelActualDepth(row, index);
+  return Math.max(0, Math.round((Number(row?.depth) || 0) - actual));
+}
+
+function specialDepthPanelItems(row) {
+  const count = depthPanelCount(row);
+  const specials = normalizeDepthPanelSpecials(row?.depthPanelSpecials, count);
+  return specials.map((item, index) => {
+    const protrusion = depthPanelProtrusion(row, index);
+    if (protrusion <= 0 && !(item.depth > 0 && item.depth !== Number(row?.depth))) return null;
+    if (!depthPanelSelectable(row, index)) return null;
+    return {
+      index,
+      name: depthPanelName(row, index),
+      depth: depthPanelActualDepth(row, index),
+      protrusion
+    };
+  }).filter(Boolean);
+}
+
+function normalizeBoothDoorWidths(values, count, fallback = 0) {
+  const source = Array.isArray(values) ? values : [];
+  return Array.from({length: Math.max(1, count || 1)}, (_, i) => {
+    const n = Number(source[i]);
+    return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
+  });
+}
+
+function rowDoorWidthOverrides(row, count = row?.count) {
+  return normalizeBoothDoorWidths(row?.boothDoorWidths, Math.max(1, Number(count) || 1), 0);
+}
+
+function boothDoorWidthAt(p, index) {
+  const n = Number(p.boothDoorWidths?.[index]);
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : (Number(p.doorW) || 600);
+}
+
+function boothHasDoorWidthOverride(p, index) {
+  const n = Number(p?.boothDoorWidths?.[index]);
+  return Number.isFinite(n) && n > 0;
+}
+
+function maxDoorWidthForBooth(row, index) {
+  if (!row) return 1200;
+  const p = {...row, boothDoorWidths: rowDoorWidthOverrides(row, row.count)};
+  const customWidthsRaw = parseWidths(p.widthsText);
+  const fixedWidths = Array.from({length:p.count}, (_, i) => {
+    const value = customWidthsRaw[i];
+    return Number.isFinite(value) && value > 0 ? Math.round(value) : null;
+  });
+  const fixedTotal = fixedWidths.reduce((sum, w) => sum + (Number.isFinite(w) ? w : 0), 0);
+  const remainingCount = fixedWidths.filter(w => !Number.isFinite(w)).length;
+  const fillWidths = splitInteger(Math.max(0, p.total - fixedTotal), remainingCount);
+  let fillIndex = 0;
+  const boothWidths = Array.from({length:p.count}, (_, i) => Number.isFinite(fixedWidths[i]) ? fixedWidths[i] : (fillWidths[fillIndex++] || Math.round(p.total / Math.max(1, p.count))));
+  const minEdgePanel = 80;
+  const minMiddlePanel = 180;
+  const outerReserve = (index === 0 ? minEdgePanel : 0) + (index === p.count - 1 ? minEdgePanel : 0);
+  let maxInstall = Math.max(0, Math.round((boothWidths[index] || 0) - (p.doorGap || 10) - outerReserve));
+  const gap = Math.max(4, Number(p.doorGap) || 10);
+  const installAt = (i, candidate = null) => {
+    const source = candidate === null ? (p.boothDoorWidths[i] || p.doorW) : candidate;
+    return rebateSmallSize(source, p, 'double');
+  };
+  const sidePairAt = (i, install) => {
+    const available = Math.max(0, Math.round((boothWidths[i] || 0) - install - gap));
+    const pair = splitInteger(available, 2);
+    if (i === 0 && pair[0] < minEdgePanel && available >= minEdgePanel) return [minEdgePanel, Math.max(0, available - minEdgePanel)];
+    if (i === p.count - 1 && pair[1] < minEdgePanel && available >= minEdgePanel) return [Math.max(0, available - minEdgePanel), minEdgePanel];
+    return pair;
+  };
+  const candidateOk = candidateBig => {
+    const candidateInstall = rebateSmallSize(candidateBig, p, 'double');
+    const currentPair = sidePairAt(index, candidateInstall);
+    if (index === 0 && currentPair[0] < minEdgePanel) return false;
+    if (index === p.count - 1 && currentPair[1] < minEdgePanel) return false;
+    if (index > 0) {
+      const leftPair = sidePairAt(index - 1, installAt(index - 1));
+      if (leftPair[1] + currentPair[0] < minMiddlePanel) return false;
+    }
+    if (index < p.count - 1) {
+      const rightPair = sidePairAt(index + 1, installAt(index + 1));
+      if (currentPair[1] + rightPair[0] < minMiddlePanel) return false;
+    }
+    return true;
+  };
+  let low = 0, high = p.rebate ? maxInstall + (p.rebateDepth || 0) * 2 : maxInstall;
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    if (candidateOk(mid)) low = mid;
+    else high = mid - 1;
+  }
+  return low;
+}
+
 function selectedNoteTarget() {
   const group = activeGroup();
   const row = activeRow();
@@ -537,11 +693,54 @@ function syncPlanNoteInputFromSelection() {
 function clearSelectedBooth() {
   selectedBoothIndex = null;
   selectedBoothRef = null;
+  clearSelectedDepthPanel();
+}
+
+function clearSelectedDepthPanel() {
+  selectedDepthPanelRef = null;
+}
+
+function setSelectedDepthPanel(groupId, rowId, index) {
+  selectedDepthPanelRef = {groupId, rowId, index};
+}
+
+function isSelectedDepthPanel(groupId, rowId, index) {
+  return selectionScope === 'depth-panel'
+    && selectedDepthPanelRef?.groupId === groupId
+    && selectedDepthPanelRef?.rowId === rowId
+    && selectedDepthPanelRef?.index === index;
+}
+
+function selectedDepthPanelRow() {
+  if (!selectedDepthPanelRef) return null;
+  const group = groups.find(g => g.id === selectedDepthPanelRef.groupId);
+  const row = group ? ensureRows(group).find(r => r.id === selectedDepthPanelRef.rowId) : null;
+  return row ? {group, row} : null;
+}
+
+function updateDepthPanelSpecial(index, patch) {
+  const target = selectedDepthPanelRow();
+  if (!target) return;
+  const {row} = target;
+  const count = depthPanelCount(row);
+  if (index < 0 || index >= count || !depthPanelSelectable(row, index)) return;
+  row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, count);
+  const baseDepth = Math.max(0, Number(row.depth) || 0);
+  const next = {...row.depthPanelSpecials[index], ...patch};
+  if (Object.prototype.hasOwnProperty.call(patch, 'depth')) {
+    next.depth = Math.max(0, Math.min(baseDepth, Math.round(Number(patch.depth) || 0)));
+    next.protrusion = next.depth > 0 ? Math.max(0, baseDepth - next.depth) : 0;
+  } else if (Object.prototype.hasOwnProperty.call(patch, 'protrusion')) {
+    next.protrusion = Math.max(0, Math.min(baseDepth, Math.round(Number(patch.protrusion) || 0)));
+    next.depth = next.protrusion > 0 ? Math.max(0, baseDepth - next.protrusion) : 0;
+  }
+  row.depthPanelSpecials[index] = next;
 }
 
 function setSelectedBooth(groupId, rowId, index) {
   selectedBoothIndex = index;
   selectedBoothRef = {groupId, rowId, index};
+  selectedDepthPanelRef = null;
 }
 
 function isSelectedBooth(groupId, rowId, index) {
@@ -586,9 +785,23 @@ function layoutGridSummary(rows) {
   return `共 ${rowCount} 排 / ${maxCol} 列`;
 }
 
+function escapeAttr(value) {
+  return String(value ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+
+function groupDisplayName(group) {
+  return String(group?.name || '').trim() || GROUP_NAME_PLACEHOLDER;
+}
+
+function groupLabelPrefix(group) {
+  const index = Math.max(1, Number(group?.id) || 1);
+  return String.fromCharCode(64 + Math.min(index, 26));
+}
+
 function renderBoothSwingPanel() {
-  const panel = document.getElementById('booth-swing-panel');
-  if (!panel) return;
+  const swingPanel = document.getElementById('booth-swing-panel');
+  const doorPanel = document.getElementById('booth-door-width-panel');
+  if (!swingPanel && !doorPanel) return;
   const row = activeRow();
   const count = Math.max(1, parseInt(document.getElementById('p-count')?.value) || row?.count || 1);
   const values = normalizeBoothSwings(row?.boothSwings, count, swingMode);
@@ -598,16 +811,129 @@ function renderBoothSwingPanel() {
   const unitName = layoutUnitName(activeGroup(), row);
   const selectedCode = selectedBoothRef ? `${prefix}${startNo + selectedBoothRef.index + 1}` : '';
   const selectedNoDoor = row && selectedBoothRef ? !hasDoorAt(row, selectedBoothRef.index) : false;
-  const currentInfo = selectedBoothRef
-    ? `${prefix}${startNo + selectedBoothRef.index + 1}：${selectedNoDoor ? '无需门板' : '需要门板'}`
+  const selectedDoorW = row && selectedBoothRef ? boothDoorWidthAt(row, selectedBoothRef.index) : '';
+  const hasDoorWidthOverride = row && selectedBoothRef ? boothHasDoorWidthOverride(row, selectedBoothRef.index) : false;
+  const doorInfo = selectedBoothRef
+    ? `${prefix}${startNo + selectedBoothRef.index + 1}：${selectedNoDoor ? '无需门板' : `门宽${selectedDoorW}mm · ${hasDoorWidthOverride ? '单独' : '默认'}`}`
+    : '选中图纸中的某一间后，可单独设置门宽';
+  const noDoorInfo = selectedBoothRef
+    ? `${selectedCode}：${selectedNoDoor ? '无需门板' : '需要门板'}`
     : '选中图纸中的某一间后，可设置无需门板';
-  panel.innerHTML = `
-    <div class="booth-swing-hint">${currentInfo}</div>
+  if (doorPanel) doorPanel.innerHTML = `
+    <div class="booth-swing-hint">${doorInfo}</div>
     <div class="booth-pick-line">
-      <input class="booth-pick-input" id="booth-code-input" value="${selectedCode}" placeholder="自定义：A1 (单独修改)" onkeydown="handleBoothCodeKey(event)" onchange="applyBoothCodeInput(this.value)">
-      <button class="booth-pick-clear" type="button" onclick="toggleSelectedBoothDoor()" ${selectedBoothRef ? '' : 'disabled'}>${selectedNoDoor ? '恢复门板' : '无需门板'}</button>
-      <button class="booth-pick-clear" type="button" onclick="clearBoothSelection()">清除</button>
+      <button class="booth-pick-clear" type="button" onclick="resetSelectedBoothDoorWidth()" ${selectedBoothRef && hasDoorWidthOverride && !selectedNoDoor ? '' : 'disabled'}>恢复默认门宽</button>
     </div>`;
+  if (swingPanel) swingPanel.innerHTML = `
+    <div class="booth-swing-hint">${noDoorInfo}</div>
+    <div class="booth-pick-line">
+      <button class="booth-pick-clear" type="button" onclick="toggleSelectedBoothDoor()" ${selectedBoothRef ? '' : 'disabled'}>${selectedNoDoor ? '恢复门板' : '无需门板'}</button>
+    </div>`;
+}
+
+function renderDepthPanelSpecialPanel() {
+  const panel = document.getElementById('depth-panel-special-panel');
+  if (!panel) return;
+  const target = selectedDepthPanelRow();
+  if (!target || selectionScope !== 'depth-panel') {
+    panel.innerHTML = `<div class="booth-swing-hint">选中图纸中的深度板后，可设置墙体凸出或板实际深度</div>`;
+    return;
+  }
+  const {group, row} = target;
+  const count = depthPanelCount(row);
+  const index = Math.max(0, Math.min(count - 1, selectedDepthPanelRef.index));
+  row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, count);
+  const item = row.depthPanelSpecials[index] || {protrusion:0, depth:0};
+  const actualDepth = depthPanelActualDepth(row, index);
+  const protrusion = depthPanelProtrusion(row, index);
+  const baseDepth = Number(row.depth) || 0;
+  const disabled = depthPanelSelectable(row, index) ? '' : 'disabled';
+  panel.innerHTML = `
+    <div class="booth-swing-hint">${escapeAttr(groupDisplayName(group))} · ${escapeAttr(depthPanelName(row, index))}：实际深 ${fmtMm(actualDepth)}mm${protrusion ? ` · 墙凸 ${fmtMm(protrusion)}mm` : ''}</div>
+    <div class="special-card-row">
+      <div class="special-card-field"><label>墙体凸出</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="0000" value="${item.protrusion || ''}" oninput="limitDepthPanelCardInput(this)" onkeydown="handleDepthPanelCardKey(event,'protrusion')" ${disabled}></div>
+      <div class="special-card-field"><label>板实际深度</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="0000" value="${item.depth || ''}" oninput="limitDepthPanelCardInput(this)" onkeydown="handleDepthPanelCardKey(event,'depth')" ${disabled}></div>
+    </div>
+    <div class="booth-pick-line">
+      <button class="booth-pick-clear" type="button" onclick="resetSelectedDepthPanelSpecial()" ${disabled}>恢复默认深度</button>
+    </div>`;
+}
+
+function limitDepthPanelCardInput(input) {
+  input.value = input.value.replace(/\D/g, '').slice(0, 4);
+}
+
+function handleDepthPanelCardKey(e, type) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (type === 'protrusion') applySelectedDepthPanelProtrusion(e.currentTarget.value);
+  else applySelectedDepthPanelDepth(e.currentTarget.value);
+}
+
+function applySelectedDepthPanelProtrusion(value) {
+  if (selectionScope !== 'depth-panel' || !selectedDepthPanelRef) return;
+  pushHistory();
+  updateDepthPanelSpecial(selectedDepthPanelRef.index, {protrusion:value});
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderDepthPanelSpecialPanel();
+  renderBOM(lastParams);
+}
+
+function applySelectedDepthPanelDepth(value) {
+  if (selectionScope !== 'depth-panel' || !selectedDepthPanelRef) return;
+  pushHistory();
+  updateDepthPanelSpecial(selectedDepthPanelRef.index, {depth:value});
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderDepthPanelSpecialPanel();
+  renderBOM(lastParams);
+}
+
+function resetSelectedDepthPanelSpecial() {
+  const target = selectedDepthPanelRow();
+  if (!target || selectionScope !== 'depth-panel' || !selectedDepthPanelRef) return;
+  pushHistory();
+  const {row} = target;
+  row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, depthPanelCount(row));
+  row.depthPanelSpecials[selectedDepthPanelRef.index] = {protrusion:0, depth:0};
+  renderDepthPanelSpecialPanel();
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
+}
+
+function applySelectedBoothDoorWidth(value) {
+  const row = activeRow();
+  if (!row || selectionScope !== 'booth' || !selectedBoothRef) return;
+  const maxDoor = maxDoorWidthForBooth(row, selectedBoothRef.index);
+  const next = Math.max(300, Math.min(maxDoor, parseInt(value, 10) || row.doorW || 600));
+  pushHistory();
+  const count = Math.max(1, Number(row.count) || 1);
+  row.boothDoorWidths = rowDoorWidthOverrides(row, count);
+  row.boothDoorWidths[selectedBoothRef.index] = next;
+  document.getElementById('p-door').value = next;
+  row.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, count);
+  row.noDoorBooths[selectedBoothRef.index] = false;
+  renderBoothSwingPanel();
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
+}
+
+function resetSelectedBoothDoorWidth() {
+  const row = activeRow();
+  if (!row || selectionScope !== 'booth' || !selectedBoothRef) return;
+  pushHistory();
+  const count = Math.max(1, Number(row.count) || 1);
+  row.boothDoorWidths = rowDoorWidthOverrides(row, count);
+  row.boothDoorWidths[selectedBoothRef.index] = 0;
+  renderBoothSwingPanel();
+  document.getElementById('p-door').value = row.doorW || 600;
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
 }
 
 function updateLayoutTargetLabel() {
@@ -697,8 +1023,10 @@ function applyGroupParamsToRow(row, params, enable = false) {
     layoutCol: row.layoutCol,
     doorInstallWidths: row.doorInstallWidths,
     doorWidths: row.doorWidths,
+    boothDoorWidths: row.boothDoorWidths,
     noDoorBooths: row.noDoorBooths,
     boothNotes: row.boothNotes,
+    depthPanelSpecials: row.depthPanelSpecials,
     note: row.note
   };
   applyParamsToRow(row, {...params, ...keep}, enable);
@@ -708,10 +1036,14 @@ function applyParamsToRow(row, params, enable = false) {
   const nextEnabled = enable ? true : row.enabled === true;
   const boothSwings = row === activeRow() ? params.boothSwings : normalizeBoothSwings(row.boothSwings, params.count, params.swing || swingMode);
   const noDoorBooths = normalizeNoDoorBooths(row === activeRow() ? params.noDoorBooths : row.noDoorBooths, params.count);
-  Object.assign(row, {...params, boothSwings, noDoorBooths}, {enabled: nextEnabled});
+  const boothDoorWidths = rowDoorWidthOverrides(row === activeRow() ? params : row, params.count);
+  const depthPanelSpecials = normalizeDepthPanelSpecials(row === activeRow() ? params.depthPanelSpecials : row.depthPanelSpecials, depthPanelCount(params));
+  Object.assign(row, {...params, boothSwings, noDoorBooths, boothDoorWidths, depthPanelSpecials}, {enabled: nextEnabled});
   row.boothSwings = normalizeBoothSwings(row.boothSwings, row.count, row.swing || swingMode);
   row.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, row.count);
   row.boothNotes = normalizeBoothNotes(row.boothNotes, row.count);
+  row.boothDoorWidths = rowDoorWidthOverrides(row, row.count);
+  row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, depthPanelCount(row));
 }
 
 function loadGroupToForm(group, row = activeRow()) {
@@ -722,7 +1054,9 @@ function loadGroupToForm(group, row = activeRow()) {
   syncWidthCardsFromText(committedWidthsText);
   renderWidthCards();
   document.getElementById('p-depth').value = row.depth;
-  document.getElementById('p-door').value = row.doorW;
+  document.getElementById('p-door').value = selectionScope === 'booth' && selectedBoothRef?.rowId === row.id
+    ? boothDoorWidthAt(row, selectedBoothRef.index)
+    : row.doorW;
   document.getElementById('p-gap').value = row.doorGap ?? 10;
   document.getElementById('p-rebate').checked = row.rebate ?? false;
   renderRebateToggle();
@@ -736,9 +1070,12 @@ function loadGroupToForm(group, row = activeRow()) {
   row.boothSwings = normalizeBoothSwings(row.boothSwings, row.count, swingMode);
   row.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, row.count);
   row.boothNotes = normalizeBoothNotes(row.boothNotes, row.count);
+  row.boothDoorWidths = rowDoorWidthOverrides(row, row.count);
+  row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, depthPanelCount(row));
   syncPlanNoteInputFromSelection();
   renderSwingButtons();
   renderBoothSwingPanel();
+  renderDepthPanelSpecialPanel();
   updateLayoutTargetLabel();
   renderQuickLayout();
   wallMode = row.wall;
@@ -749,17 +1086,23 @@ function syncQuickLayoutFromGroup(group = activeGroup()) {
   const rows = ensureRows(group).filter(row => row.enabled === true);
   if (!rows.length) {
     quickLayoutRows = [['', '', '']];
+    quickLayoutPages = [[['', '', '']]];
+    activeQuickPage = 0;
     return;
   }
-  const maxRow = Math.max(1, ...rows.map(row => Number(row.layoutRow) || 1));
-  const next = Array.from({length: maxRow}, () => ['', '', '']);
+  const maxPage = Math.max(0, ...rows.map(row => Number(row.sheetPage) || 0));
+  const nextPages = Array.from({length: maxPage + 1}, () => [['', '', '']]);
   rows.forEach(row => {
+    const pageIndex = Math.max(0, Number(row.sheetPage) || 0);
     const rowIndex = Math.max(0, (Number(row.layoutRow) || 1) - 1);
     const colIndex = Math.max(0, (Number(row.layoutCol) || 1) - 1);
-    while (next[rowIndex].length <= colIndex) next[rowIndex].push('');
-    next[rowIndex][colIndex] = String(Math.max(1, Number(row.count) || 1));
+    while (nextPages[pageIndex].length <= rowIndex) nextPages[pageIndex].push(['', '', '']);
+    while (nextPages[pageIndex][rowIndex].length <= colIndex) nextPages[pageIndex][rowIndex].push('');
+    nextPages[pageIndex][rowIndex][colIndex] = String(Math.max(1, Number(row.count) || 1));
   });
-  quickLayoutRows = next;
+  quickLayoutPages = nextPages;
+  activeQuickPage = Math.max(0, Math.min(activeQuickPage, quickLayoutPages.length - 1));
+  quickLayoutRows = quickLayoutPages[activeQuickPage];
   normalizeQuickRows();
 }
 
@@ -899,7 +1242,10 @@ function cloneState() {
     selectionScope,
     selectedBoothIndex,
     selectedBoothRef: selectedBoothRef ? {...selectedBoothRef} : null,
+    selectedDepthPanelRef: selectedDepthPanelRef ? {...selectedDepthPanelRef} : null,
     quickLayoutRows: JSON.parse(JSON.stringify(quickLayoutRows)),
+    quickLayoutPages: JSON.parse(JSON.stringify(quickLayoutPages)),
+    activeQuickPage,
     noteInputValue,
     sheetHeaderText,
     currentPlanPage
@@ -913,7 +1259,10 @@ function restoreState(state) {
   selectionScope = state.selectionScope;
   selectedBoothIndex = state.selectedBoothIndex;
   selectedBoothRef = state.selectedBoothRef ? {...state.selectedBoothRef} : null;
-  quickLayoutRows = JSON.parse(JSON.stringify(state.quickLayoutRows || [['','','']]));
+  selectedDepthPanelRef = state.selectedDepthPanelRef ? {...state.selectedDepthPanelRef} : null;
+  quickLayoutPages = JSON.parse(JSON.stringify(state.quickLayoutPages || [state.quickLayoutRows || [['','','']]]));
+  activeQuickPage = Math.max(0, Math.min(Number(state.activeQuickPage) || 0, quickLayoutPages.length - 1));
+  quickLayoutRows = quickLayoutPages[activeQuickPage] || [['','','']];
   noteInputValue = state.noteInputValue || state.planNoteText || '';
   sheetHeaderText = state.sheetHeaderText || '';
   const noteInput = document.getElementById('plan-note-input');
@@ -951,6 +1300,9 @@ function redoLayout() {
 }
 
 function normalizeQuickRows() {
+  if (!Array.isArray(quickLayoutPages) || !quickLayoutPages.length) quickLayoutPages = [quickLayoutRows || [['','','']]];
+  if (!quickLayoutPages[activeQuickPage]) quickLayoutPages[activeQuickPage] = [['','','']];
+  quickLayoutRows = quickLayoutPages[activeQuickPage];
   quickLayoutRows = quickLayoutRows.map((row, rowIndex) => {
     const next = row.map(value => String(value || ''));
     while (next.length < 3) next.push('');
@@ -965,10 +1317,17 @@ function normalizeQuickRows() {
     return next;
   });
   if (!quickLayoutRows.length) quickLayoutRows = [['','','']];
+  quickLayoutPages[activeQuickPage] = quickLayoutRows;
+}
+
+function syncQuickPageRows() {
+  if (!Array.isArray(quickLayoutPages) || !quickLayoutPages.length) quickLayoutPages = [quickLayoutRows || [['','','']]];
+  quickLayoutPages[activeQuickPage] = quickLayoutRows;
 }
 
 function quickLayoutHasValues() {
-  return quickLayoutRows.some(row => row.some(value => Number(value) > 0));
+  syncQuickPageRows();
+  return quickLayoutPages.some(page => page.some(row => row.some(value => Number(value) > 0)));
 }
 
 function renderQuickLayout(focusRef = null) {
@@ -976,7 +1335,9 @@ function renderQuickLayout(focusRef = null) {
   normalizeQuickRows();
   const box = document.getElementById('quick-layout');
   if (!box) return;
-  box.innerHTML = quickLayoutRows.map((row, rowIndex) => `
+  const prevBtn = document.getElementById('quick-prev-page');
+  if (prevBtn) prevBtn.disabled = activeQuickPage <= 0;
+  box.innerHTML = `<div class="quick-row-head"><span>第 ${activeQuickPage + 1} 页</span><span>共 ${quickLayoutPages.length} 页</span></div>` + quickLayoutRows.map((row, rowIndex) => `
     <div class="quick-row">
       <div class="quick-row-head"><span>第 ${rowIndex + 1} 排</span><span>${row.filter(v => Number(v) > 0).length} 列</span></div>
       <div class="quick-cells">
@@ -1023,7 +1384,7 @@ function selectQuickCell(input) {
   const group = activeGroup();
   const rows = ensureRows(group);
   normalizeLayoutGrid(group);
-  const target = rows.find(r => (r.layoutRow || 1) === rowIndex + 1 && (r.layoutCol || 1) === colIndex + 1);
+  const target = rows.find(r => (r.sheetPage || 0) === activeQuickPage && (r.layoutRow || 1) === rowIndex + 1 && (r.layoutCol || 1) === colIndex + 1);
   if (!target) {
     quickNavKeep = {row: rowIndex, col: colIndex};
     return;
@@ -1045,6 +1406,7 @@ function handleQuickInput(input) {
   quickNavKeep = null;
   if (quickLayoutRows[row][col] !== value) pushHistory();
   quickLayoutRows[row][col] = value;
+  syncQuickPageRows();
   if (quickTenMode && value.length === 1) return;
   syncQuickCellToLayout(row, col, value);
   const isLast = col === quickLayoutRows[row].length - 1;
@@ -1060,7 +1422,7 @@ function syncQuickCellToLayout(rowIndex, colIndex, value) {
   document.getElementById('p-count').value = count;
   document.getElementById('p-total').value = count * 1000;
   const group = activeGroup();
-  const target = buildRowsFromQuickLayout(group, {row: rowIndex + 1, col: colIndex + 1});
+  const target = buildRowsFromQuickLayout(group, {page: activeQuickPage, row: rowIndex + 1, col: colIndex + 1});
   if (target) {
     activeRowId = target.id;
     selectionScope = 'row';
@@ -1076,20 +1438,21 @@ function syncQuickCellToLayout(rowIndex, colIndex, value) {
 
 function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
   normalizeQuickRows();
+  syncQuickPageRows();
   const existingRows = ensureRows(group);
   normalizeLayoutGrid(group);
-  const byCell = new Map(existingRows.map(row => [`${row.layoutRow || 1}:${row.layoutCol || 1}`, row]));
+  const byCell = new Map(existingRows.map(row => [`${row.sheetPage || 0}:${row.layoutRow || 1}:${row.layoutCol || 1}`, row]));
   const template = activeRow() || existingRows.find(row => row.enabled === true) || defaultRow;
   const generated = [];
   let id = 1;
   let activeTarget = null;
-  quickLayoutRows.forEach((row, rowIndex) => {
+  quickLayoutPages.forEach((pageRows, pageIndex) => pageRows.forEach((row, rowIndex) => {
     row.forEach((value, colIndex) => {
       const count = parseInt(value, 10);
       if (!Number.isFinite(count) || count <= 0) return;
       const layoutRow = rowIndex + 1;
       const layoutCol = colIndex + 1;
-      const existing = byCell.get(`${layoutRow}:${layoutCol}`);
+      const existing = byCell.get(`${pageIndex}:${layoutRow}:${layoutCol}`);
       const base = existing || template;
       const next = {
         ...base,
@@ -1097,20 +1460,23 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
         layoutType: 'cell',
         layoutRow,
         layoutCol,
+        sheetPage: pageIndex,
         enabled: true,
         count,
         total: count * 1000,
         widthsText: '',
         doorInstallWidths: undefined,
         doorWidths: undefined,
+        boothDoorWidths: Array.from({length: count}, () => 0),
         noDoorBooths: normalizeNoDoorBooths(base.noDoorBooths, count),
-        boothNotes: normalizeBoothNotes(base.boothNotes, count)
+        boothNotes: normalizeBoothNotes(base.boothNotes, count),
+        depthPanelSpecials: normalizeDepthPanelSpecials(base.depthPanelSpecials, count + 1)
       };
       next.boothSwings = normalizeBoothSwings(base.boothSwings, count, next.swing || swingMode);
       generated.push(next);
-      if (activeCell && activeCell.row === layoutRow && activeCell.col === layoutCol) activeTarget = next;
+      if (activeCell && (activeCell.page ?? activeQuickPage) === pageIndex && activeCell.row === layoutRow && activeCell.col === layoutCol) activeTarget = next;
     });
-  });
+  }));
   if (!generated.length) return null;
   group.rows = generated;
   return activeTarget || generated[0];
@@ -1120,7 +1486,7 @@ function commitQuickLayoutForFreeCanvas() {
   if (!(currentTab === 'plan' && canvasMode === 'free')) return;
   if (!quickLayoutHasValues()) return;
   const group = activeGroup();
-  const activeCell = activeRow() ? {row: activeRow().layoutRow || 1, col: activeRow().layoutCol || 1} : null;
+  const activeCell = activeRow() ? {page: activeRow().sheetPage || 0, row: activeRow().layoutRow || 1, col: activeRow().layoutCol || 1} : null;
   const target = buildRowsFromQuickLayout(group, activeCell);
   if (target) activeRowId = target.id;
 }
@@ -1146,7 +1512,7 @@ function handleQuickKey(e) {
   }
   if (e.key === 'Tab') {
     e.preventDefault();
-    addQuickLayoutRow(row + 1);
+    addQuickLayoutPage();
     return;
   }
 }
@@ -1187,8 +1553,9 @@ function deleteQuickCell(rowIndex, colIndex) {
   row.splice(colIndex, 1);
   while (row.length < 3) row.push('');
   normalizeQuickRows();
+  syncQuickPageRows();
   const group = activeGroup();
-  const target = buildRowsFromQuickLayout(group, {row: rowIndex + 1, col: Math.max(1, colIndex + 1)});
+  const target = buildRowsFromQuickLayout(group, {page: activeQuickPage, row: rowIndex + 1, col: Math.max(1, colIndex + 1)});
   if (target) activeRowId = target.id;
   selectionScope = target ? 'row' : 'group';
   clearSelectedBooth();
@@ -1201,7 +1568,30 @@ function deleteQuickCell(rowIndex, colIndex) {
 function addQuickLayoutRow(afterIndex = quickLayoutRows.length) {
   pushHistory();
   quickLayoutRows.splice(afterIndex, 0, ['', '', '']);
+  syncQuickPageRows();
   renderQuickLayout({row: afterIndex, col: 0});
+}
+
+function addQuickLayoutPage() {
+  pushHistory();
+  normalizeQuickRows();
+  syncQuickPageRows();
+  activeQuickPage += 1;
+  if (!quickLayoutPages[activeQuickPage]) quickLayoutPages.splice(activeQuickPage, 0, [['','','']]);
+  quickLayoutRows = quickLayoutPages[activeQuickPage];
+  quickNavKeep = null;
+  renderQuickLayout({row:0, col:0});
+}
+
+function goQuickLayoutPage(delta) {
+  normalizeQuickRows();
+  syncQuickPageRows();
+  const nextPage = Math.max(0, Math.min(quickLayoutPages.length - 1, activeQuickPage + delta));
+  if (nextPage === activeQuickPage) return;
+  activeQuickPage = nextPage;
+  quickLayoutRows = quickLayoutPages[activeQuickPage];
+  quickNavKeep = null;
+  renderQuickLayout({row:0, col:0});
 }
 
 function applyQuickLayout() {
@@ -1240,7 +1630,7 @@ function renderGroups(animateCollapse = false) {
     return `
       <div class="group-block" data-group-block="${g.id}">
         <div class="group-item group-color ${g.id === activeGroupId ? 'active' : ''}" data-group-card="${g.id}" style="--group-color:${color}" role="button" tabindex="0" onclick="selectGroup(${g.id})">
-          <span class="group-name">${g.name}</span>
+          <input class="group-name-input" value="${escapeAttr(g.name || '')}" placeholder="${GROUP_NAME_PLACEHOLDER}" onclick="event.stopPropagation()" onfocus="selectGroup(${g.id})" oninput="updateGroupName(${g.id}, this.value)" onkeydown="handleGroupNameKey(event)">
           <span class="group-actions-inline"><span data-group-count="${g.id}">${totalCount} 间</span></span>
           <span class="group-meta" data-group-meta="${g.id}">${layoutGridSummary(rows)}</span>
         </div>
@@ -1251,6 +1641,21 @@ function renderGroups(animateCollapse = false) {
   if (sidebar) sidebar.scrollTop = scrollTop;
   list.scrollTop = listScrollTop;
   updateGroupListState();
+}
+
+function updateGroupName(id, value) {
+  const group = groups.find(g => g.id === id);
+  if (!group) return;
+  group.name = String(value || '').trim();
+  if (id === activeGroupId) updateLayoutTargetLabel();
+  drawView(lastParams || getParams(), currentTab);
+  renderBOM(lastParams || getParams());
+}
+
+function handleGroupNameKey(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  e.currentTarget.blur();
 }
 
 function toggleUrinalPanel(force = null) {
@@ -1535,18 +1940,6 @@ function setWall(btn) {
 }
 
 function setSwing(btn) {
-  const codeInput = document.getElementById('booth-code-input');
-  if (codeInput && codeInput.value.trim()) {
-    const found = findBoothByCode(codeInput.value);
-    if (found) {
-      activeGroupId = found.group.id;
-      activeRowId = found.row.id;
-      setSelectedBooth(found.group.id, found.row.id, found.index);
-      selectionScope = 'booth';
-      openGroupIds.add(activeGroupId);
-      loadGroupToForm(found.group, found.row);
-    }
-  }
   const nextSwing = btn.dataset.swing;
   const row = activeRow();
   if (row && selectionScope === 'booth' && isSelectedBooth(activeGroupId, activeRowId, selectedBoothIndex)) {
@@ -1564,6 +1957,7 @@ function setSwing(btn) {
   }
   renderSwingButtons();
   renderBoothSwingPanel();
+  renderDepthPanelSpecialPanel();
   updateLayoutTargetLabel();
   refreshDrawing(false);
 }
@@ -1582,6 +1976,7 @@ function applyBoothCodeInput(value) {
   revealActiveGroupInList();
   renderSwingButtons();
   renderBoothSwingPanel();
+  renderDepthPanelSpecialPanel();
   updateLayoutTargetLabel();
   refreshDrawing(true, false, false);
 }
@@ -1598,11 +1993,18 @@ function clearBoothSelection() {
   syncPlanNoteInputFromSelection();
   renderSwingButtons();
   renderBoothSwingPanel();
+  renderDepthPanelSpecialPanel();
   updateLayoutTargetLabel();
 }
 
 function refreshDrawing(refit = false, renderList = true, enableRow = true) {
   commitQuickLayoutForFreeCanvas();
+  const doorInput = document.getElementById('p-door');
+  if (selectionScope === 'booth' && selectedBoothRef && doorInput && document.activeElement === doorInput) {
+    applySelectedBoothDoorWidth(doorInput.value);
+    if (renderList) updateGroupListState();
+    return;
+  }
   saveActiveGroup(enableRow);
   const p = getParams();
   lastParams = p;
@@ -1629,18 +2031,27 @@ function switchTab(tab) {
 }
 
 function getParams() {
+  const currentRow = activeRow();
+  const formDoorW = parseInt(document.getElementById('p-door').value) || 600;
+  const count = Math.max(1, parseInt(document.getElementById('p-count').value)||3);
+  const rawDefaultDoorW = selectionScope === 'booth' && currentRow ? (Number(currentRow.doorW) || 600) : formDoorW;
+  const defaultDoorLimit = currentRow ? Math.min(...Array.from({length: count}, (_, i) => maxDoorWidthForBooth({...currentRow, count, total: parseInt(document.getElementById('p-total').value)||3000, widthsText: committedWidthsText, doorGap: Math.max(4, parseInt(document.getElementById('p-gap').value)||10), rebate: document.getElementById('p-rebate').checked, rebateDepth: Math.max(0, parseInt(document.getElementById('p-rebate-depth').value) || 0)}, i))) : 1200;
+  const rowDefaultDoorW = Math.max(300, Math.min(rawDefaultDoorW, defaultDoorLimit));
+  if (selectionScope !== 'booth' && document.activeElement?.id === 'p-door' && rowDefaultDoorW !== formDoorW) document.getElementById('p-door').value = rowDefaultDoorW;
   return {
-    count: Math.max(1, parseInt(document.getElementById('p-count').value)||3),
+    count,
     widthsText: committedWidthsText,
     total: parseInt(document.getElementById('p-total').value)||3000,
     depth: parseInt(document.getElementById('p-depth').value)||1220,
-    doorW: parseInt(document.getElementById('p-door').value)||600,
+    doorW: rowDefaultDoorW,
     doorGap: Math.max(4, parseInt(document.getElementById('p-gap').value)||10),
     rebate: document.getElementById('p-rebate').checked,
     rebateDepth: Math.max(0, parseInt(document.getElementById('p-rebate-depth').value) || 0),
     swing: swingMode,
-    boothSwings: normalizeBoothSwings(activeRow()?.boothSwings, Math.max(1, parseInt(document.getElementById('p-count').value)||3), swingMode),
-    noDoorBooths: normalizeNoDoorBooths(activeRow()?.noDoorBooths, Math.max(1, parseInt(document.getElementById('p-count').value)||3)),
+    boothSwings: normalizeBoothSwings(currentRow?.boothSwings, count, swingMode),
+    boothDoorWidths: rowDoorWidthOverrides(currentRow, count),
+    noDoorBooths: normalizeNoDoorBooths(currentRow?.noDoorBooths, count),
+    depthPanelSpecials: normalizeDepthPanelSpecials(currentRow?.depthPanelSpecials, count + 1),
     hUpright: parseInt(document.getElementById('h-upright').value)||1830,
     hDoor: parseInt(document.getElementById('h-door').value)||1750,
     hMid: parseInt(document.getElementById('h-mid').value)||1800,
@@ -1747,16 +2158,10 @@ function compute(p) {
   const customWidthsRaw = parseWidths(p.widthsText);
   const hasCustomWidths = customWidthsRaw.length > 0;
   const standardDoorInstallW = rebateSmallSize(p.doorW, p, 'double');
-  const doorZoneW = standardDoorInstallW + p.doorGap;
-  const minEdgePanel = 100;
-  const minMiddlePanel = 200;
+  const minEdgePanel = 80;
+  const minMiddlePanel = 180;
   const minDoorW = 500;
-  const preferredDoorWidths = Array.from({length:p.count}, () => standardDoorInstallW);
-  const doorTotal = preferredDoorWidths.reduce((sum, w) => sum + w, 0);
-  const doorZoneTotal = p.count * doorZoneW;
-  const remainingForMargins = p.total - doorZoneTotal;
-  const adjustedLength = remainingForMargins < 0;
-  const autoBoothW = adjustedLength ? doorZoneW : doorZoneW + Math.round(remainingForMargins / p.count);
+  const autoBoothW = Math.max(0, Math.round(p.total / Math.max(1, p.count)));
   const fixedWidths = Array.from({length:p.count}, (_, i) => {
     const value = customWidthsRaw[i];
     return Number.isFinite(value) && value > 0 ? Math.round(value) : null;
@@ -1767,39 +2172,43 @@ function compute(p) {
   const fillWidths = splitInteger(remainingWidth, remainingCount);
   let fillIndex = 0;
   const boothWidths = Array.from({length:p.count}, (_, i) => Number.isFinite(fixedWidths[i]) ? fixedWidths[i] : (fillWidths[fillIndex++] || autoBoothW));
+  const boothDoorWidths = rowDoorWidthOverrides(p, p.count);
+  const minOuterForIndex = i => (i === 0 ? minEdgePanel : 0) + (i === p.count - 1 ? minEdgePanel : 0);
   const doorInstallWidths = boothWidths.map((width, i) => {
-    const minSides = (i === 0 ? minEdgePanel : 0) + (i === p.count - 1 ? minEdgePanel : 0);
-    const maxDoor = Math.max(0, Math.round(width - minSides - p.doorGap));
-    return Math.max(minDoorW, Math.min(standardDoorInstallW, maxDoor));
+    const preferred = rebateSmallSize(boothDoorWidths[i] || p.doorW, p, 'double');
+    const maxDoor = Math.max(0, Math.round(width - p.doorGap - minOuterForIndex(i)));
+    return Math.max(0, Math.min(Math.round(preferred || standardDoorInstallW), maxDoor));
   });
-  const doorWidths = doorInstallWidths.map(w => p.rebate ? w + (p.rebateDepth || 0) * 2 : w);
-  const sidePairs = boothWidths.map((width, i) => {
+  const preferredDoorWidths = doorInstallWidths;
+  const doorTotal = preferredDoorWidths.reduce((sum, w) => sum + w, 0);
+  const doorZoneTotal = preferredDoorWidths.reduce((sum, w) => sum + w + p.doorGap, 0);
+  const remainingForMargins = p.total - doorZoneTotal;
+  const adjustedLength = remainingForMargins < 0;
+  let doorWidths = doorInstallWidths.map(w => p.rebate ? w + (p.rebateDepth || 0) * 2 : w);
+  const makeSidePairs = () => boothWidths.map((width, i) => {
     const available = Math.max(0, Math.round(width - doorInstallWidths[i] - p.doorGap));
     const pair = splitInteger(available, 2);
-    if (p.count === 1) {
-      const left = Math.max(pair[0] || 0, Math.min(minEdgePanel, available));
-      const right = Math.max(0, available - left);
-      return [left, right];
-    }
-    if (i === 0 && (pair[0] || 0) < minEdgePanel) return [Math.min(minEdgePanel, available), Math.max(0, available - minEdgePanel)];
-    if (i === p.count - 1 && (pair[1] || 0) < minEdgePanel) return [Math.max(0, available - minEdgePanel), Math.min(minEdgePanel, available)];
+    if (i === 0 && pair[0] < minEdgePanel && available >= minEdgePanel) return [minEdgePanel, Math.max(0, available - minEdgePanel)];
+    if (i === p.count - 1 && pair[1] < minEdgePanel && available >= minEdgePanel) return [Math.max(0, available - minEdgePanel), minEdgePanel];
     return pair;
   });
-  for (let i = 0; i < p.count - 1; i++) {
-    let middle = sidePairs[i][1] + sidePairs[i + 1][0];
-    let deficit = minMiddlePanel - middle;
-    if (deficit <= 0) continue;
-    const nextCanShrink = Math.max(0, doorInstallWidths[i + 1] - minDoorW);
-    const fromNext = Math.min(deficit, nextCanShrink);
-    doorInstallWidths[i + 1] -= fromNext;
-    doorWidths[i + 1] = p.rebate ? doorInstallWidths[i + 1] + (p.rebateDepth || 0) * 2 : doorInstallWidths[i + 1];
-    sidePairs[i + 1][0] += fromNext;
-    deficit -= fromNext;
-    const currentCanShrink = Math.max(0, doorInstallWidths[i] - minDoorW);
-    const fromCurrent = Math.min(deficit, currentCanShrink);
-    doorInstallWidths[i] -= fromCurrent;
-    doorWidths[i] = p.rebate ? doorInstallWidths[i] + (p.rebateDepth || 0) * 2 : doorInstallWidths[i];
-    sidePairs[i][1] += fromCurrent;
+  let sidePairs = makeSidePairs();
+  for (let guard = 0; guard < p.count * 6; guard++) {
+    let changed = false;
+    for (let i = 0; i < p.count - 1; i++) {
+      const middle = sidePairs[i][1] + sidePairs[i + 1][0];
+      const deficit = minMiddlePanel - middle;
+      if (deficit <= 0) continue;
+      const rightCanShrink = Math.max(0, doorInstallWidths[i + 1] - minDoorW);
+      const leftCanShrink = Math.max(0, doorInstallWidths[i] - minDoorW);
+      if (rightCanShrink >= leftCanShrink && rightCanShrink > 0) doorInstallWidths[i + 1] -= Math.min(deficit * 2, rightCanShrink);
+      else if (leftCanShrink > 0) doorInstallWidths[i] -= Math.min(deficit * 2, leftCanShrink);
+      else continue;
+      changed = true;
+      doorWidths = doorInstallWidths.map(w => p.rebate ? w + (p.rebateDepth || 0) * 2 : w);
+      sidePairs = makeSidePairs();
+    }
+    if (!changed) break;
   }
   const gapPairs = boothWidths.map(() => splitInteger(p.doorGap, 2));
   const insufficientDoors = doorInstallWidths.map(w => w < minDoorW);
@@ -2186,7 +2595,7 @@ function collectPlanBlocks(p = lastParams || getParams()) {
   };
   return source
     .slice()
-    .sort((a, b) => (orderIndex(a) - orderIndex(b)) || (a.group.id - b.group.id) || ((a.row.layoutRow || 1) - (b.row.layoutRow || 1)) || ((a.row.layoutCol || 1) - (b.row.layoutCol || 1)) || (a.row.id - b.row.id))
+    .sort((a, b) => ((a.row.sheetPage || 0) - (b.row.sheetPage || 0)) || (orderIndex(a) - orderIndex(b)) || (a.group.id - b.group.id) || ((a.row.layoutRow || 1) - (b.row.layoutRow || 1)) || ((a.row.layoutCol || 1) - (b.row.layoutCol || 1)) || (a.row.id - b.row.id))
     .map(item => {
       const metrics = planBlockMetrics(item.row);
       const block = {...item, metrics, labelStart};
@@ -2294,6 +2703,8 @@ function paginatePlanBlocksAtScale(blocks, layout, sheetScale) {
   blocks.forEach(block => {
     const rawW = block.metrics.w;
     const rawH = block.metrics.h;
+    const targetSheetPage = Number.isFinite(Number(block.row?.sheetPage)) ? Math.max(0, Number(block.row.sheetPage)) : null;
+    if (targetSheetPage !== null && page.blocks.length && block.row?.sheetPage !== page.blocks[0]?.row?.sheetPage) pushPage();
     let pageIndex = pages.length;
     const rowCapacity = maxRawW(pageIndex);
     if (cursorX > 0 && cursorX + rawW > rowCapacity + 0.5) {
@@ -2648,30 +3059,50 @@ function drawDim(x1,y1,x2,y2,label,side) {
   const off = anno(side || 45);
   if (isH) {
     const dy = (y1+y2)/2 - off;
+    const tick = anno(28);
     ctx.beginPath();
     ctx.moveTo(x1,y1); ctx.lineTo(x1,dy+off);
     ctx.moveTo(x2,y2); ctx.lineTo(x2,dy+off);
     ctx.moveTo(x1,dy); ctx.lineTo(x2,dy);
+    ctx.moveTo(x1,dy-tick); ctx.lineTo(x1,dy+tick);
+    ctx.moveTo(x2,dy-tick); ctx.lineTo(x2,dy+tick);
     ctx.stroke();
-    const aw=anno(22);
-    ctx.beginPath(); ctx.moveTo(x1,dy); ctx.lineTo(x1+aw,dy-aw/2); ctx.lineTo(x1+aw,dy+aw/2); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(x2,dy); ctx.lineTo(x2-aw,dy-aw/2); ctx.lineTo(x2-aw,dy+aw/2); ctx.closePath(); ctx.fill();
     ctx.textAlign='center'; ctx.textBaseline='bottom';
     ctx.fillText(label,(x1+x2)/2,dy-anno(18));
   } else {
     const dx = (x1+x2)/2 + off;
+    const tick = anno(28);
     ctx.beginPath();
     ctx.moveTo(x1,y1); ctx.lineTo(dx-off,y1);
     ctx.moveTo(x2,y2); ctx.lineTo(dx-off,y2);
     ctx.moveTo(dx,y1); ctx.lineTo(dx,y2);
+    ctx.moveTo(dx-tick,y1); ctx.lineTo(dx+tick,y1);
+    ctx.moveTo(dx-tick,y2); ctx.lineTo(dx+tick,y2);
     ctx.stroke();
-    const aw=anno(22);
-    ctx.beginPath(); ctx.moveTo(dx,y1); ctx.lineTo(dx-aw/2,y1+aw); ctx.lineTo(dx+aw/2,y1+aw); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(dx,y2); ctx.lineTo(dx-aw/2,y2-aw); ctx.lineTo(dx+aw/2,y2-aw); ctx.closePath(); ctx.fill();
     ctx.save(); ctx.translate(dx+anno(70), (y1+y2)/2); ctx.rotate(Math.PI/2);
     ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,0,0);
     ctx.restore();
   }
+  ctx.restore();
+}
+
+function drawLeftOuterDepthDim(x, y1, y2, label) {
+  ctx.save();
+  ctx.strokeStyle='#111'; ctx.fillStyle='#111';
+  ctx.lineWidth=Math.max(0.35, anno(4)); ctx.font=planFont(95);
+  const dimX = x;
+  const textX = x - anno(72);
+  ctx.beginPath();
+  ctx.moveTo(x, y1); ctx.lineTo(x, y2);
+  const tick = anno(28);
+  ctx.moveTo(x - tick, y1); ctx.lineTo(x + tick, y1);
+  ctx.moveTo(x - tick, y2); ctx.lineTo(x + tick, y2);
+  ctx.moveTo(dimX, y1); ctx.lineTo(dimX + anno(34), y1);
+  ctx.moveTo(dimX, y2); ctx.lineTo(dimX + anno(34), y2);
+  ctx.stroke();
+  ctx.save(); ctx.translate(textX, (y1+y2)/2); ctx.rotate(Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,0,0);
+  ctx.restore();
   ctx.restore();
 }
 
@@ -2789,23 +3220,35 @@ function drawStandardPlanModule(x, y, w, h, p, c) {
   drawDim(x + w + 28, y, x + w + 28, y + h, `深 ${p.depth}mm`, 12);
 }
 
-function drawPlanWalls(ox, oy, sW, sD, swt, c) {
-  const left = c.hasLeft ? swt : 0;
-  const right = c.hasRight ? swt : 0;
+function drawPlanWalls(ox, oy, sW, sD, swt, c, extras = {}) {
+  const extraLeft = Math.max(0, Number(extras.left) || 0);
+  const extraRight = Math.max(0, Number(extras.right) || 0);
+  const middleExtras = Array.isArray(extras.middle) ? extras.middle.filter(item => item && item.h > 0 && item.x2 > item.x1) : [];
+  const left = (c.hasLeft || extraLeft > 0) ? swt : 0;
+  const right = (c.hasRight || extraRight > 0) ? swt : 0;
   const back = c.hasBack ? swt : 0;
   if (!left && !right && !back) return;
-  const outerX = ox - left;
+  const leftH = c.hasLeft ? sD + back : Math.min(sD + back, back + extraLeft);
+  const rightH = c.hasRight ? sD + back : Math.min(sD + back, back + extraRight);
+  const leftX = left ? ox - left : ox;
+  const rightX = right ? ox + sW : ox + sW;
+  const backX = back ? Math.min(left ? leftX : ox, ox) : ox;
+  const backRight = back ? Math.max(right ? rightX + right : ox + sW, ox + sW) : ox + sW;
+  const outerX = Math.min(backX, left ? leftX : ox, ox);
   const outerY = oy - back;
-  const outerW = sW + left + right;
-  const outerH = sD + back;
+  const middleH = middleExtras.reduce((max, item) => Math.max(max, back + item.h), 0);
+  const outerW = Math.max(backRight, right ? rightX + right : ox + sW, ox + sW) - outerX;
+  const outerH = Math.max(back, leftH, rightH, middleH);
   const wallPath = new Path2D();
-  wallPath.rect(outerX, outerY, outerW, outerH);
-  wallPath.rect(ox, oy, sW, sD);
+  if (back) wallPath.rect(backX, oy - back, backRight - backX, back);
+  if (left) wallPath.rect(leftX, oy - back, left, leftH);
+  if (right) wallPath.rect(rightX, oy - back, right, rightH);
+  middleExtras.forEach(item => wallPath.rect(item.x1, oy - back, item.x2 - item.x1, back + item.h));
 
   ctx.save();
   ctx.fillStyle = '#fbfbfb';
-  ctx.fill(wallPath, 'evenodd');
-  ctx.clip(wallPath, 'evenodd');
+  ctx.fill(wallPath);
+  ctx.clip(wallPath);
 
   ctx.strokeStyle = '#000000';
   ctx.lineWidth = 0.8;
@@ -2822,39 +3265,58 @@ function drawPlanWalls(ox, oy, sW, sD, swt, c) {
   ctx.lineWidth = 1.6;
   ctx.lineJoin = 'miter';
   ctx.beginPath();
-  if (back) {
-    ctx.moveTo(outerX, outerY);
-    ctx.lineTo(outerX + outerW, outerY);
-    if (!right) ctx.lineTo(outerX + outerW, oy);
-    ctx.moveTo(ox + sW, oy);
-    ctx.lineTo(ox, oy);
-    if (!left) {
-      ctx.moveTo(outerX, oy);
-      ctx.lineTo(outerX, outerY);
+  const drawSegmentedLine = (x1, x2, y, gaps) => {
+    let cursor = x1;
+    gaps
+      .map(gap => ({x1:Math.max(x1, gap.x1), x2:Math.min(x2, gap.x2)}))
+      .filter(gap => gap.x2 > gap.x1)
+      .sort((a, b) => a.x1 - b.x1)
+      .forEach(gap => {
+        if (gap.x1 > cursor) {
+          ctx.moveTo(cursor, y);
+          ctx.lineTo(gap.x1, y);
+        }
+        cursor = Math.max(cursor, gap.x2);
+      });
+    if (cursor < x2) {
+      ctx.moveTo(cursor, y);
+      ctx.lineTo(x2, y);
     }
+  };
+  if (back) {
+    ctx.moveTo(backX, oy - back);
+    ctx.lineTo(backRight, oy - back);
+    if (!left) {
+      ctx.moveTo(ox, oy - back);
+      ctx.lineTo(ox, oy);
+    }
+    if (!right) {
+      ctx.moveTo(ox + sW, oy - back);
+      ctx.lineTo(ox + sW, oy);
+    }
+    drawSegmentedLine(ox, ox + sW, oy, middleExtras);
   }
   if (left) {
-    ctx.moveTo(outerX, outerY);
-    ctx.lineTo(outerX, oy + sD);
-    ctx.lineTo(ox, oy + sD);
-    ctx.moveTo(ox, oy + sD);
-    ctx.lineTo(ox, oy);
-    if (!back) {
-      ctx.moveTo(ox, oy);
-      ctx.lineTo(outerX, oy);
-    }
+    ctx.moveTo(leftX, oy - back);
+    ctx.lineTo(leftX, oy - back + leftH);
+    ctx.lineTo(leftX + left, oy - back + leftH);
+    ctx.moveTo(leftX + left, oy - back + leftH);
+    ctx.lineTo(leftX + left, oy);
   }
   if (right) {
-    ctx.moveTo(outerX + outerW, outerY);
-    ctx.lineTo(outerX + outerW, oy + sD);
-    ctx.lineTo(ox + sW, oy + sD);
-    ctx.moveTo(ox + sW, oy + sD);
-    ctx.lineTo(ox + sW, oy);
-    if (!back) {
-      ctx.moveTo(ox + sW, oy);
-      ctx.lineTo(outerX + outerW, oy);
-    }
+    ctx.moveTo(rightX + right, oy - back);
+    ctx.lineTo(rightX + right, oy - back + rightH);
+    ctx.lineTo(rightX, oy - back + rightH);
+    ctx.moveTo(rightX, oy - back + rightH);
+    ctx.lineTo(rightX, oy);
   }
+  middleExtras.forEach(item => {
+    const wallBottom = oy - back + back + item.h;
+    ctx.moveTo(item.x1, oy);
+    ctx.lineTo(item.x1, wallBottom);
+    ctx.lineTo(item.x2, wallBottom);
+    ctx.lineTo(item.x2, oy);
+  });
   ctx.stroke();
   ctx.restore();
 }
@@ -3040,11 +3502,12 @@ function drawPlanRebateDetails(p, ox, oy, sW, sD, st, scale, boardModel) {
 
 
 function drawProjectStats(x, y, p, c, cols, rows) {
+  const doorCount = Array.from({length: Math.max(1, Number(p.count) || 1)}, (_, i) => i).filter(i => hasDoorAt(p, i)).length;
   const lines = [
     ['总间数', `${p.count} 间`],
     ['排布示意', `${cols} × ${rows}`],
     ['估算总长度', `${Math.round(c.totalRun / 1000)} m`],
-    ['门板数量', `${p.count} 块`],
+    ['门板数量', `${doorCount} 块`],
     ['中隔板数量', `${p.count} 块`],
   ];
   ctx.strokeStyle = '#30343a'; ctx.lineWidth = 1; ctx.strokeRect(x, y, 280, 150);
@@ -3104,6 +3567,21 @@ function drawMultiGroupOverview() {
     ctx.fillText(`${Math.round(c.totalRun/1000*10)/10} m`, x + cardW - 14, y + 112);
     ctx.textAlign = 'left';
   });
+}
+
+function doorWidthSummary(row, c = compute(row)) {
+  const groupsByWidth = new Map();
+  for (let i = 0; i < Math.max(1, Number(row.count) || 1); i++) {
+    if (!hasDoorAt(row, i)) continue;
+    const width = Math.round(Number(c.doorWidths?.[i]) || Number(row.doorW) || 0);
+    if (!width) continue;
+    groupsByWidth.set(width, (groupsByWidth.get(width) || 0) + 1);
+  }
+  const entries = [...groupsByWidth.entries()].sort((a, b) => a[0] - b[0]);
+  return {
+    count: entries.reduce((sum, [, qty]) => sum + qty, 0),
+    text: entries.length ? entries.map(([width, qty]) => `${rebateText(width, row, 'double')}×${row.hDoor || 1750}：${qty}块`).join(' / ') : '无'
+  };
 }
 
 function drawSegmentedPlan(p, c) {
@@ -3166,7 +3644,22 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   ctx.lineTo(ox + sW, oy + sD);
   ctx.stroke();
 
-  drawPlanWalls(ox, oy, sW, sD, swt, c);
+  const middleWallExtras = [];
+  let depthBoundaryX = ox;
+  for (let i = 0; i < Math.max(0, p.count - 1); i++) {
+    depthBoundaryX += (c.boothWidths[i] || c.boothW) * scale;
+    const protrusion = depthPanelProtrusion(p, i + 1) * scale;
+    if (protrusion > 0) {
+      const wallX = depthBoundaryX - swt / 2;
+      middleWallExtras.push({x1:wallX, x2:wallX + swt, h:protrusion});
+    }
+  }
+  const sideWallExtras = {
+    left: depthPanelProtrusion(p, 0) * scale,
+    right: depthPanelProtrusion(p, Math.max(1, Number(p.count) || 1)) * scale,
+    middle: middleWallExtras
+  };
+  drawPlanWalls(ox, oy, sW, sD, swt, c, sideWallExtras);
   const rowSelected = options.groupId === activeGroupId && (
     selectionScope === 'group' ||
     (selectionScope === 'row' && options.rowId === activeRowId)
@@ -3186,7 +3679,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     ctx.setLineDash([]);
     ctx.restore();
   }
-  if (showGroupName) {
+  if (showGroupName && !(drawingForExport && options.tagPreviewOnly)) {
     ctx.save();
     const tagText = String(options.tagText || showGroupName);
     ctx.font = planFont(95);
@@ -3195,7 +3688,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     const totalY = oy - swt - (options.totalDimGap ?? PLAN_ANCHOR.totalDimGap);
     const tagGap = anno(PLAN_ANCHOR.noteTagGap);
     const tagX = ox;
-    const singleBoothTagLift = Math.max(1, Number(p.count) || 1) === 1 ? anno(110) : 0;
+    const singleBoothTagLift = Math.max(1, Number(p.count) || 1) === 1 ? anno(165) : 0;
     const tagY = totalY - tagH - tagGap - singleBoothTagLift;
     if (!drawingForExport && options.groupId && options.rowId) {
       const hitScale = options.hitScale || 1;
@@ -3226,10 +3719,38 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     ctx.restore();
   }
 
+  const drawDepthPanel = (panelIndex, x, y, w, h) => {
+    const selected = isSelectedDepthPanel(options.groupId ?? activeGroupId, options.rowId ?? activeRowId, panelIndex);
+    const protrusion = depthPanelProtrusion(p, panelIndex) * scale;
+    const actualDepth = depthPanelActualDepth(p, panelIndex);
+    const actualH = Math.max(st, h - protrusion);
+    const count = Math.max(1, Number(p.count) || 1);
+    const drawX = panelIndex === count ? x + w - st : x;
+    const drawW = st;
+    ctx.strokeStyle = selected ? '#d64242' : '#222';
+    ctx.lineWidth = selected ? Math.max(1.2, anno(3)) : 0.8;
+    ctx.strokeRect(drawX, y + protrusion, drawW, Math.max(1, actualH));
+    if (protrusion > 0 && actualDepth > 0) {
+      if (panelIndex === 0) {
+        drawLeftOuterDepthDim(drawX - anno(70), y + protrusion, y + protrusion + actualH, `${fmtMm(actualDepth)}mm`);
+      } else {
+        const dimX = drawX + drawW + anno(panelIndex === count ? 70 : 54);
+        drawDim(dimX, y + protrusion, dimX, y + protrusion + actualH, `${fmtMm(actualDepth)}mm`, 12);
+      }
+    }
+    if (selected && !drawingForExport) drawPlanSelectionBox(drawX, y + protrusion, drawW, Math.max(1, actualH), anno(10));
+    if (!drawingForExport && options.groupId && options.rowId && depthPanelSelectable(p, panelIndex)) {
+      const hitScale = options.hitScale || 1;
+      const hitX = options.hitX || 0;
+      const hitY = options.hitY || 0;
+      const hitPad = Math.max(anno(28), 125 * scale);
+      planHitAreas.push({type:'depth-panel', x:hitX + (x - hitPad) * hitScale, y:hitY + y * hitScale, w:(w + hitPad * 2) * hitScale, h:h * hitScale, groupId:options.groupId, rowId:options.rowId, index:panelIndex});
+    }
+  };
+
   let x = ox;
   if (!c.hasLeft) {
-    ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
-    ctx.strokeRect(x, oy, st, Math.max(1, sD - st));
+    drawDepthPanel(0, x, oy, st, Math.max(1, sD - st));
   }
   const doors = [];
   let boothX = ox;
@@ -3282,9 +3803,8 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
       ctx.restore();
     }
     if (i < p.count - 1) {
-      ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
       const panelX = bx + bw - st / 2;
-      ctx.strokeRect(panelX, oy, st, Math.max(1, sD - st));
+      drawDepthPanel(i + 1, panelX, oy, st, Math.max(1, sD - st));
     }
     boothX += bw;
   }
@@ -3299,8 +3819,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     if (ox + sW > doors[doors.length - 1].zoneEnd + 0.5) ctx.strokeRect(doors[doors.length - 1].zoneEnd, oy+sD-st, ox + sW - doors[doors.length - 1].zoneEnd, st);
   }
   if (!c.hasRight) {
-    ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
-    ctx.strokeRect(ox + sW - st, oy, st, Math.max(1, sD - st));
+    drawDepthPanel(p.count, ox + sW - st, oy, st, Math.max(1, sD - st));
   }
   doors.filter(door => door.hasDoor !== false).forEach(door => {
     drawDoorSwing(door, oy+sD, st, p);
@@ -3340,7 +3859,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   });
   boardModel.doors.forEach(door => {
     const sourceDoor = doors[door.index];
-    segments.push({x1: sourceDoor.zoneStart, x2: sourceDoor.zoneEnd, label: p.rebate ? boardDimLabel(door.bigMm, p, 2, door.topIsSmall) : fmtMm(door.bigMm)});
+    segments.push({x1: sourceDoor.start, x2: sourceDoor.end, label: p.rebate ? boardDimLabel(door.bigMm, p, 2, door.topIsSmall) : fmtMm(door.bigMm)});
   });
   segments.sort((a, b) => a.x1 - b.x1);
   drawChainDim(oy + sD + (options.bottomDimOffset || PLAN_ANCHOR.bottomDimOffset), segments);
@@ -3362,7 +3881,7 @@ function drawPlanBlock(block, x, y, fit, pageOffsetX, pageOffsetY) {
     ctx.save();
     ctx.globalAlpha = 0.35;
   }
-  drawPlanRow(g, drawX + m.drawX, drawY + m.drawY, 1, group.name.replace('组', ''), layoutUnitName(group, g), {
+  drawPlanRow(g, drawX + m.drawX, drawY + m.drawY, 1, groupLabelPrefix(group), layoutUnitName(group, g), {
     showTopDims: true,
     showBoothDim: true,
     totalDimGap: PLAN_ANCHOR.totalDimGap,
@@ -3372,7 +3891,8 @@ function drawPlanBlock(block, x, y, fit, pageOffsetX, pageOffsetY) {
     labelStart: block.labelStart || 0,
     groupId: group.id,
     rowId: g.id,
-    tagText: g.note || layoutUnitName(group, g),
+    tagText: g.note || groupDisplayName(group),
+    tagPreviewOnly: !g.note && !String(group.name || '').trim(),
     hitScale: fit,
     hitX: pageOffsetX,
     hitY: pageOffsetY
@@ -3410,7 +3930,7 @@ function drawSheetDragOverlay() {
         ctx.save();
         ctx.translate(x, y);
         ctx.scale(fit, fit);
-        drawPlanRow(block.row, m.drawX, m.drawY, 1, block.group.name.replace('组', ''), layoutUnitName(block.group, block.row), {
+        drawPlanRow(block.row, m.drawX, m.drawY, 1, groupLabelPrefix(block.group), layoutUnitName(block.group, block.row), {
           showTopDims: true,
           showBoothDim: true,
           totalDimGap: PLAN_ANCHOR.totalDimGap,
@@ -3420,7 +3940,8 @@ function drawSheetDragOverlay() {
           labelStart: block.labelStart || 0,
           groupId: block.group.id,
           rowId: block.row.id,
-          tagText: block.row.note || layoutUnitName(block.group, block.row),
+          tagText: block.row.note || groupDisplayName(block.group),
+          tagPreviewOnly: !block.row.note && !String(block.group.name || '').trim(),
           hitScale: 1,
           hitX: 0,
           hitY: 0
@@ -3485,7 +4006,9 @@ function drawPlanSheetsPreview(p) {
     drawSheet('卫生间隔断平面图', p, x, 0, index);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(hitX, hitY, hitW, hitH);
+    const clipTop = index === 0 ? layout.frame.y + 82 : layout.frame.y + 12;
+    const clipBottom = hitY + hitH;
+    ctx.rect(hitX, clipTop, hitW, Math.max(1, clipBottom - clipTop));
     ctx.clip();
     if (!drawingForExport) planHitAreas.push({type:'sheet-page', x:hitX, y:hitY, w:hitW, h:hitH, pageIndex:index});
     drawPlanPageContent(page, layout, x, 0, index);
@@ -3568,9 +4091,11 @@ function drawFront(p) {
       x += st;
     }
     if (i < p.count) {
-      const bw = c.boothW * scale;
-      const doorOff = (c.boothW - p.doorW) / 2 * scale;
-      const dsx = x + doorOff, dsw = p.doorW * scale;
+      const boothMm = c.boothWidths[i] || c.boothW;
+      const doorMm = c.doorWidths[i] || p.doorW;
+      const bw = boothMm * scale;
+      const doorOff = Math.max(0, (boothMm - doorMm) / 2) * scale;
+      const dsx = x + doorOff, dsw = doorMm * scale;
       ctx.strokeStyle='#185FA5'; ctx.lineWidth=1; ctx.strokeRect(dsx, floor-hDp, dsw, hDp);
       ctx.strokeStyle='#6a9bcc'; ctx.lineWidth=0.6; ctx.strokeRect(x, floor-hM, bw, vis);
       ctx.fillStyle='#185FA5'; ctx.font=`14px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -3652,17 +4177,19 @@ function renderBOM(p) {
   }
   if (rows.length > 1) {
     const totalCount = rows.reduce((sum, item) => sum + item.row.count, 0);
-    const totalDoorCount = rows.reduce((sum, item) => sum + normalizeNoDoorBooths(item.row.noDoorBooths, item.row.count).filter(v => !v).length, 0);
+    const doorSummaries = rows.map(item => doorWidthSummary(item.row, compute(item.row)));
+    const totalDoorCount = doorSummaries.reduce((sum, item) => sum + item.count, 0);
+    const doorSummaryText = doorSummaries.map((item, index) => item.count ? `${groupDisplayName(rows[index].group)}${rows[index].row.layoutRow || 1}排：${item.text}` : '').filter(Boolean).join(' / ');
     const totalRun = rows.reduce((sum, item) => sum + compute(item.row).totalRun, 0);
     const active = activeGroup();
     const row = activeRow();
     const items = [
-      {name:'当前组', val:active.name, sub:`共 ${rows.length} 排`},
+      {name:'当前组', val:groupDisplayName(active), sub:`共 ${rows.length} 排`},
       {name:'总间数', val:`${totalCount} 间`, sub:'当前组合计'},
-      {name:'门板', val:`${totalDoorCount} 块`, sub:totalDoorCount === totalCount ? '按每间 1 块估算' : `已扣除 ${totalCount - totalDoorCount} 间无需门板`},
+      {name:'门板', val:`${totalDoorCount} 块`, sub:doorSummaryText || `${totalCount} 间均无需门板`},
       {name:'中隔板（顶板）', val:`${totalCount} 块`, sub:'按每间 1 块估算'},
       {name:'估算总长度', val:`${Math.round(totalRun/1000*10)/10} m`, sub:'当前组合计'},
-      {name:'当前排净间宽', val:`${fmtMm(compute(row).boothW)} mm`, sub:`${active.name} · ${row.count} 间`},
+      {name:'当前排净间宽', val:`${fmtMm(compute(row).boothW)} mm`, sub:`${groupDisplayName(active)} · ${row.count} 间`},
     ];
     renderBomItems(items);
     return;
@@ -3670,8 +4197,7 @@ function renderBOM(p) {
   const c = compute(p);
   const doorIndexes = Array.from({length:p.count}, (_, i) => i).filter(i => hasDoorAt(p, i));
   const doorCount = doorIndexes.length;
-  const uniqueDoorWidths = [...new Set(doorIndexes.map(i => fmtMm(c.doorWidths[i])))];
-  const doorWidthText = uniqueDoorWidths.length === 0 ? '无' : uniqueDoorWidths.length === 1 ? rebateText(c.doorWidths[doorIndexes[0]], p, 'double') : uniqueDoorWidths.map(w => rebateText(Number(w), p, 'double')).join(' / ');
+  const doorSummary = doorWidthSummary(p, c);
   const edgeWidths = [c.sidePairs[0]?.[0] || 0, c.sidePairs[p.count - 1]?.[1] || 0];
   const uprightWidths = c.sidePairs.slice(0, -1).map((pair, i) => pair[1] + c.sidePairs[i + 1][0]);
   const edgeWidthText = uniqueRebateTexts(edgeWidths, p, 'single');
@@ -3680,6 +4206,8 @@ function renderBOM(p) {
   const hasSmallEdge = c.insufficientEdges.some(Boolean);
   const hasSmallMiddle = c.insufficientMiddles.some(Boolean);
   const guardText = [hasSmallDoor ? `门小于${c.minDoorW}` : '', hasSmallEdge ? `边板小于${c.minEdgePanel}` : '', hasSmallMiddle ? `立板小于${c.minMiddlePanel}` : ''].filter(Boolean).join(' · ');
+  const specialDepths = specialDepthPanelItems(p);
+  const specialDepthText = specialDepths.map(item => `${item.name} 深${fmtMm(item.depth)}mm${item.protrusion ? `（墙凸${fmtMm(item.protrusion)}mm）` : ''}`).join(' / ');
   const swingCounts = normalizeBoothSwings(p.boothSwings, p.count, p.swing).filter((_, i) => hasDoorAt(p, i)).reduce((acc, key) => {
     acc[key] = (acc[key] || 0) + 1;
     return acc;
@@ -3689,9 +4217,10 @@ function renderBOM(p) {
     {name:'图纸模式', val:c.projectMode ? '项目总览' : c.segmentedMode ? '分段详图' : '详细施工图', sub:c.projectMode ? '按标准单间统计' : c.segmentedMode ? `每段最多 ${c.segmentSize} 间` : '逐间绘制'},
     {name:'边板', val:'2 块', sub:p.rebate ? `${p.tPanel}×宽${edgeWidthText}×高${p.hUpright}mm · 单启口` : `${p.tPanel}×宽${edgeWidths.map(fmtMm).join('/')}×高${p.hUpright}mm`},
     {name:'立板', val:`${Math.max(0, p.count - 1)} 块`, sub:p.rebate ? `${p.tPanel}×宽${uprightWidthText}×高${p.hUpright}mm · 双启口` : `${p.tPanel}×宽${uprightWidths.length ? uprightWidths.map(fmtMm).join('/') : '无'}×高${p.hUpright}mm`},
-    {name:'门板', val:`${doorCount} 块`, sub:doorCount ? `${p.tPanel}×宽${doorWidthText}×高${p.hDoor||1750}mm · ${swingSummary}${p.rebate ? ' · 双启口' : ''}${guardText ? ` · ${guardText}需调整` : ''}${p.doorGap ? ` · 门缝${p.doorGap}mm` : ''}${doorCount < p.count ? ` · ${p.count - doorCount}间无需门板` : ''}` : `${p.count} 间均无需门板`},
+    {name:'门板', val:`${doorCount} 块`, sub:doorCount ? `${p.tPanel}×${doorSummary.text} · ${swingSummary}${p.rebate ? ' · 双启口' : ''}${guardText ? ` · ${guardText}需调整` : ''}${p.doorGap ? ` · 门缝${p.doorGap}mm` : ''}${doorCount < p.count ? ` · ${p.count - doorCount}间无需门板` : ''}` : `${p.count} 间均无需门板`},
     {name:'中隔板（顶板）', val:`${p.count} 块`, sub:`${p.tPanel}×深${c.boothD}×高${p.hMid}mm`},
     {name:'见光板', val:`按未靠墙侧`, sub:`${p.tPanel}×深${c.boothD}×高${p.hVis}mm`},
+    ...(specialDepths.length ? [{name:'特殊深度板', val:`${specialDepths.length} 块`, sub:`${p.tPanel}×${specialDepthText}`} ] : []),
     {name:'净间宽', val:`${fmtMm(c.boothW)} mm`, sub:`共 ${p.count} 间`},
     {name:'估算总长度', val:`${Math.round((c.totalRun || p.total)/1000*10)/10} m`, sub:`板厚 ${p.tPanel}mm`},
   ];
@@ -3716,6 +4245,21 @@ function renderBomItems(items) {
       <div class="val">${i.val}</div>
       <div class="sub">${i.sub}</div>
     </div>`).join('');
+  updateBomToggleText();
+}
+
+function toggleBomArea() {
+  const area = document.getElementById('bom-area');
+  if (!area) return;
+  area.classList.toggle('expanded');
+  updateBomToggleText();
+}
+
+function updateBomToggleText() {
+  const area = document.getElementById('bom-area');
+  const btn = document.getElementById('bom-toggle');
+  if (!area || !btn) return;
+  btn.textContent = area.classList.contains('expanded') ? '收起' : '展开更多';
 }
 
 function exportImg(name) {
@@ -3875,7 +4419,7 @@ function canvasPlanPoint(e) {
 
 function hitPlanArea(x, y) {
   const hits = [...planHitAreas].reverse().filter(area => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
-  return hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'block') || null;
+  return hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'block') || null;
 }
 
 function hitPlanBlock(x, y) {
@@ -4010,12 +4554,24 @@ cv.addEventListener('click', e => {
   if (currentTab !== 'plan' || isDragging) return;
   const pt = canvasPlanPoint(e);
   const hit = hitPlanArea(pt.x, pt.y);
-  if (!hit) return;
+  if (!hit) {
+    selectionScope = 'none';
+    clearSelectedBooth();
+    clearSelectedDepthPanel();
+    syncPlanNoteInputFromSelection();
+    renderSwingButtons();
+    renderBoothSwingPanel();
+    renderDepthPanelSpecialPanel();
+    drawView(lastParams || getParams(), currentTab);
+    return;
+  }
   if (hit.type === 'sheet-note') {
     saveActiveGroup();
     selectionScope = 'sheet-note';
     clearSelectedBooth();
+    clearSelectedDepthPanel();
     syncPlanNoteInputFromSelection();
+    renderDepthPanelSpecialPanel();
     drawView(lastParams || getParams(), currentTab);
     return;
   }
@@ -4028,12 +4584,18 @@ cv.addEventListener('click', e => {
   if (hit.type === 'booth') {
     selectionScope = 'booth';
     setSelectedBooth(group.id, row.id, hit.index);
+  } else if (hit.type === 'depth-panel') {
+    selectionScope = 'depth-panel';
+    clearSelectedBooth();
+    setSelectedDepthPanel(group.id, row.id, hit.index);
   } else if (hit.type === 'tag') {
     selectionScope = 'tag';
     clearSelectedBooth();
+    clearSelectedDepthPanel();
   } else {
     selectionScope = 'row';
     clearSelectedBooth();
+    clearSelectedDepthPanel();
   }
   openGroupIds.add(group.id);
   loadGroupToForm(group, row);
@@ -4041,6 +4603,7 @@ cv.addEventListener('click', e => {
   revealActiveGroupInList();
   renderSwingButtons();
   renderBoothSwingPanel();
+  renderDepthPanelSpecialPanel();
   syncPlanNoteInputFromSelection();
   lastParams = getParams();
   drawView(lastParams, currentTab);
@@ -4206,6 +4769,8 @@ document.getElementById('plan-note-input')?.addEventListener('input', e => {
   if (lastParams) drawView(lastParams, currentTab);
 });
 
-setTimeout(()=>{ applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindExportButtons(); generate(); }, 100);
+setTimeout(()=>{ applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindExportButtons(); generate(); }, 100);
 </script>
+
+
 
