@@ -44,55 +44,6 @@ h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,
 .theme-btn{width:2rem;height:2rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;line-height:1;transition:all .15s}
 .theme-btn:hover{border-color:#378ADD;color:#185FA5}
 body.theme-dark .theme-btn:hover{color:#79c0ff}
-.group-list{display:flex;flex-direction:column;gap:0.375rem;height:14rem;overflow-y:auto;overscroll-behavior:contain;padding-right:0.125rem;scrollbar-width:thin}
-body.view-plan .group-list{height:24rem}
-.group-list.compact{height:auto;max-height:5rem;overflow:visible;padding-right:0}
-body.view-plan .group-list.compact{height:auto;max-height:5rem}
-.group-block{display:grid;gap:0.375rem}
-.row-collapse{display:grid;grid-template-rows:0fr;transition:grid-template-rows .22s ease}
-.row-collapse.open{grid-template-rows:1fr}
-.row-collapse-inner{overflow:hidden;display:grid;gap:0.375rem}
-.group-item{width:100%;padding:0.5rem 0.625rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;text-align:left;display:grid;grid-template-columns:1fr auto;gap:0.375rem;align-items:center}
-.row-anim-wrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .2s ease,opacity .16s ease}
-.row-anim-wrap.entering,.row-anim-wrap.leaving{grid-template-rows:0fr;opacity:0}
-.row-anim-inner{overflow:hidden}
-.group-item.active{border-color:#378ADD;background:#E6F1FB;color:#185FA5}
-body.theme-dark .group-item.active{border-color:#58a6ff;background:#102a43;color:#b9dcff}
-.group-item.row-item.active{background:var(--color-background-primary)}
-body.theme-dark .group-item.row-item.active{background:var(--color-background-primary)}
-.group-item.group-color{border-color:var(--color-border-secondary);color:var(--color-text-tertiary);box-shadow:inset 4px 0 0 var(--group-color)}
-.group-item.group-color.open{border-color:var(--group-color);color:var(--group-color)}
-.group-item.group-color.active{background:color-mix(in srgb, var(--group-color) 14%, var(--color-background-primary));border-color:var(--group-color);color:var(--group-color)}
-body.theme-dark .group-item.group-color.active{background:color-mix(in srgb, var(--group-color) 18%, var(--color-background-primary));border-color:var(--group-color);color:var(--group-color)}
-.group-item.group-color.open.active{background:color-mix(in srgb, var(--group-color) 14%, var(--color-background-primary));border-color:var(--group-color);color:var(--group-color)}
-body.theme-dark .group-item.group-color.open.active{background:color-mix(in srgb, var(--group-color) 18%, var(--color-background-primary));border-color:var(--group-color);color:var(--group-color)}
-.group-item.group-color{padding-left:0.75rem}
-.group-item.row-item{padding-left:0.625rem}
-.group-item.row-item.active{border-color:var(--group-color);color:var(--group-color)}
-body.theme-dark .group-item.row-item.active{border-color:var(--group-color);color:var(--group-color)}
-.group-name{font-size:0.8125rem;font-weight:600;color:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.group-name-input{min-width:0;width:100%;height:1.625rem;border:0.5px solid transparent;border-radius:var(--border-radius-sm);background:transparent;color:inherit;font-size:0.8125rem;font-weight:600;padding:0.125rem 0.25rem}
-.group-name-input:focus{outline:none;border-color:currentColor;background:var(--color-background-primary);box-shadow:0 0 0 2px rgba(55,138,221,.12)}
-.group-meta{font-size:0.6875rem;color:var(--color-text-tertiary);grid-column:1 / -1}
-.group-actions-inline{display:flex;gap:0.375rem;align-items:center;justify-content:flex-end}
-.group-toggle{width:2rem;height:1.125rem;border:0.5px solid var(--color-border-secondary);border-radius:999px;background:var(--color-border-secondary);cursor:pointer;position:relative;flex:0 0 auto;transition:background .18s,border-color .18s}
-.group-toggle::after{content:"";position:absolute;width:0.8125rem;height:0.8125rem;left:0.125rem;top:50%;border-radius:50%;background:#fff;transform:translateY(-50%);box-shadow:0 1px 2px rgba(31,35,40,.18);transition:left .18s}
-.group-toggle.open{background:var(--group-color);border-color:var(--group-color)}
-.group-toggle.open::after{left:1rem}
-.icon-action{width:1.5rem;height:1.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-.icon-action.add{color:#2DA44E}
-.icon-action.del{color:#CF222E}
-.icon-action.add.row-add{font-size:0;position:relative}
-.icon-action.add.row-add::before,.icon-action.add.row-add::after{content:"";position:absolute;left:50%;top:50%;width:0.875rem;height:0.125rem;border-radius:999px;background:currentColor;transform:translate(-50%,-50%)}
-.icon-action.add.row-add::after{transform:translate(-50%,-50%) rotate(90deg)}
-.icon-action.del.row-delete{font-size:0;position:relative}
-.icon-action.del.row-delete::before{content:"";width:0.875rem;height:0.125rem;border-radius:999px;background:currentColor;display:block}
-.icon-action:hover{border-color:currentColor;background:var(--color-background-primary)}
-.new-group-btn{width:100%;height:2.25rem;margin-top:0.625rem;border:0.5px solid #185FA5;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer}
-.new-group-btn:hover{background:#0C447C;border-color:#0C447C}
-.group-advanced-toggle{width:100%;height:2rem;margin-top:0.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;font-weight:600;cursor:pointer}
-.group-advanced-toggle:hover{border-color:#378ADD;color:#185FA5;background:#fff}
-body.theme-dark .group-advanced-toggle:hover{border-color:#58a6ff;color:#b9dcff;background:#141a22}
 .quick-layout{display:grid;gap:0.5rem}
 .quick-title-row{display:flex;align-items:center;justify-content:space-between;gap:0.625rem;margin-bottom:0.625rem}
 .quick-title-row .sec-title{margin-bottom:0}
@@ -198,18 +149,29 @@ body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;backg
 body.theme-dark .canvas-area{background:#202734}
 canvas{display:block;width:100%;height:100%}
 .canvas-text-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;resize:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;overflow:hidden}
-.bom-area{border-top:0.5px solid var(--color-border-tertiary);padding:0.625rem 0.875rem;background:var(--color-background-secondary);max-height:6.25rem;overflow:hidden;transition:max-height .2s ease}
-.bom-area.expanded{max-height:18rem;overflow:auto}
+.bom-area{position:absolute;top:3rem;right:0.875rem;bottom:1.5rem;z-index:9;min-width:20rem;width:max-content;max-width:min(42rem,calc(100% - 1.75rem));border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.875rem;background:rgba(255,255,255,.92);box-shadow:0 14px 34px rgba(31,35,40,.14);overflow:auto}
+body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px rgba(0,0,0,.24)}
 .bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.375rem}
-.bom-title{font-size:0.6875rem;font-weight:500;color:var(--color-text-secondary)}
-.bom-toggle{border:none;background:transparent;color:#185FA5;font-size:0.6875rem;font-weight:600;cursor:pointer;padding:0.125rem 0.25rem;white-space:nowrap}
-.bom-toggle::after{content:"";display:inline-block;width:0.38rem;height:0.38rem;margin-left:0.375rem;border:0.1rem solid currentColor;border-left:0;border-top:0;transform:translateY(-0.125rem) rotate(45deg)}
-.bom-area.expanded .bom-toggle::after{transform:translateY(0.125rem) rotate(225deg)}
-.bom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));gap:0.375rem}
-.bom-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.4375rem 0.625rem}
-.bom-card .name{font-size:0.625rem;color:var(--color-text-tertiary)}
-.bom-card .val{font-size:0.8125rem;font-weight:500;color:var(--color-text-primary)}
-.bom-card .sub{font-size:0.625rem;color:var(--color-text-tertiary)}
+.bom-title{font-size:0.9375rem;font-weight:700;color:#111827}
+body.theme-dark .bom-title{color:#f6f8fa}
+.bom-grid{display:grid;grid-template-columns:1fr;gap:0.625rem}
+.bom-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.75rem;min-width:0}
+.bom-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:0.625rem;margin-bottom:0.5rem}
+.bom-card .name{font-size:0.9375rem;font-weight:700;color:#111827;line-height:1.35;white-space:nowrap}
+body.theme-dark .bom-card .name{color:#f6f8fa}
+.bom-card .val{font-size:0.8125rem;font-weight:700;color:#0C447C;line-height:1.35;text-align:right;word-break:keep-all}
+body.theme-dark .bom-card .val{color:#58a6ff}
+.bom-lines{display:grid;grid-template-columns:1fr;row-gap:0.375rem;align-items:start}
+.bom-line{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8125rem;line-height:1.55;color:#24292f;word-break:normal;white-space:nowrap;font-variant-numeric:tabular-nums}
+body.theme-dark .bom-line{color:#e6edf3}
+.bom-line::before{content:"";width:0.3125rem;height:0.3125rem;margin-top:0.5rem;border-radius:999px;background:#57606a;opacity:.9;flex:0 0 auto}
+body.theme-dark .bom-line::before{background:#d0d7de;opacity:.92}
+.bom-size-line{display:inline-grid;grid-template-columns:3.45em auto;column-gap:0.3em;align-items:baseline}
+.bom-size-left{white-space:nowrap;text-align:left}
+.bom-size-right{white-space:nowrap;text-align:left}
+.bom-chip{display:inline-block;margin:0 0.1875rem 0.1875rem 0;padding:0.125rem 0.4375rem;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:0.75rem;font-weight:700;line-height:1.45;white-space:nowrap}
+body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
+@media (max-width:1200px){.bom-area{min-width:18rem;max-width:calc(100% - 1.75rem)}.bom-line{font-size:0.75rem}}
 .export-row{display:flex;gap:0.5rem;padding:0.625rem 0.875rem;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
 .ex-btn{padding:0.3125rem 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.25rem}
 .ex-btn:hover{background:var(--color-background-primary);border-color:#378ADD;color:#185FA5}
@@ -254,24 +216,11 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     </div>
 
     <div class="sec">
-      <div class="sec-title">项目分组</div>
-      <div class="group-list" id="group-list"></div>
-      <button class="group-advanced-toggle" id="group-advanced-toggle" type="button" onclick="toggleAdvancedGroups()">高级分组</button>
-      <button class="new-group-btn" id="new-group-btn" type="button" onclick="addGroup()" style="display:none">新建组</button>
-    </div>
-
-    <div class="sec">
       <div class="quick-title-row">
         <div class="sec-title">快速布局</div>
         <button class="switch-toggle" id="quick-ten-toggle" type="button" onclick="toggleQuickTenMode()"><span>10间+</span><span class="switch-track" aria-hidden="true"></span><span class="switch-state">关闭</span></button>
       </div>
       <div class="quick-layout" id="quick-layout"></div>
-      <div class="quick-actions" style="margin-top:0.625rem">
-        <div class="quick-page-actions"><button class="quick-btn" id="quick-prev-page" type="button" onclick="goQuickLayoutPage(-1)">上一页</button><button class="quick-btn" type="button" onclick="addQuickLayoutPage()">下一页</button></div>
-        <div class="quick-bottom-actions">
-          <button class="quick-btn primary" type="button" onclick="applyQuickLayout()">生成布局</button>
-        </div>
-      </div>
     </div>
 
     <div class="sec">
@@ -361,14 +310,14 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     <div class="canvas-area" id="carea">
       <canvas id="cv"></canvas>
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" aria-label="图纸文字输入"></textarea>
+      <div class="bom-area" id="bom-area">
+        <div class="bom-head"><div class="bom-title">材料清单</div></div>
+        <div class="bom-grid" id="bom"></div>
+      </div>
       <div class="cv-controls">
         <span class="zoom-info" id="zoom-info">100%</span>
         <button class="cv-btn" onclick="resetZoom()">重置视图</button>
       </div>
-    </div>
-    <div class="bom-area" id="bom-area">
-      <div class="bom-head"><div class="bom-title">材料清单</div><button class="bom-toggle" id="bom-toggle" type="button" onclick="toggleBomArea()">展开更多</button></div>
-      <div class="bom-grid" id="bom"></div>
     </div>
     <div class="export-row">
       <button class="ex-btn" id="btn-export-current" type="button"><i class="ti ti-download" aria-hidden="true" style="font-size:14px"></i> 导出当前视图</button>
@@ -426,9 +375,10 @@ let widthCards = ['', '', ''];
 let undoStack = [];
 let redoStack = [];
 let pendingSelectionDraw = 0;
-let advancedGroupsVisible = false;
 let urinalSpec = {count:0, width:400, height:900, thick:12, shape:'矩形', hole:'无开孔', note:''};
 let quickNavKeep = null;
+let lastQuickCellRef = null;
+let autoOpenTotalOnQuickFocus = false;
 let noteInputValue = '';
 let sheetHeaderText = '';
 const GROUP_NAME_PLACEHOLDER = '备注标签';
@@ -1449,9 +1399,8 @@ function renderQuickLayout(focusRef = null) {
   if (!box) return;
   const prevBtn = document.getElementById('quick-prev-page');
   if (prevBtn) prevBtn.disabled = activeQuickPage <= 0;
-  box.innerHTML = `<div class="quick-row-head"><span>第 ${activeQuickPage + 1} 页</span><span>共 ${quickLayoutPages.length} 页</span></div>` + quickLayoutRows.map((row, rowIndex) => `
+  box.innerHTML = quickLayoutRows.map((row, rowIndex) => `
     <div class="quick-row">
-      <div class="quick-row-head"><span>第 ${rowIndex + 1} 排</span><span>${row.filter(v => Number(v) > 0).length} 列</span></div>
       <div class="quick-cells">
         ${row.map((value, colIndex) => `<input class="quick-cell ${isQuickCellActive(rowIndex, colIndex) ? 'active' : ''}" inputmode="numeric" maxlength="${quickTenMode ? 2 : 1}" value="${value}" data-quick-row="${rowIndex}" data-quick-col="${colIndex}" onfocus="selectQuickCell(this)" oninput="handleQuickInput(this)" onkeydown="handleQuickKey(event)">`).join('')}
       </div>
@@ -1493,6 +1442,7 @@ function isQuickCellActive(rowIndex, colIndex) {
 function selectQuickCell(input) {
   const rowIndex = Number(input.dataset.quickRow);
   const colIndex = Number(input.dataset.quickCol);
+  lastQuickCellRef = {page:activeQuickPage, row:rowIndex, col:colIndex};
   const group = activeGroup();
   const rows = ensureRows(group);
   normalizeLayoutGrid(group);
@@ -1509,6 +1459,90 @@ function selectQuickCell(input) {
   renderGroups(false);
   renderQuickLayout({row: rowIndex, col: colIndex});
   drawView(getParams(), currentTab);
+  if (autoOpenTotalOnQuickFocus && Number(input.value) > 0) {
+    autoOpenTotalOnQuickFocus = false;
+    focusTotalInputForQuickCell();
+  }
+}
+
+function focusTotalInputForQuickCell() {
+  const totalInput = document.getElementById('p-total');
+  if (!totalInput) return;
+  const row = activeRow();
+  if (row) lastQuickCellRef = {page:Number(row.sheetPage) || 0, row:(Number(row.layoutRow) || 1) - 1, col:(Number(row.layoutCol) || 1) - 1};
+  window.setTimeout(() => {
+    totalInput.focus({preventScroll:true});
+    totalInput.select();
+  }, 0);
+}
+
+function activeQuickCellRef() {
+  if (lastQuickCellRef) return {...lastQuickCellRef};
+  const row = activeRow();
+  if (!row) return null;
+  return {
+    page: Number(row.sheetPage) || 0,
+    row: (Number(row.layoutRow) || 1) - 1,
+    col: (Number(row.layoutCol) || 1) - 1
+  };
+}
+
+function focusNextQuickInputCellFromRef(currentRef = activeQuickCellRef()) {
+  if (!currentRef) return false;
+  normalizeQuickRows();
+  syncQuickPageRows();
+  const pageRows = quickLayoutPages[currentRef.page] || quickLayoutRows;
+  const targetRow = pageRows?.[currentRef.row];
+  if (!targetRow) return false;
+  const nextCol = Math.min(currentRef.col + 1, targetRow.length - 1);
+  const next = {page:currentRef.page, row:currentRef.row, col:nextCol};
+  if (activeQuickPage !== next.page) {
+    activeQuickPage = next.page;
+    quickLayoutRows = quickLayoutPages[activeQuickPage];
+  }
+  lastQuickCellRef = {...next};
+  renderQuickLayout({row:next.row, col:next.col});
+  autoOpenTotalOnQuickFocus = Number(targetRow[next.col]) > 0;
+  focusQuickCell(next.row, next.col);
+  return true;
+}
+
+function selectNextQuickCellAndFocusField(currentRef = activeQuickCellRef(), fieldId = 'p-total') {
+  if (!currentRef) return false;
+  normalizeQuickRows();
+  syncQuickPageRows();
+  const pageRows = quickLayoutPages[currentRef.page] || quickLayoutRows;
+  const targetRow = pageRows?.[currentRef.row];
+  if (!targetRow) return false;
+  const nextCol = Math.min(currentRef.col + 1, targetRow.length - 1);
+  const next = {page:currentRef.page, row:currentRef.row, col:nextCol};
+  if (activeQuickPage !== next.page) {
+    activeQuickPage = next.page;
+    quickLayoutRows = quickLayoutPages[activeQuickPage];
+  }
+  lastQuickCellRef = {...next};
+  if (!(Number(targetRow[next.col]) > 0)) {
+    renderQuickLayout({row:next.row, col:next.col});
+    focusQuickCell(next.row, next.col);
+    return true;
+  }
+  const group = activeGroup();
+  const target = buildRowsFromQuickLayout(group, {page:next.page, row:next.row + 1, col:next.col + 1});
+  if (!target) return false;
+  activeRowId = target.id;
+  selectionScope = 'row';
+  clearSelectedBooth();
+  loadGroupToForm(group, target);
+  renderGroups(false);
+  renderQuickLayout({row:next.row, col:next.col});
+  drawView(getParams(), currentTab);
+  window.setTimeout(() => {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+    el.focus({preventScroll:true});
+    if (typeof el.select === 'function') el.select();
+  }, 0);
+  return true;
 }
 
 function handleQuickInput(input) {
@@ -1520,7 +1554,8 @@ function handleQuickInput(input) {
   quickLayoutRows[row][col] = value;
   syncQuickPageRows();
   if (quickTenMode && value.length === 1) return;
-  syncQuickCellToLayout(row, col, value);
+  const syncedToLayout = syncQuickCellToLayout(row, col, value);
+  if (syncedToLayout) return;
   const isLast = col === quickLayoutRows[row].length - 1;
   if (value && isLast) quickLayoutRows[row].push('');
   const shouldAutoAdvance = value && (!quickTenMode || value.length >= 2);
@@ -1530,7 +1565,8 @@ function handleQuickInput(input) {
 
 function syncQuickCellToLayout(rowIndex, colIndex, value) {
   const count = parseInt(value, 10);
-  if (!Number.isFinite(count) || count <= 0) return;
+  if (!Number.isFinite(count) || count <= 0) return false;
+  lastQuickCellRef = {page:activeQuickPage, row:rowIndex, col:colIndex};
   document.getElementById('p-count').value = count;
   document.getElementById('p-total').value = count * 1000;
   const group = activeGroup();
@@ -1546,6 +1582,8 @@ function syncQuickCellToLayout(rowIndex, colIndex, value) {
   updateLayoutTargetLabel();
   renderGroups(false);
   refreshDrawing(false, false, false);
+  if (target) focusTotalInputForQuickCell();
+  return Boolean(target);
 }
 
 function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
@@ -1621,11 +1659,6 @@ function handleQuickKey(e) {
   if (e.key === 'Enter') {
     e.preventDefault();
     applyQuickLayout();
-    return;
-  }
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    addQuickLayoutPage();
     return;
   }
 }
@@ -1727,49 +1760,7 @@ function applyQuickLayout() {
   renderBOM(p);
 }
 
-function renderGroups(animateCollapse = false) {
-  const list = document.getElementById('group-list');
-  if (!list) return;
-  const sidebar = document.querySelector('.sidebar');
-  const scrollTop = sidebar ? sidebar.scrollTop : 0;
-  const listScrollTop = list.scrollTop;
-  const visibleGroups = advancedGroupsVisible ? groups : groups.filter(g => g.id === 1 || g.id === activeGroupId);
-  list.classList.toggle('compact', !advancedGroupsVisible);
-  list.innerHTML = visibleGroups.map((g) => {
-    const groupIndex = groups.indexOf(g);
-    const rows = ensureRows(g);
-    const totalCount = rows.reduce((sum, r) => sum + (r.enabled === true ? r.count : 0), 0);
-    const color = groupColor(groupIndex);
-    return `
-      <div class="group-block" data-group-block="${g.id}">
-        <div class="group-item group-color ${g.id === activeGroupId ? 'active' : ''}" data-group-card="${g.id}" style="--group-color:${color}" role="button" tabindex="0" onclick="selectGroup(${g.id})">
-          <input class="group-name-input" value="${escapeAttr(g.name || '')}" placeholder="${GROUP_NAME_PLACEHOLDER}" onclick="event.stopPropagation()" onfocus="selectGroup(${g.id})" oninput="updateGroupName(${g.id}, this.value)" onkeydown="handleGroupNameKey(event)">
-          <span class="group-actions-inline"><span data-group-count="${g.id}">${totalCount} 间</span></span>
-          <span class="group-meta" data-group-meta="${g.id}">${layoutGridSummary(rows)}</span>
-        </div>
-      </div>`;
-  }).join('');
-  rowAnimation = null;
-  updateAdvancedGroupControls();
-  if (sidebar) sidebar.scrollTop = scrollTop;
-  list.scrollTop = listScrollTop;
-  updateGroupListState();
-}
-
-function updateGroupName(id, value) {
-  const group = groups.find(g => g.id === id);
-  if (!group) return;
-  group.name = String(value || '').trim();
-  if (id === activeGroupId) updateLayoutTargetLabel();
-  drawView(lastParams || getParams(), currentTab);
-  renderBOM(lastParams || getParams());
-}
-
-function handleGroupNameKey(e) {
-  if (e.key !== 'Enter') return;
-  e.preventDefault();
-  e.currentTarget.blur();
-}
+function renderGroups() {}
 
 function toggleUrinalPanel(force = null) {
   const panel = document.getElementById('urinal-panel');
@@ -1803,37 +1794,11 @@ function saveUrinalSpec() {
   renderBOM(lastParams || getParams());
 }
 
-function updateAdvancedGroupControls() {
-  const toggle = document.getElementById('group-advanced-toggle');
-  const addBtn = document.getElementById('new-group-btn');
-  if (toggle) toggle.textContent = advancedGroupsVisible ? '收起高级分组' : '高级分组';
-  if (addBtn) addBtn.style.display = advancedGroupsVisible ? '' : 'none';
-}
-
-function toggleAdvancedGroups() {
-  advancedGroupsVisible = !advancedGroupsVisible;
-  renderGroups(false);
-}
-
 function updateGroupListState() {
-  document.querySelectorAll('[data-group-card]').forEach(el => {
-    const groupId = Number(el.dataset.groupCard);
-    el.classList.toggle('active', groupId === activeGroupId);
-  });
-  groups.forEach(g => {
-    const rows = ensureRows(g);
-    const countEl = document.querySelector(`[data-group-count="${g.id}"]`);
-    if (countEl) countEl.textContent = `${rows.reduce((sum, r) => sum + (r.enabled === true ? r.count : 0), 0)} 间`;
-    const metaEl = document.querySelector(`[data-group-meta="${g.id}"]`);
-    if (metaEl) metaEl.textContent = layoutGridSummary(rows);
-  });
+  renderBOM(lastParams || getParams());
 }
 
-function setGroupCardActiveNow(id) {
-  document.querySelectorAll('[data-group-card]').forEach(el => {
-    el.classList.toggle('active', Number(el.dataset.groupCard) === id);
-  });
-}
+function setGroupCardActiveNow() {}
 
 function scheduleSelectionDrawing(refit = false) {
   const token = ++pendingSelectionDraw;
@@ -1906,7 +1871,6 @@ function selectRow(groupId, rowId) {
 function addGroup() {
   pushHistory();
   saveActiveGroup();
-  advancedGroupsVisible = true;
   const base = {...activeGroup()};
   delete base.rows;
   const id = Math.max(...groups.map(g => g.id)) + 1;
@@ -3347,13 +3311,15 @@ function drawStandardPlanModule(x, y, w, h, p, c) {
 function drawPlanWalls(ox, oy, sW, sD, swt, c, extras = {}) {
   const extraLeft = Math.max(0, Number(extras.left) || 0);
   const extraRight = Math.max(0, Number(extras.right) || 0);
+  const frontExtend = Math.max(0, Number(extras.frontExtend) || 0);
   const middleExtras = Array.isArray(extras.middle) ? extras.middle.filter(item => item && item.h > 0 && item.x2 > item.x1) : [];
   const left = (c.hasLeft || extraLeft > 0) ? swt : 0;
   const right = (c.hasRight || extraRight > 0) ? swt : 0;
   const back = c.hasBack ? swt : 0;
   if (!left && !right && !back) return;
-  const leftH = c.hasLeft ? sD + back : Math.min(sD + back, back + extraLeft);
-  const rightH = c.hasRight ? sD + back : Math.min(sD + back, back + extraRight);
+  const fullSideH = sD + frontExtend + back;
+  const leftH = c.hasLeft ? fullSideH : Math.min(fullSideH, back + extraLeft);
+  const rightH = c.hasRight ? fullSideH : Math.min(fullSideH, back + extraRight);
   const leftX = left ? ox - left : ox;
   const rightX = right ? ox + sW : ox + sW;
   const backX = back ? Math.min(left ? leftX : ox, ox) : ox;
@@ -3704,7 +3670,7 @@ function doorWidthSummary(row, c = compute(row)) {
   const entries = [...groupsByWidth.entries()].sort((a, b) => a[0] - b[0]);
   return {
     count: entries.reduce((sum, [, qty]) => sum + qty, 0),
-    text: entries.length ? entries.map(([width, qty]) => `${rebateText(width, row, 'double')}×${row.hDoor || 1750}：${qty}块`).join(' / ') : '无'
+    text: entries.length ? entries.map(([width, qty]) => `${rebateText(width, row, 'double')}：${qty}块`).join(' / ') : '无'
   };
 }
 
@@ -3764,6 +3730,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   const sideWallExtras = {
     left: panelGeoms[0]?.wallH || 0,
     right: panelGeoms[Math.max(1, Number(p.count) || 1)]?.wallH || 0,
+    frontExtend: st,
     middle: panelGeoms.filter(item => !item.isEdge && item.wallH > 0).map(item => ({x1:item.wallX, x2:item.wallX + item.wallW, h:item.wallH}))
   };
   drawPlanWalls(ox, oy, sW, sD, swt, c, sideWallExtras);
@@ -4291,55 +4258,94 @@ function renderBOM(p) {
     return;
   }
   if (rows.length > 1) {
-    const totalCount = rows.reduce((sum, item) => sum + item.row.count, 0);
-    const doorSummaries = rows.map(item => doorWidthSummary(item.row, compute(item.row)));
-    const totalDoorCount = doorSummaries.reduce((sum, item) => sum + item.count, 0);
-    const doorSummaryText = doorSummaries.map((item, index) => item.count ? `${groupDisplayName(rows[index].group)}${rows[index].row.layoutRow || 1}排：${item.text}` : '').filter(Boolean).join(' / ');
-    const totalRun = rows.reduce((sum, item) => sum + compute(item.row).totalRun, 0);
-    const active = activeGroup();
-    const row = activeRow();
-    const items = [
-      {name:'当前组', val:groupDisplayName(active), sub:`共 ${rows.length} 排`},
-      {name:'总间数', val:`${totalCount} 间`, sub:'当前组合计'},
-      {name:'门板', val:`${totalDoorCount} 块`, sub:doorSummaryText || `${totalCount} 间均无需门板`},
-      {name:'中隔板（顶板）', val:`${totalCount} 块`, sub:'按每间 1 块估算'},
-      {name:'估算总长度', val:`${Math.round(totalRun/1000*10)/10} m`, sub:'当前组合计'},
-      {name:'当前排净间宽', val:`${fmtMm(compute(row).boothW)} mm`, sub:`${groupDisplayName(active)} · ${row.count} 间`},
-    ];
-    renderBomItems(items);
+    renderBomItems(buildMaterialListItems(rows.map(item => item.row)));
     return;
   }
-  const c = compute(p);
-  const doorIndexes = Array.from({length:p.count}, (_, i) => i).filter(i => hasDoorAt(p, i));
-  const doorCount = doorIndexes.length;
-  const doorSummary = doorWidthSummary(p, c);
-  const edgeWidths = [c.sidePairs[0]?.[0] || 0, c.sidePairs[p.count - 1]?.[1] || 0];
-  const uprightWidths = c.sidePairs.slice(0, -1).map((pair, i) => pair[1] + c.sidePairs[i + 1][0]);
-  const edgeWidthText = uniqueRebateTexts(edgeWidths, p, 'single');
-  const uprightWidthText = uprightWidths.length ? uniqueRebateTexts(uprightWidths, p, 'double') : '无';
-  const hasSmallDoor = doorIndexes.some(i => c.insufficientDoors[i]);
-  const hasSmallEdge = c.insufficientEdges.some(Boolean);
-  const hasSmallMiddle = c.insufficientMiddles.some(Boolean);
-  const guardText = [hasSmallDoor ? `门小于${c.minDoorW}` : '', hasSmallEdge ? `边板小于${c.minEdgePanel}` : '', hasSmallMiddle ? `立板小于${c.minMiddlePanel}` : ''].filter(Boolean).join(' · ');
-  const specialDepths = specialDepthPanelItems(p);
-  const specialDepthText = specialDepths.map(item => `${item.name} 深${fmtMm(item.depth)}mm${item.protrusion ? `（墙凸${fmtMm(item.protrusion)}mm）` : ''}`).join(' / ');
-  const swingCounts = normalizeBoothSwings(p.boothSwings, p.count, p.swing).filter((_, i) => hasDoorAt(p, i)).reduce((acc, key) => {
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, {});
-  const swingSummary = Object.entries(swingCounts).map(([key, count]) => `${swingLabel(key)}${count}块`).join(' / ') || '无门板';
-  const items = [
-    {name:'图纸模式', val:c.projectMode ? '项目总览' : c.segmentedMode ? '分段详图' : '详细施工图', sub:c.projectMode ? '按标准单间统计' : c.segmentedMode ? `每段最多 ${c.segmentSize} 间` : '逐间绘制'},
-    {name:'边板', val:'2 块', sub:p.rebate ? `${p.tPanel}×宽${edgeWidthText}×高${p.hUpright}mm · 单启口` : `${p.tPanel}×宽${edgeWidths.map(fmtMm).join('/')}×高${p.hUpright}mm`},
-    {name:'立板', val:`${Math.max(0, p.count - 1)} 块`, sub:p.rebate ? `${p.tPanel}×宽${uprightWidthText}×高${p.hUpright}mm · 双启口` : `${p.tPanel}×宽${uprightWidths.length ? uprightWidths.map(fmtMm).join('/') : '无'}×高${p.hUpright}mm`},
-    {name:'门板', val:`${doorCount} 块`, sub:doorCount ? `${p.tPanel}×${doorSummary.text} · ${swingSummary}${p.rebate ? ' · 双启口' : ''}${guardText ? ` · ${guardText}需调整` : ''}${p.doorGap ? ` · 门缝${p.doorGap}mm` : ''}${doorCount < p.count ? ` · ${p.count - doorCount}间无需门板` : ''}` : `${p.count} 间均无需门板`},
-    {name:'中隔板（顶板）', val:`${p.count} 块`, sub:`${p.tPanel}×深${c.boothD}×高${p.hMid}mm`},
-    {name:'见光板', val:`按未靠墙侧`, sub:`${p.tPanel}×深${c.boothD}×高${p.hVis}mm`},
-    ...(specialDepths.length ? [{name:'特殊深度板', val:`${specialDepths.length} 块`, sub:`${p.tPanel}×${specialDepthText}`} ] : []),
-    {name:'净间宽', val:`${fmtMm(c.boothW)} mm`, sub:`共 ${p.count} 间`},
-    {name:'估算总长度', val:`${Math.round((c.totalRun || p.total)/1000*10)/10} m`, sub:`板厚 ${p.tPanel}mm`},
+  renderBomItems(buildMaterialListItems([p]));
+}
+
+function buildMaterialListItems(rows) {
+  const sourceRows = rows.filter(Boolean);
+  const front = createBomBucket();
+  const doors = createBomBucket();
+  const midDepths = createBomBucket();
+  const visibleDepths = createBomBucket();
+  let noDoorCount = 0;
+  sourceRows.forEach(row => {
+    const c = compute(row);
+    const count = Math.max(1, Number(row.count) || 1);
+    const edgeWidths = [c.sidePairs[0]?.[0] || 0, c.sidePairs[count - 1]?.[1] || 0];
+    const middleWidths = c.sidePairs.slice(0, -1).map((pair, i) => pair[1] + c.sidePairs[i + 1][0]);
+    const frontHeight = Number(row.hUpright) || 1830;
+    if (row.rebate) {
+      edgeWidths.forEach(width => addBomPiece(front, frontHeight, rebateText(width, row, 'single'), '单启口'));
+      middleWidths.forEach(width => addBomPiece(front, frontHeight, rebateText(width, row, 'double'), '双启口'));
+    } else {
+      [...edgeWidths, ...middleWidths].forEach(width => addBomPiece(front, frontHeight, fmtMm(width), ''));
+    }
+
+    for (let i = 0; i < count; i++) {
+      if (!hasDoorAt(row, i)) {
+        noDoorCount++;
+        continue;
+      }
+      const width = Math.round(Number(c.doorWidths?.[i]) || Number(row.doorW) || 0);
+      if (width) addBomPiece(doors, Number(row.hDoor) || 1750, rebateText(width, row, 'double'), row.rebate ? '双启口' : '');
+    }
+
+    const specialDepths = specialDepthPanelItems(row);
+    const depthTextFor = index => {
+      const special = specialDepths.find(item => item.index === index);
+      const depth = special ? special.depth : c.boothD;
+      return fmtMm(depth);
+    };
+    Array.from({length: Math.max(0, count - 1)}, (_, i) => i + 1).forEach(index => addBomPiece(midDepths, row.hMid, depthTextFor(index), ''));
+
+    const visibleIndexes = [];
+    if (!c.hasLeft) visibleIndexes.push(0);
+    if (!c.hasRight) visibleIndexes.push(count);
+    visibleIndexes.forEach(index => addBomPiece(visibleDepths, row.hVis, depthTextFor(index), ''));
+  });
+  return [
+    {name:'前沿板', val:`${front.count} 块`, sub:formatBomBucket(front) || '无前沿板数据'},
+    {name:'门板', val:`${doors.count} 块`, sub:doors.count ? `${formatBomBucket(doors)}${noDoorCount ? ` · ${noDoorCount}间无需门板` : ''}` : `${noDoorCount || 0} 间均无需门板`},
+    {name:'中隔板', val:`${midDepths.count} 块`, sub:midDepths.count ? formatBomBucket(midDepths) : '单间无中隔板'},
+    {name:'见光板', val:`${visibleDepths.count} 块`, sub:visibleDepths.count ? formatBomBucket(visibleDepths) : '左右两侧均靠墙'},
   ];
-  renderBomItems(items);
+}
+
+function createBomBucket() {
+  return {count:0, pieces:new Map()};
+}
+
+function addBomPiece(bucket, height, sizeText, process = '') {
+  const h = Math.round(Number(height) || 0);
+  const size = String(sizeText || '').trim();
+  if (!h || !size) return;
+  const proc = String(process || '').trim();
+  const key = `${h}|${size}|${proc}`;
+  const item = bucket.pieces.get(key) || {height:h, size, process:proc, count:0};
+  item.count++;
+  bucket.count++;
+  bucket.pieces.set(key, item);
+}
+
+function formatBomBucket(bucket) {
+  if (!bucket?.pieces?.size) return '';
+  let lastHeight = null;
+  return [...bucket.pieces.values()]
+    .sort((a, b) => a.height - b.height || bomSizeSortValue(a.size) - bomSizeSortValue(b.size) || a.size.localeCompare(b.size, 'zh-Hans-CN') || a.process.localeCompare(b.process, 'zh-Hans-CN'))
+    .map(item => {
+      const prefix = item.height === lastHeight ? `[size-cont]${item.size}` : `[size-head:${item.height}]${item.size}`;
+      lastHeight = item.height;
+      return `${prefix}${item.process ? ` ${item.process}` : ''}=${item.count}`;
+    })
+    .join(' / ');
+}
+
+function bomSizeSortValue(value) {
+  const match = String(value || '').match(/\d+/);
+  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
 }
 
 function urinalBomItem() {
@@ -4356,25 +4362,28 @@ function renderBomItems(items) {
   if (urinal) allItems.push(urinal);
   document.getElementById('bom').innerHTML = allItems.map(i=>`
     <div class="bom-card">
-      <div class="name">${i.name}</div>
-      <div class="val">${i.val}</div>
-      <div class="sub">${i.sub}</div>
+      <div class="bom-card-head"><div class="name">${escapeHtml(i.name)}</div><div class="val">${formatBomChips(i.val)}</div></div>
+      <div class="bom-lines">${formatBomLines(i.sub)}</div>
     </div>`).join('');
-  updateBomToggleText();
 }
 
-function toggleBomArea() {
-  const area = document.getElementById('bom-area');
-  if (!area) return;
-  area.classList.toggle('expanded');
-  updateBomToggleText();
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 
-function updateBomToggleText() {
-  const area = document.getElementById('bom-area');
-  const btn = document.getElementById('bom-toggle');
-  if (!area || !btn) return;
-  btn.textContent = area.classList.contains('expanded') ? '收起' : '展开更多';
+function formatBomChips(value) {
+  return String(value ?? '').split('/').map(part => part.trim()).filter(Boolean).map(part => `<span class="bom-chip">${escapeHtml(part)}</span>`).join('');
+}
+
+function formatBomLines(value) {
+  const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
+  return (lines.length ? lines : ['无']).map(line => {
+    const headMatch = line.match(/^\[size-head:(\d+)\](.*)$/);
+    if (headMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-left">${escapeHtml(headMatch[1])} x</span><span class="bom-size-right">${escapeHtml(headMatch[2])}</span></span></div>`;
+    const isContinued = line.startsWith('[size-cont]');
+    if (isContinued) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(line.slice(11))}</span></span></div>`;
+    return `<div class="bom-line">${escapeHtml(line)}</div>`;
+  }).join('');
 }
 
 function exportImg(name) {
@@ -4851,6 +4860,52 @@ document.getElementById('p-count').addEventListener('keydown', e => {
   refreshDrawing(false);
 });
 
+function commitTotalInput(selectAfterCommit = false, advanceQuickCell = false) {
+  const el = document.getElementById('p-total');
+  if (!el) return;
+  const quickCellBeforeCommit = advanceQuickCell ? activeQuickCellRef() : null;
+  const min = Number(el.min) || 600;
+  const max = Number(el.max) || 20000;
+  const next = Math.max(min, Math.min(max, Math.round(Number(el.value) || min)));
+  el.value = next;
+  commitTotalRowOnly();
+  if (advanceQuickCell && focusNextQuickInputCellFromRef(quickCellBeforeCommit)) return;
+  if (selectAfterCommit) {
+    window.setTimeout(() => {
+      el.focus({preventScroll:true});
+      el.select();
+    }, 0);
+  }
+}
+
+function commitTotalRowOnly() {
+  saveActiveGroup(false);
+  const p = getParams();
+  lastParams = p;
+  drawView(p, currentTab);
+  renderBOM(p);
+  updateGroupListState();
+}
+
+function commitFieldAndAdvance(fieldId) {
+  const currentRef = activeQuickCellRef();
+  saveActiveGroup(false);
+  const p = getParams();
+  lastParams = p;
+  drawView(p, currentTab);
+  renderBOM(p);
+  updateGroupListState();
+  selectNextQuickCellAndFocusField(currentRef, fieldId);
+}
+
+document.getElementById('p-total').addEventListener('change', () => commitTotalInput(false));
+
+document.getElementById('p-total').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  commitTotalInput(true, true);
+});
+
 document.getElementById('p-gap').addEventListener('input', () => {
   refreshDrawing(false);
 });
@@ -4863,9 +4918,10 @@ document.getElementById('p-gap').addEventListener('change', () => {
 
 document.getElementById('p-gap').addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
+  e.preventDefault();
   const el = e.currentTarget;
   if (el.value === '' || Number(el.value) < 4) el.value = 4;
-  refreshDrawing(false);
+  commitFieldAndAdvance('p-gap');
 });
 
 document.getElementById('p-rebate').addEventListener('change', () => {
@@ -4874,10 +4930,18 @@ document.getElementById('p-rebate').addEventListener('change', () => {
 });
 
 document.querySelectorAll('.field input[type=number], .field select').forEach(el => {
-  if (el.id === 'p-count' || el.id === 'p-gap') return;
+  if (el.id === 'p-count' || el.id === 'p-total' || el.id === 'p-gap') return;
   el.addEventListener('change', () => refreshDrawing(false));
   el.addEventListener('keydown', e => {
-    if (e.key === 'Enter') refreshDrawing(false);
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (el.id === 'p-door' && selectionScope === 'booth' && selectedBoothRef) {
+      applySelectedBoothDoorWidth(el.value);
+      updateGroupListState();
+      return;
+    }
+    if (['p-depth','p-door','p-rebate-depth','t-panel'].includes(el.id)) commitFieldAndAdvance(el.id);
+    else refreshDrawing(false);
   });
 });
 
