@@ -159,15 +159,21 @@ body.theme-dark .bom-title{color:#f6f8fa}
 body.theme-dark .bom-card .name{color:#f6f8fa}
 .bom-card .val{font-size:0.8125rem;font-weight:700;color:#0C447C;line-height:1.35;text-align:right;word-break:keep-all}
 body.theme-dark .bom-card .val{color:#58a6ff}
-.bom-lines{display:grid;grid-template-columns:1fr;row-gap:0.375rem;align-items:start}
+.bom-lines{display:grid;grid-template-columns:repeat(var(--bom-columns,1),max-content);column-gap:2.25rem;align-items:start}
+.bom-column{display:grid;grid-template-columns:1fr;row-gap:0.375rem;align-items:start}
 .bom-line{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8125rem;line-height:1.55;color:#24292f;word-break:normal;white-space:nowrap;font-variant-numeric:tabular-nums}
 body.theme-dark .bom-line{color:#e6edf3}
 .bom-line::before{content:"";width:0.3125rem;height:0.3125rem;margin-top:0.5rem;border-radius:999px;background:#57606a;opacity:.9;flex:0 0 auto}
 body.theme-dark .bom-line::before{background:#d0d7de;opacity:.92}
 .bom-size-line{display:inline-grid;grid-template-columns:auto 3.45em auto;column-gap:0.3em;align-items:baseline}
+.bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-line{grid-template-columns:auto auto}
+.bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-left{display:none}
 .bom-size-process{white-space:nowrap;text-align:left}
+.bom-process-placeholder{visibility:hidden}
 .bom-size-left{white-space:nowrap;text-align:left}
 .bom-size-right{white-space:nowrap;text-align:left}
+.bom-gap{height:0.625rem}
+.bom-gap::before{display:none}
 .bom-chip{display:inline-block;margin:0 0.1875rem 0.1875rem 0;padding:0.125rem 0.4375rem;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:0.75rem;font-weight:700;line-height:1.45;white-space:nowrap}
 body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
 @media (max-width:1200px){.bom-area{min-width:18rem;max-width:calc(100% - 1.75rem)}.bom-line{font-size:0.75rem}}
@@ -362,6 +368,7 @@ let canvasMode = paperSize === 'auto' ? 'free' : 'sheets';
 let planAnnotationScale = 1;
 let canvasPixelRatio = window.devicePixelRatio || 1;
 let drawingForExport = false;
+let lastGuardWarningSignature = '';
 let currentPlanPage = 0;
 const QUALITY_RENDER_SCALE = 4;
 const PDF_RENDER_SCALE = 8;
@@ -1621,7 +1628,7 @@ function syncQuickCellToLayout(rowIndex, colIndex, value) {
   }
   updateLayoutTargetLabel();
   renderGroups(false);
-  refreshDrawing(false, false, false);
+  refreshDrawing(false, false, false, false);
   if (target) focusTotalInputForQuickCell();
   return Boolean(target);
 }
@@ -1650,6 +1657,10 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
       const layoutCol = colIndex + 1;
       const existing = byCell.get(`${pageIndex}:${layoutRow}:${layoutCol}`);
       const base = existing || resetLocalWallSpecials({...template}, count);
+      const isActiveCell = activeCell && (activeCell.page ?? activeQuickPage) === pageIndex && activeCell.row === layoutRow && activeCell.col === layoutCol;
+      const total = (!existing || isActiveCell) ? count * 1000 : base.total;
+      const widthsText = existing ? (base.widthsText || '') : '';
+      const boothDoorWidths = existing ? rowDoorWidthOverrides(base, count) : Array.from({length: count}, () => 0);
       const next = {
         ...base,
         id: id++,
@@ -1659,11 +1670,11 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
         sheetPage: pageIndex,
         enabled: true,
         count,
-        total: count * 1000,
-        widthsText: '',
-        doorInstallWidths: undefined,
-        doorWidths: undefined,
-        boothDoorWidths: Array.from({length: count}, () => 0),
+        total,
+        widthsText,
+        doorInstallWidths: existing ? base.doorInstallWidths : undefined,
+        doorWidths: existing ? base.doorWidths : undefined,
+        boothDoorWidths,
         wall: existing ? base.wall : 'three',
         noDoorBooths: normalizeNoDoorBooths(base.noDoorBooths, count),
         boothNotes: normalizeBoothNotes(base.boothNotes, count),
@@ -1671,7 +1682,7 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
       };
       next.boothSwings = normalizeBoothSwings(base.boothSwings, count, next.swing || swingMode);
       generated.push(next);
-      if (activeCell && (activeCell.page ?? activeQuickPage) === pageIndex && activeCell.row === layoutRow && activeCell.col === layoutCol) activeTarget = next;
+      if (isActiveCell) activeTarget = next;
     });
   }));
   if (!generated.length) return null;
@@ -1795,6 +1806,7 @@ function applyQuickLayout() {
   autoFit(p);
   drawView(p, currentTab);
   renderBOM(p);
+  notifyGuardWarnings(p);
 }
 
 function renderGroups() {}
@@ -2059,6 +2071,7 @@ function setWall(btn) {
     lastParams = p;
     drawView(p, currentTab);
     renderBOM(p);
+    notifyGuardWarnings(p);
     updateGroupListState();
     return;
   }
@@ -2086,6 +2099,7 @@ function setSwing(btn) {
     lastParams = p;
     drawView(p, currentTab);
     renderBOM(p);
+    notifyGuardWarnings(p);
     updateGroupListState();
     return;
   } else {
@@ -2134,7 +2148,7 @@ function clearBoothSelection() {
   updateLayoutTargetLabel();
 }
 
-function refreshDrawing(refit = false, renderList = true, enableRow = true) {
+function refreshDrawing(refit = false, renderList = true, enableRow = true, notifyWarnings = true) {
   const doorInput = document.getElementById('p-door');
   if (selectionScope === 'booth' && selectedBoothRef && doorInput && document.activeElement === doorInput) {
     applySelectedBoothDoorWidth(doorInput.value);
@@ -2147,6 +2161,7 @@ function refreshDrawing(refit = false, renderList = true, enableRow = true) {
   if (refit) autoFit(p);
   drawView(p, currentTab);
   renderBOM(p);
+  if (notifyWarnings) notifyGuardWarnings(p);
   if (renderList) updateGroupListState();
 }
 
@@ -2387,6 +2402,7 @@ function generate() {
   autoFit(p);
   drawView(p, currentTab);
   renderBOM(p);
+  notifyGuardWarnings(p);
 }
 
 function drawView(p, tab) {
@@ -2701,15 +2717,11 @@ function loadPdfLib() {
 
 function planBlockMetrics(row) {
   const c = compute(row);
-  const swings = normalizeBoothSwings(row.boothSwings, Math.max(1, Number(row.count) || 1), row.swing || swingMode);
-  const outDoorWidths = swings
-    .map((key, index) => (hasDoorAt(row, index) && String(key).startsWith('out')) ? Number(c.doorInstallWidths[index]) || 0 : 0);
-  const maxOutDoor = Math.max(0, ...outDoorWidths);
   const safeLeft = 220;
   const safeTop = PLAN_ANCHOR.totalDimGap + PLAN_ANCHOR.noteTagH + PLAN_ANCHOR.noteTagGap + 130;
   const safeRight = PLAN_ANCHOR.depthDimGap + 325;
   const frontPanelDepth = Number(row.tPanel) || 12;
-  const safeBottom = frontPanelDepth + Math.max(PLAN_ANCHOR.bottomDimOffset + 90, maxOutDoor + 120);
+  const safeBottom = frontPanelDepth + PLAN_ANCHOR.bottomDimOffset + 90;
   return {
     c,
     safeLeft,
@@ -2815,8 +2827,9 @@ function nineBoothBaselineWidth(blocks) {
 
 function paginatePlanBlocksAtScale(blocks, layout, sheetScale) {
   const minScale = SHEET_LAYOUT_RULES.minReadableScale;
-  const rawGapX = SHEET_LAYOUT_RULES.colGap / Math.max(0.0001, minScale);
-  const rawGapY = SHEET_LAYOUT_RULES.rowGap / Math.max(0.0001, minScale);
+  const packingScale = Math.max(0.0001, sheetScale || minScale);
+  const rawGapX = SHEET_LAYOUT_RULES.colGap / packingScale;
+  const rawGapY = SHEET_LAYOUT_RULES.rowGap / packingScale;
   const pages = [];
   let page = {blocks: [], usedW: 0, usedH: 0, rowCount: 0};
   let cursorX = 0;
@@ -3312,25 +3325,23 @@ function collectGuardWarnings(c) {
 }
 
 function drawPlanWarnings(c, x, y) {
-  const warnings = collectGuardWarnings(c);
-  if (!warnings.length) return;
-  ctx.save();
-  ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  const text = `尺寸冲突：${warnings.join('，')}`;
-  const w = Math.min(360, ctx.measureText(text).width + 18);
-  const h = 24;
-  ctx.fillStyle = '#fff5f5';
-  ctx.strokeStyle = '#d64242';
-  ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  ctx.rect(x, y, w, h);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = '#d64242';
-  ctx.fillText(text, x + 9, y + 5);
-  ctx.restore();
+  return;
+}
+
+function notifyGuardWarnings(p = lastParams || getParams()) {
+  const rows = drawableGroupRows();
+  const source = rows.length ? rows.map(item => ({group:item.group, row:item.row})) : [{group:activeGroup(), row:p}];
+  const messages = [];
+  source.forEach(item => {
+    const warnings = collectGuardWarnings(compute(item.row));
+    if (!warnings.length) return;
+    const name = layoutUnitName(item.group, item.row);
+    messages.push(`${name}：${warnings.join('，')}`);
+  });
+  const signature = messages.join('|');
+  if (!signature || signature === lastGuardWarningSignature) return;
+  lastGuardWarningSignature = signature;
+  window.setTimeout(() => alert(`尺寸冲突，请调整参数：\n${messages.join('\n')}`), 0);
 }
 
 function drawProjectOverview(p, c) {
@@ -4156,6 +4167,12 @@ function drawPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, p
   const fit = singleBoothPage ? autoFitScale * 0.75 : autoFitScale;
   const contentW = Math.max(1, rawContentW * fit);
   const contentH = Math.max(1, rawContentH * fit);
+  const rowYs = [...new Set(page.blocks.map(block => block.pageY))].sort((a, b) => a - b);
+  const bottomReserve = 48;
+  const spareH = Math.max(0, availableH - contentH - bottomReserve);
+  const visualRowGap = rowYs.length > 1 ? Math.min(24, spareH / (rowYs.length - 1)) : 0;
+  const rawVisualRowGap = visualRowGap / Math.max(0.0001, fit);
+  const rowOffsetByY = new Map(rowYs.map((y, index) => [y, rawVisualRowGap * index]));
   const prevAnnoScale = planAnnotationScale;
   planAnnotationScale = 1;
   const localX = sheetOffsetX + P.x + gaps.left + (availableW - contentW) / 2;
@@ -4163,7 +4180,10 @@ function drawPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, p
   ctx.save();
   ctx.translate(localX, localY);
   ctx.scale(fit, fit);
-  page.blocks.forEach(block => drawPlanBlock({...block, pageIndex}, block.pageX, block.pageY, fit, localX, localY));
+  page.blocks.forEach(block => {
+    const visualY = block.pageY + (rowOffsetByY.get(block.pageY) || 0);
+    drawPlanBlock({...block, pageIndex, pageY: visualY}, block.pageX, visualY, fit, localX, localY);
+  });
   ctx.restore();
   planAnnotationScale = prevAnnoScale;
 }
@@ -4374,8 +4394,7 @@ function buildMaterialListItems(rows) {
     const middleWidths = c.sidePairs.slice(0, -1).map((pair, i) => pair[1] + c.sidePairs[i + 1][0]);
     const frontHeight = Number(row.hUpright) || 1830;
     if (row.rebate) {
-      edgeWidths.forEach(width => addBomPiece(front, frontHeight, rebateBomSizeText(width, row), '单启口'));
-      middleWidths.forEach(width => addBomPiece(front, frontHeight, rebateBomSizeText(width, row), '双启口'));
+      addFrontRebateBomPieces(front, row, c, frontHeight);
     } else {
       [...edgeWidths, ...middleWidths].forEach(width => addBomPiece(front, frontHeight, fmtMm(width), ''));
     }
@@ -4410,6 +4429,22 @@ function buildMaterialListItems(rows) {
   ];
 }
 
+function addFrontRebateBomPieces(bucket, row, c = compute(row), height = row.hUpright || 1830) {
+  const count = Math.max(1, Number(row.count) || 1);
+  const panels = [];
+  if (count <= 0) return;
+  panels.push({width:c.sidePairs[0]?.[0] || 0, process:'单启口'});
+  for (let i = 0; i < count - 1; i++) {
+    const leftSwing = boothSwingAt(row, i);
+    const rightSwing = boothSwingAt(row, i + 1);
+    const width = (c.sidePairs[i]?.[1] || 0) + (c.sidePairs[i + 1]?.[0] || 0);
+    const mixed = frontSmallOnTopForSwing(leftSwing) !== frontSmallOnTopForSwing(rightSwing);
+    panels.push({width, process:mixed ? '异启口' : '双启口'});
+  }
+  panels.push({width:c.sidePairs[count - 1]?.[1] || 0, process:'单启口'});
+  panels.forEach(panel => addBomPiece(bucket, height, rebateBomSizeText(panel.width, row), panel.process));
+}
+
 function createBomBucket() {
   return {count:0, pieces:new Map()};
 }
@@ -4429,16 +4464,27 @@ function addBomPiece(bucket, height, sizeText, process = '') {
 function formatBomBucket(bucket) {
   if (!bucket?.pieces?.size) return '';
   const lastHeightByProcess = new Map();
+  let lastProcess = null;
+  const shownProcess = new Set();
   return [...bucket.pieces.values()]
-    .sort((a, b) => a.height - b.height || bomSizeSortValue(a.size) - bomSizeSortValue(b.size) || a.size.localeCompare(b.size, 'zh-Hans-CN') || a.process.localeCompare(b.process, 'zh-Hans-CN'))
+    .sort((a, b) => bomProcessSortValue(a.process) - bomProcessSortValue(b.process) || a.process.localeCompare(b.process, 'zh-Hans-CN') || a.height - b.height || bomSizeSortValue(a.size) - bomSizeSortValue(b.size) || a.size.localeCompare(b.size, 'zh-Hans-CN'))
     .map(item => {
       const processKey = item.process || '';
       const lastHeight = lastHeightByProcess.get(processKey);
       const prefix = item.height === lastHeight ? `[size-cont]${item.size}` : `[size-head:${item.height}]${item.size}`;
       lastHeightByProcess.set(processKey, item.height);
-      return `${item.process ? `${item.process} ` : ''}${prefix}=${item.count}`;
+      const groupGap = lastProcess !== null && processKey !== lastProcess ? '[bom-gap] / ' : '';
+      lastProcess = processKey;
+      const processText = item.process && !shownProcess.has(processKey) ? `${item.process} ` : (item.process ? `[process-cont:${item.process}] ` : '');
+      if (item.process) shownProcess.add(processKey);
+      return `${groupGap}${processText}${prefix}=${item.count}`;
     })
     .join(' / ');
+}
+
+function bomProcessSortValue(process) {
+  const order = {'单启口':1, '双启口':2, '异启口':3};
+  return order[String(process || '')] || 0;
 }
 
 function bomSizeSortValue(value) {
@@ -4461,7 +4507,7 @@ function renderBomItems(items) {
   document.getElementById('bom').innerHTML = allItems.map(i=>`
     <div class="bom-card">
       <div class="bom-card-head"><div class="name">${escapeHtml(i.name)}</div><div class="val">${formatBomChips(i.val)}</div></div>
-      <div class="bom-lines">${formatBomLines(i.sub)}</div>
+      ${formatBomLines(i.sub)}
     </div>`).join('');
 }
 
@@ -4475,17 +4521,26 @@ function formatBomChips(value) {
 
 function formatBomLines(value) {
   const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
-  return (lines.length ? lines : ['无']).map(line => {
+  const htmlLines = (lines.length ? lines : ['无']).map(line => {
+    if (line === '[bom-gap]') return '<div class="bom-gap" aria-hidden="true"></div>';
+    const processPlaceholderHeadMatch = line.match(/^\[process-cont:(.+?)\]\s+\[size-head:(\d+)\](.*)$/);
+    if (processPlaceholderHeadMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process bom-process-placeholder">${escapeHtml(processPlaceholderHeadMatch[1])}</span><span class="bom-size-left">${escapeHtml(processPlaceholderHeadMatch[2])} x </span><span class="bom-size-right">${escapeHtml(processPlaceholderHeadMatch[3])}</span></span></div>`;
+    const processPlaceholderContMatch = line.match(/^\[process-cont:(.+?)\]\s+\[size-cont\](.*)$/);
+    if (processPlaceholderContMatch) return `<div class="bom-line" data-bom-cont="1"><span class="bom-size-line"><span class="bom-size-process bom-process-placeholder">${escapeHtml(processPlaceholderContMatch[1])}</span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(processPlaceholderContMatch[2])}</span></span></div>`;
     const processHeadMatch = line.match(/^(.+?)\s+\[size-head:(\d+)\](.*)$/);
     if (processHeadMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process">${escapeHtml(processHeadMatch[1])}</span><span class="bom-size-left">${escapeHtml(processHeadMatch[2])} x </span><span class="bom-size-right">${escapeHtml(processHeadMatch[3])}</span></span></div>`;
     const processContMatch = line.match(/^(.+?)\s+\[size-cont\](.*)$/);
-    if (processContMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process">${escapeHtml(processContMatch[1])}</span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(processContMatch[2])}</span></span></div>`;
+    if (processContMatch) return `<div class="bom-line" data-bom-cont="1"><span class="bom-size-line"><span class="bom-size-process">${escapeHtml(processContMatch[1])}</span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(processContMatch[2])}</span></span></div>`;
     const headMatch = line.match(/^\[size-head:(\d+)\](.*)$/);
     if (headMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process"></span><span class="bom-size-left">${escapeHtml(headMatch[1])} x </span><span class="bom-size-right">${escapeHtml(headMatch[2])}</span></span></div>`;
     const isContinued = line.startsWith('[size-cont]');
-    if (isContinued) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process"></span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(line.slice(11))}</span></span></div>`;
+    if (isContinued) return `<div class="bom-line" data-bom-cont="1"><span class="bom-size-line"><span class="bom-size-process"></span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(line.slice(11))}</span></span></div>`;
     return `<div class="bom-line">${escapeHtml(line)}</div>`;
-  }).join('');
+  });
+  const columns = [];
+  for (let i = 0; i < htmlLines.length; i += 20) columns.push(htmlLines.slice(i, i + 20));
+  const columnHtml = columns.map((column, index) => `<div class="bom-column${index > 0 ? ' is-overflow' : ''}">${column.join('')}</div>`).join('');
+  return `<div class="bom-lines" style="--bom-columns:${Math.max(1, columns.length)}">${columnHtml}</div>`;
 }
 
 function exportImg(name) {
@@ -5043,6 +5098,7 @@ function commitTotalRowOnly() {
   lastParams = p;
   drawView(p, currentTab);
   renderBOM(p);
+  notifyGuardWarnings(p);
   updateGroupListState();
 }
 
@@ -5053,6 +5109,7 @@ function commitFieldAndAdvance(fieldId) {
     lastParams = p;
     drawView(p, currentTab);
     renderBOM(p);
+    notifyGuardWarnings(p);
     updateGroupListState();
     quickSelectAllActive = false;
     selectNextQuickCellAndFocusField(currentRef, fieldId);
@@ -5063,6 +5120,7 @@ function commitFieldAndAdvance(fieldId) {
   lastParams = p;
   drawView(p, currentTab);
   renderBOM(p);
+  notifyGuardWarnings(p);
   updateGroupListState();
   selectNextQuickCellAndFocusField(currentRef, fieldId);
 }
@@ -5095,6 +5153,7 @@ function commitFieldChange(fieldId) {
     lastParams = p;
     drawView(p, currentTab);
     renderBOM(p);
+    notifyGuardWarnings(p);
     updateGroupListState();
     quickSelectAllActive = false;
     return;
