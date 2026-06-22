@@ -4514,12 +4514,13 @@ function drawPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, p
   const baseContentW = Math.max(1, page.usedW);
   const baseContentH = Math.max(1, page.usedH);
   const singleBoothPage = page.blocks.length === 1 && Math.max(1, Number(page.blocks[0]?.row?.count) || 1) === 1;
+  const singleBoothTaggedPage = singleBoothPage;
   const rawContentW = baseContentW;
   const rawContentH = baseContentH;
   const availableW = Math.max(1, P.w - gaps.left - gaps.right);
   const availableH = Math.max(1, P.h - gaps.top - gaps.bottom);
   const autoFitScale = Math.min(availableW / rawContentW, availableH / rawContentH, 1);
-  const fit = singleBoothPage ? autoFitScale * 0.75 : autoFitScale;
+  const fit = singleBoothTaggedPage ? autoFitScale * 0.58 : singleBoothPage ? autoFitScale * 0.75 : autoFitScale;
   const contentW = Math.max(1, rawContentW * fit);
   const contentH = Math.max(1, rawContentH * fit);
   const rowYs = [...new Set(page.blocks.map(block => block.pageY))].sort((a, b) => a - b);
@@ -4531,7 +4532,8 @@ function drawPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, p
   const prevAnnoScale = planAnnotationScale;
   planAnnotationScale = 1;
   const localX = sheetOffsetX + P.x + gaps.left + (availableW - contentW) / 2;
-  const localY = sheetOffsetY + P.y + gaps.top;
+  const titleClearance = singleBoothTaggedPage ? 90 : 0;
+  const localY = sheetOffsetY + P.y + gaps.top + titleClearance;
   ctx.save();
   ctx.translate(localX, localY);
   ctx.scale(fit, fit);
