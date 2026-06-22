@@ -167,6 +167,7 @@ body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;backg
 body.theme-dark .canvas-area{background:#202734}
 canvas{display:block;width:100%;height:100%}
 .canvas-text-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;resize:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;overflow:hidden}
+.dimension-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;outline:none}
 .bom-area{position:absolute;top:3rem;right:0.875rem;bottom:1.5rem;z-index:9;min-width:20rem;width:max-content;max-width:min(42rem,calc(100% - 1.75rem));border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.875rem;background:rgba(255,255,255,.92);box-shadow:0 14px 34px rgba(31,35,40,.14);overflow:auto}
 body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px rgba(0,0,0,.24)}
 .bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.375rem}
@@ -339,6 +340,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     <div class="canvas-area" id="carea">
       <canvas id="cv"></canvas>
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" aria-label="图纸文字输入"></textarea>
+      <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area" id="bom-area">
         <div class="bom-head"><div class="bom-title">材料清单</div></div>
         <div class="bom-grid" id="bom"></div>
@@ -399,6 +401,8 @@ const PDF_RENDER_SCALE = 8;
 const PRINT_RENDER_SCALE = 4;
 let pdfLibPromise = null;
 let svgPrintSeq = 0;
+let activeDimensionContext = null;
+let activeDimensionEdit = null;
 let quickLayoutRows = [['','','']];
 let quickLayoutPages = [[['','','']]];
 let activeQuickPage = 0;
@@ -423,7 +427,7 @@ const swingDefs = {
   'out-right': {label:'右外开', hinge:'right', opensUp:false, vx:40, y1:30, y2:6, arcEndX:16, arcEndY:6, arcSweep:1},
 };
 const swingOrder = ['in-left', 'in-right', 'out-left', 'out-right'];
-const defaultRow = {id:1, layoutType:'cell', layoutRow:1, layoutCol:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], noDoorBooths:[], depthPanelSpecials:[], hUpright:1830, hDoor:1750, hMid:1800, hVis:1830, tPanel:12, wall:'three'};
+const defaultRow = {id:1, layoutType:'cell', layoutRow:1, layoutCol:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], noDoorBooths:[], depthPanelSpecials:[], dimensionLocks:null, hUpright:1830, hDoor:1750, hMid:1800, hVis:1830, tPanel:12, wall:'three'};
 const blankRow = {...defaultRow, enabled:false};
 let groups = [
   {id:1, name:'', rows:[{...defaultRow}]},
@@ -911,6 +915,60 @@ function drawCanvasTextCaret(x, y, h, color = '#111') {
   ctx.restore();
 }
 
+function drawDimensionCaret(x, baselineY, baseline = 'bottom', color = '#111', sample = '390') {
+  const metrics = ctx.measureText(String(sample || '390'));
+  const ascent = metrics.actualBoundingBoxAscent || annoFont(95) * 0.72;
+  const descent = metrics.actualBoundingBoxDescent || annoFont(95) * 0.12;
+  const h = ascent + descent;
+  const y = baseline === 'top' ? baselineY + descent : baseline === 'middle' ? baselineY - h / 2 : baselineY - ascent;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(2, anno(6));
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, y + h);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function dimensionEditActive(meta) {
+  if (!activeDimensionEdit || !meta) return false;
+  return activeDimensionEdit.key === dimensionMetaKey(meta);
+}
+
+function dimensionDisplayLabel(label, meta) {
+  if (!dimensionEditActive(meta)) return label;
+  const editor = document.getElementById('dimension-editor');
+  return editor ? editor.value : label;
+}
+
+function dimensionMetaKey(meta = {}) {
+  const parts = [meta.kind || '', meta.boothIndex ?? '', meta.panelIndex ?? '', meta.face || ''];
+  if (meta.panel) parts.push(meta.panel.kind || '', meta.panel.lockIndex ?? meta.panel.index ?? '');
+  return parts.join(':');
+}
+
+function registerDimensionHit(meta, centerX, topY, width, height) {
+  if (!meta || drawingForExport) return;
+  const context = activeDimensionContext;
+  if (!context?.groupId || !context?.rowId) return;
+  const hitScale = context.hitScale || 1;
+  const hitX = context.hitX || 0;
+  const hitY = context.hitY || 0;
+  const pad = anno(12);
+  planHitAreas.push({
+    type:'dimension',
+    x: hitX + (centerX - width / 2 - pad) * hitScale,
+    y: hitY + (topY - pad) * hitScale,
+    w: (width + pad * 2) * hitScale,
+    h: (height + pad * 2) * hitScale,
+    groupId: context.groupId,
+    rowId: context.rowId,
+    key: dimensionMetaKey(meta),
+    meta
+  });
+}
+
 function groupDisplayName(group) {
   return String(group?.name || '').trim() || GROUP_NAME_PLACEHOLDER;
 }
@@ -1158,6 +1216,7 @@ function applyGroupParamsToRow(row, params, enable = false) {
     boothNotes: row.boothNotes,
     wall: row.wall,
     depthPanelSpecials: row.depthPanelSpecials,
+    dimensionLocks: row.dimensionLocks,
     note: row.note
   };
   applyParamsToRow(row, {...params, ...keep}, enable);
@@ -1169,7 +1228,8 @@ function applyParamsToRow(row, params, enable = false) {
   const noDoorBooths = normalizeNoDoorBooths(row === activeRow() ? params.noDoorBooths : row.noDoorBooths, params.count);
   const boothDoorWidths = rowDoorWidthOverrides(row === activeRow() ? params : row, params.count);
   const depthPanelSpecials = normalizeDepthPanelSpecials(row === activeRow() ? params.depthPanelSpecials : row.depthPanelSpecials, depthPanelCount(params));
-  Object.assign(row, {...params, boothSwings, noDoorBooths, boothDoorWidths, depthPanelSpecials}, {enabled: nextEnabled});
+  const dimensionLocks = row === activeRow() ? (params.dimensionLocks || row.dimensionLocks || null) : (row.dimensionLocks || null);
+  Object.assign(row, {...params, boothSwings, noDoorBooths, boothDoorWidths, depthPanelSpecials, dimensionLocks}, {enabled: nextEnabled});
   row.boothSwings = normalizeBoothSwings(row.boothSwings, row.count, row.swing || swingMode);
   row.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, row.count);
   row.boothNotes = normalizeBoothNotes(row.boothNotes, row.count);
@@ -2360,6 +2420,7 @@ function getParams() {
     boothDoorWidths: rowDoorWidthOverrides(currentRow, count),
     noDoorBooths: normalizeNoDoorBooths(currentRow?.noDoorBooths, count),
     depthPanelSpecials: normalizeDepthPanelSpecials(currentRow?.depthPanelSpecials, count + 1),
+    dimensionLocks: currentRow?.dimensionLocks || null,
     hUpright: parseInt(document.getElementById('h-upright').value)||1830,
     hDoor: parseInt(document.getElementById('h-door').value)||1750,
     hMid: parseInt(document.getElementById('h-mid').value)||1800,
@@ -2389,6 +2450,77 @@ function splitInteger(total, count) {
   const base = Math.floor(roundedTotal / n);
   let rem = roundedTotal - base * n;
   return Array.from({length:n}, () => base + (rem-- > 0 ? 1 : 0));
+}
+
+function normalizeDimensionLocks(locks, count) {
+  const n = Math.max(1, Number(count) || 1);
+  const source = locks && typeof locks === 'object' ? locks : {};
+  const fixedNumber = value => {
+    const num = Math.round(Number(value) || 0);
+    return num > 0 ? num : null;
+  };
+  return {
+    frontPanels: Array.from({length:n + 1}, (_, i) => fixedNumber(source.frontPanels?.[i])),
+    doorWidths: Array.from({length:n}, (_, i) => fixedNumber(source.doorWidths?.[i]))
+  };
+}
+
+function hasDimensionLocks(locks) {
+  return !!locks && [...(locks.frontPanels || []), ...(locks.doorWidths || [])].some(value => Number(value) > 0);
+}
+
+function applyDimensionLocksToComputed(row, computed) {
+  const locks = normalizeDimensionLocks(row.dimensionLocks, row.count);
+  if (!hasDimensionLocks(locks)) return computed;
+  const count = Math.max(1, Number(row.count) || 1);
+  const lockedDoors = locks.doorWidths.map(value => Number(value) > 0 ? rebateSmallSize(value, row, 'double') : null);
+  const doorInstallWidths = computed.doorInstallWidths.map((width, i) => Number(lockedDoors[i]) > 0 ? Math.min(Number(lockedDoors[i]), computed.boothWidths[i]) : width);
+  const doorWidths = doorInstallWidths.map(width => row.rebate ? width + (row.rebateDepth || 0) * 2 : width);
+  const gapPairs = computed.gapPairs || computed.boothWidths.map(() => splitInteger(row.doorGap, 2));
+  const availablePanels = computed.boothWidths.map((width, i) => Math.max(0, Math.round(width - doorInstallWidths[i] - row.doorGap)));
+  const totalPanelWidth = availablePanels.reduce((sum, width) => sum + width, 0);
+  const baseFrontPanels = Array.from({length:count + 1}, (_, i) => {
+    if (i === 0) return computed.sidePairs[0]?.[0] || 0;
+    if (i === count) return computed.sidePairs[count - 1]?.[1] || 0;
+    return (computed.sidePairs[i - 1]?.[1] || 0) + (computed.sidePairs[i]?.[0] || 0);
+  });
+  const lockedTotal = locks.frontPanels.reduce((sum, value) => sum + (Number(value) > 0 ? Number(value) : 0), 0);
+  const unlockedIndexes = baseFrontPanels.map((_, i) => i).filter(i => !(Number(locks.frontPanels[i]) > 0));
+  const remainingPanelWidth = Math.max(0, totalPanelWidth - lockedTotal);
+  const unlockedBaseTotal = unlockedIndexes.reduce((sum, i) => sum + baseFrontPanels[i], 0);
+  const fallbackParts = splitInteger(remainingPanelWidth, unlockedIndexes.length);
+  const frontPanels = Array.from({length:count + 1}, (_, i) => {
+    const locked = Number(locks.frontPanels[i]);
+    if (locked > 0) return Math.max(0, Math.round(locked));
+    if (!unlockedIndexes.length) return 0;
+    if (unlockedBaseTotal > 0) return Math.max(0, Math.round(remainingPanelWidth * (baseFrontPanels[i] || 0) / unlockedBaseTotal));
+    return fallbackParts.shift() || 0;
+  });
+  const diff = totalPanelWidth - frontPanels.reduce((sum, width) => sum + width, 0);
+  if (diff && unlockedIndexes.length) frontPanels[unlockedIndexes[unlockedIndexes.length - 1]] += diff;
+  const sidePairs = Array.from({length:count}, () => [0, 0]);
+  if (count === 1) {
+    sidePairs[0][0] = Math.min(availablePanels[0], frontPanels[0] || 0);
+    sidePairs[0][1] = Math.max(0, availablePanels[0] - sidePairs[0][0]);
+  } else {
+    sidePairs[0][0] = Math.min(availablePanels[0], frontPanels[0] || 0);
+    for (let i = 1; i < count; i++) {
+      sidePairs[i - 1][1] = Math.max(0, availablePanels[i - 1] - sidePairs[i - 1][0]);
+      sidePairs[i][0] = Math.max(0, (frontPanels[i] || 0) - sidePairs[i - 1][1]);
+      if (sidePairs[i][0] > availablePanels[i]) {
+        const overflow = sidePairs[i][0] - availablePanels[i];
+        sidePairs[i][0] = availablePanels[i];
+        if (!(Number(locks.frontPanels[i]) > 0)) frontPanels[i] = Math.max(0, (frontPanels[i] || 0) - overflow);
+      }
+    }
+    sidePairs[count - 1][1] = Math.max(0, availablePanels[count - 1] - sidePairs[count - 1][0]);
+  }
+  const insufficientDoors = doorInstallWidths.map(width => width < computed.minDoorW);
+  const insufficientEdges = sidePairs.map((pair, i) => (i === 0 && pair[0] < computed.minEdgePanel) || (i === count - 1 && pair[1] < computed.minEdgePanel));
+  const insufficientMiddles = sidePairs.slice(0, -1).map((pair, i) => pair[1] + sidePairs[i + 1][0] < computed.minMiddlePanel);
+  const doorZoneTotal = doorInstallWidths.reduce((sum, width) => sum + width + row.doorGap, 0);
+  const remainingForMargins = row.total - doorZoneTotal;
+  return {...computed, doorInstallWidths, doorWidths, sidePairs, gapPairs, doorTotal:doorInstallWidths.reduce((sum, width) => sum + width, 0), remainingForMargins, adjustedLength:remainingForMargins < 0, totalRun:remainingForMargins < 0 ? doorZoneTotal : row.total, edge:sidePairs[0]?.[0] || 0, middle:(sidePairs[0]?.[0] || 0) * 2, insufficientDoors, insufficientEdges, insufficientMiddles, dimensionLocks:locks};
 }
 
 function rebateLabel(size, p, type = 'double', role = 'panel', swingOverride = null) {
@@ -2536,7 +2668,8 @@ function compute(p) {
   const standardBoothW = boothW;
   const segmentSize = 999;
   const segmentedMode = false;
-  return {hasLeft, hasRight, hasBack, wallT, middlePanels, boothW, boothWidths, doorWidths, doorInstallWidths, sidePairs, gapPairs, boothD, projectMode, segmentedMode, segmentSize, totalRun, standardBoothW, adjustedLength, edge, middle, doorTotal, totalPanelThickness, remainingForMargins, hasCustomWidths, minEdgePanel, minMiddlePanel, minDoorW, insufficientDoors, insufficientEdges, insufficientMiddles};
+  const result = {hasLeft, hasRight, hasBack, wallT, middlePanels, boothW, boothWidths, doorWidths, doorInstallWidths, sidePairs, gapPairs, boothD, projectMode, segmentedMode, segmentSize, totalRun, standardBoothW, adjustedLength, edge, middle, doorTotal, totalPanelThickness, remainingForMargins, hasCustomWidths, minEdgePanel, minMiddlePanel, minDoorW, insufficientDoors, insufficientEdges, insufficientMiddles};
+  return applyDimensionLocksToComputed(p, result);
 }
 
 function resizeCanvas() {
@@ -3430,10 +3563,11 @@ function groupColor(index) {
   return ['var(--group-mono)', '#2DA44E', '#C65300', '#8250DF', '#BF3989', '#185FA5'][index % 6];
 }
 
-function drawDim(x1,y1,x2,y2,label,side) {
+function drawDim(x1,y1,x2,y2,label,side, meta = null) {
   ctx.save();
   ctx.strokeStyle='#111'; ctx.fillStyle='#111';
   ctx.lineWidth=Math.max(0.35, anno(4)); ctx.font=planFont(95);
+  const displayLabel = dimensionDisplayLabel(label, meta);
   const isH = Math.abs(x2-x1) > Math.abs(y2-y1);
   const off = anno(side || 45);
   if (isH) {
@@ -3447,7 +3581,12 @@ function drawDim(x1,y1,x2,y2,label,side) {
     ctx.moveTo(x2,dy-tick); ctx.lineTo(x2,dy+tick);
     ctx.stroke();
     ctx.textAlign='center'; ctx.textBaseline='bottom';
-    ctx.fillText(label,(x1+x2)/2,dy-anno(18));
+    const tx = (x1+x2)/2;
+    const ty = dy-anno(18);
+    ctx.fillText(displayLabel,tx,ty);
+    const textW = ctx.measureText(String(displayLabel)).width;
+    registerDimensionHit(meta, tx, ty - anno(74), Math.max(anno(210), textW + anno(95)), anno(96));
+    if (dimensionEditActive(meta) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(tx + textW / 2 + anno(8), ty, 'bottom', '#111', displayLabel);
   } else {
     const dx = (x1+x2)/2 + off;
     const tick = anno(28);
@@ -3458,9 +3597,14 @@ function drawDim(x1,y1,x2,y2,label,side) {
     ctx.moveTo(dx-tick,y1); ctx.lineTo(dx+tick,y1);
     ctx.moveTo(dx-tick,y2); ctx.lineTo(dx+tick,y2);
     ctx.stroke();
-    ctx.save(); ctx.translate(dx+anno(70), (y1+y2)/2); ctx.rotate(Math.PI/2);
-    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,0,0);
+    const tx = dx+anno(70);
+    const ty = (y1+y2)/2;
+    ctx.save(); ctx.translate(tx, ty); ctx.rotate(Math.PI/2);
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(displayLabel,0,0);
+    const textW = ctx.measureText(String(displayLabel)).width;
+    if (dimensionEditActive(meta) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(textW / 2 + anno(8), 0, 'middle', '#111', displayLabel);
     ctx.restore();
+    registerDimensionHit(meta, tx, ty - Math.max(anno(155), textW / 2 + anno(35)), anno(130), Math.max(anno(310), textW + anno(110)));
   }
   ctx.restore();
 }
@@ -3501,12 +3645,21 @@ function drawChainDim(y, segments, color = '#111') {
     ctx.beginPath(); ctx.moveTo(seg.x2, y - anno(28)); ctx.lineTo(seg.x2, y + anno(28)); ctx.stroke();
     const cx = (seg.x1 + seg.x2) / 2;
     if (seg.label && typeof seg.label === 'object') {
-      ctx.fillText(seg.label.top, cx, y - anno(30));
+      const top = String(dimensionDisplayLabel(seg.label.top, {...seg.meta, face:'top'}));
+      const bottom = String(dimensionDisplayLabel(seg.label.bottom, {...seg.meta, face:'bottom'}));
+      ctx.fillText(top, cx, y - anno(30));
+      registerDimensionHit({...seg.meta, face:'top'}, cx, y - anno(105), Math.max(anno(185), ctx.measureText(top).width + anno(88)), anno(88));
       ctx.textBaseline = 'top';
-      ctx.fillText(seg.label.bottom, cx, y + anno(42));
+      ctx.fillText(bottom, cx, y + anno(42));
+      registerDimensionHit({...seg.meta, face:'bottom'}, cx, y + anno(32), Math.max(anno(185), ctx.measureText(bottom).width + anno(88)), anno(92));
       ctx.textBaseline = 'bottom';
+      if (dimensionEditActive({...seg.meta, face:'top'}) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(cx + ctx.measureText(top).width / 2 + anno(8), y - anno(30), 'bottom', color, top);
+      if (dimensionEditActive({...seg.meta, face:'bottom'}) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(cx + ctx.measureText(bottom).width / 2 + anno(8), y + anno(42), 'top', color, bottom);
     } else if (seg.label) {
-      ctx.fillText(seg.label, cx, y - anno(30));
+      const text = String(dimensionDisplayLabel(seg.label, seg.meta));
+      ctx.fillText(text, cx, y - anno(30));
+      registerDimensionHit(seg.meta, cx, y - anno(105), Math.max(anno(185), ctx.measureText(text).width + anno(88)), anno(88));
+      if (dimensionEditActive(seg.meta) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(cx + ctx.measureText(text).width / 2 + anno(8), y - anno(30), 'bottom', color, text);
     }
   });
   ctx.restore();
@@ -3809,7 +3962,7 @@ function buildBoardModel(p, c, doors, ox, sW, scale) {
     const firstDoorIndex = doors[0].index ?? 0;
     const lastDoorIndex = doors[doors.length - 1].index ?? (p.count - 1);
     panels.push({
-      kind: 'edge', index: 0, bigX1: ox, bigX2: doors[0].zoneStart,
+      kind: 'edge', index: 0, lockIndex: 0, bigX1: ox, bigX2: doors[0].zoneStart,
       bigMm: c.sidePairs[firstDoorIndex]?.[0] || 0,
       leftRebate: false, rightRebate: true,
       leftTopIsSmall: frontSmallOnTopForSwing(doors[0].swing),
@@ -3821,7 +3974,7 @@ function buildBoardModel(p, c, doors, ox, sW, scale) {
       const leftIndex = doors[i].index ?? i;
       const rightIndex = doors[i + 1].index ?? (i + 1);
       panels.push({
-        kind: 'middle', index: i,
+        kind: 'middle', index: i, lockIndex: i + 1,
         bigX1: doors[i].zoneEnd,
         bigX2: doors[i + 1].zoneStart,
         bigMm: (c.sidePairs[leftIndex]?.[1] || 0) + (c.sidePairs[rightIndex]?.[0] || 0),
@@ -3835,7 +3988,7 @@ function buildBoardModel(p, c, doors, ox, sW, scale) {
       });
     }
     panels.push({
-      kind: 'edge', index: doors.length - 1, bigX1: doors[doors.length - 1].zoneEnd, bigX2: ox + sW,
+      kind: 'edge', index: doors.length - 1, lockIndex: Math.max(1, Number(p.count) || 1), bigX1: doors[doors.length - 1].zoneEnd, bigX2: ox + sW,
       bigMm: c.sidePairs[lastDoorIndex]?.[1] || 0,
       leftRebate: true, rightRebate: false,
       leftTopIsSmall: frontSmallOnTopForSwing(doors[doors.length - 1].swing),
@@ -4014,6 +4167,9 @@ function drawSegmentedPlan(p, c) {
 }
 
 function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', options = {}) {
+  const prevDimensionContext = activeDimensionContext;
+  activeDimensionContext = {groupId:options.groupId, rowId:options.rowId, hitScale:options.hitScale || 1, hitX:options.hitX || 0, hitY:options.hitY || 0};
+  try {
   const c = compute(p);
   const W = c.totalRun, D = p.depth;
   const t = p.tPanel, wt = c.wallT;
@@ -4108,10 +4264,10 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     ctx.strokeRect(drawX, drawY, drawW, actualH);
     if (protrusion > 0 && actualDepth > 0) {
       if (panelIndex === 0) {
-        drawLeftOuterDepthDim(drawX - anno(70), drawY, drawY + actualH, `${fmtMm(actualDepth)}mm`);
+        drawDim(drawX - anno(70), drawY, drawX - anno(70), drawY + actualH, `${fmtMm(actualDepth)}mm`, -12, {kind:'depth-panel-depth', panelIndex});
       } else {
         const dimX = drawX + drawW + anno(panelIndex === count ? 70 : 54);
-        drawDim(dimX, drawY, dimX, drawY + actualH, `${fmtMm(actualDepth)}mm`, 12);
+        drawDim(dimX, drawY, dimX, drawY + actualH, `${fmtMm(actualDepth)}mm`, 12, {kind:'depth-panel-depth', panelIndex});
       }
     }
     if (selected && !drawingForExport) drawPlanSelectionBox(drawX, drawY, drawW, actualH, anno(10));
@@ -4210,7 +4366,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   const middle = c.middle;
   if (options.showTopDims !== false) {
     const totalY = oy - swt - (options.totalDimGap ?? PLAN_ANCHOR.totalDimGap);
-    drawDim(ox, totalY, ox+sW, totalY, `${c.adjustedLength ? '展开总长' : '总长'} ${fmtMm(W)}mm`, 10);
+    drawDim(ox, totalY, ox+sW, totalY, `${c.adjustedLength ? '展开总长' : '总长'} ${fmtMm(W)}mm`, 10, {kind:'total'});
   }
   drawPlanWarnings(c, ox + sW + swt + 18, oy - swt + 4);
   if (options.showBoothDim !== false) {
@@ -4219,12 +4375,12 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     for (let i = 0; i < p.count; i++) {
       const boothMm = c.boothWidths[i] || c.boothW;
       const boothPx = boothMm * scale;
-      drawDim(boothDimX, boothY, boothDimX + boothPx, boothY, `${fmtMm(boothMm)}mm`, -10);
+      drawDim(boothDimX, boothY, boothDimX + boothPx, boothY, `${fmtMm(boothMm)}mm`, -10, {kind:'booth-width', boothIndex:i});
       boothDimX += boothPx;
     }
   }
   const depthX = ox + sW + swt + (options.depthDimGap ?? PLAN_ANCHOR.depthDimGap);
-  drawDim(depthX, oy, depthX, oy+sD, `深 ${p.depth}mm`, 14);
+  drawDim(depthX, oy, depthX, oy+sD, `深 ${p.depth}mm`, 14, {kind:'depth'});
 
   const segments = [];
   boardModel.panels.forEach(panel => {
@@ -4234,7 +4390,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
       : panel.mixed
       ? {top: fmtMm(Math.max(0, Math.round(panel.bigMm - (p.rebateDepth || 0)))), bottom: fmtMm(panel.bigMm)}
       : boardDimLabel(panel.bigMm, p, cutSides, panel.leftTopIsSmall);
-    segments.push({x1: panel.bigX1, x2: panel.bigX2, label});
+    segments.push({x1: panel.bigX1, x2: panel.bigX2, label, meta:{kind:'front-panel', panel}});
   });
   boardModel.doors.forEach(door => {
     const sourceDoor = doors[door.index];
@@ -4244,10 +4400,13 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
         bottom: fmtMm(door.topIsSmall ? door.bigMm : door.smallMm)
       }
       : fmtMm(door.bigMm);
-    segments.push({x1: sourceDoor.bigStart, x2: sourceDoor.bigEnd, label});
+    segments.push({x1: sourceDoor.bigStart, x2: sourceDoor.bigEnd, label, meta:{kind:'door-width', boothIndex:door.index}});
   });
   segments.sort((a, b) => a.x1 - b.x1);
   drawChainDim(oy + sD + st + (options.bottomDimOffset || PLAN_ANCHOR.bottomDimOffset), segments);
+  } finally {
+    activeDimensionContext = prevDimensionContext;
+  }
 }
 
 function drawPlanBlock(block, x, y, fit, pageOffsetX, pageOffsetY) {
@@ -4446,6 +4605,9 @@ function drawPlan(p) {
   ctx.restore();
 }
 function drawFront(p) {
+  const prevDimensionContext = activeDimensionContext;
+  activeDimensionContext = {groupId:activeGroup()?.id, rowId:activeRow()?.id, hitScale:1, hitX:0, hitY:0};
+  try {
   const c = compute(p);
   const P = getSheetLayout(p).plot;
   const W = c.totalRun;
@@ -4483,9 +4645,12 @@ function drawFront(p) {
     }
   }
   ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
-  drawDim(ox, oy-58, ox+sW, oy-58, `${c.adjustedLength ? '展开总长' : '总长'} ${W}mm`, 14);
-  drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14);
-  drawDim(ox+sW+58, floor-vis, ox+sW+58, floor, `见光板 ${p.hVis}mm`, 14);
+  drawDim(ox, oy-58, ox+sW, oy-58, `${c.adjustedLength ? '展开总长' : '总长'} ${W}mm`, 14, {kind:'total'});
+  drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14, {kind:'h-upright'});
+  drawDim(ox+sW+58, floor-vis, ox+sW+58, floor, `见光板 ${p.hVis}mm`, 14, {kind:'h-vis'});
+  } finally {
+    activeDimensionContext = prevDimensionContext;
+  }
 }
 
 function drawStandardFrontModule(p, c) {
@@ -4513,6 +4678,9 @@ function drawStandardFrontModule(p, c) {
 }
 
 function drawSide(p) {
+  const prevDimensionContext = activeDimensionContext;
+  activeDimensionContext = {groupId:activeGroup()?.id, rowId:activeRow()?.id, hitScale:1, hitX:0, hitY:0};
+  try {
   const c = compute(p);
   const P = getSheetLayout(p).plot;
   const W = p.depth;
@@ -4543,9 +4711,12 @@ function drawSide(p) {
   ctx.strokeStyle='#888'; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
   ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
 
-  drawDim(ox, oy-58, ox+sW, oy-58, `深度 ${p.depth}mm`, 14);
-  drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14);
-  drawDim(ox+sW+58, floor-hD, ox+sW+58, floor, `门高 ${p.hDoor||1750}mm`, 14);
+  drawDim(ox, oy-58, ox+sW, oy-58, `深度 ${p.depth}mm`, 14, {kind:'depth'});
+  drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14, {kind:'h-upright'});
+  drawDim(ox+sW+58, floor-hD, ox+sW+58, floor, `门高 ${p.hDoor||1750}mm`, 14, {kind:'h-door'});
+  } finally {
+    activeDimensionContext = prevDimensionContext;
+  }
 }
 
 function renderBOM(p) {
@@ -4880,9 +5051,156 @@ function canvasPlanPoint(e) {
   };
 }
 
+function dimensionValueFromInput(value) {
+  const n = Math.round(Number(String(value || '').replace(/[^0-9.]/g, '')) || 0);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function setRowFixedBoothWidth(row, boothIndex, width) {
+  const count = Math.max(1, Number(row.count) || 1);
+  const current = parseWidths(row.widthsText || '');
+  const values = Array.from({length:count}, (_, i) => Number(current[i]) > 0 ? Math.round(current[i]) : '');
+  values[Math.max(0, Math.min(count - 1, Number(boothIndex) || 0))] = Math.max(1, Math.round(width));
+  row.widthsText = values.map(value => Number(value) > 0 ? String(value) : '').join(',');
+}
+
+function panelRelatedBoothIndex(panel, row) {
+  const count = Math.max(1, Number(row?.count) || 1);
+  if (!panel) return 0;
+  if (panel.kind === 'edge') return panel.index === 0 ? 0 : count - 1;
+  return Math.max(0, Math.min(count - 1, Number(panel.index) || 0));
+}
+
+function frontPanelWidthForCandidate(row, panel, boothIndex, width) {
+  const testRow = {...row};
+  setRowFixedBoothWidth(testRow, boothIndex, width);
+  const c = compute(testRow);
+  if (panel?.kind === 'edge') return panel.index === 0 ? c.sidePairs[0]?.[0] || 0 : c.sidePairs[Math.max(0, Number(testRow.count) || 1) - 1]?.[1] || 0;
+  const index = Math.max(0, Math.min((Number(testRow.count) || 1) - 2, Number(panel?.index) || 0));
+  return (c.sidePairs[index]?.[1] || 0) + (c.sidePairs[index + 1]?.[0] || 0);
+}
+
+function estimateBoothWidthForPanelTarget(row, panel, target) {
+  const boothIndex = panelRelatedBoothIndex(panel, row);
+  const c = compute(row);
+  const current = c.boothWidths[boothIndex] || c.boothW || 1;
+  let best = Math.max(1, Math.round(current));
+  let diff = Infinity;
+  const min = Math.max(1, Number(row.doorW) || 1);
+  const max = Math.max(min, Number(row.total) || current || 1);
+  for (let width = min; width <= max; width += 5) {
+    const d = Math.abs(frontPanelWidthForCandidate(row, panel, boothIndex, width) - target);
+    if (d < diff) { diff = d; best = width; }
+  }
+  for (let width = Math.max(min, best - 6); width <= Math.min(max, best + 6); width++) {
+    const d = Math.abs(frontPanelWidthForCandidate(row, panel, boothIndex, width) - target);
+    if (d < diff) { diff = d; best = width; }
+  }
+  return best;
+}
+
+function frontPanelLockIndex(panel, row) {
+  const count = Math.max(1, Number(row?.count) || 1);
+  if (!panel) return 0;
+  if (Number.isFinite(Number(panel.lockIndex))) return Math.max(0, Math.min(count, Number(panel.lockIndex)));
+  if (panel.kind === 'edge') return panel.index === 0 ? 0 : count;
+  return Math.max(1, Math.min(count - 1, Number(panel.index) + 1 || 1));
+}
+
+function setRowDimensionLock(row, section, index, value) {
+  const count = Math.max(1, Number(row.count) || 1);
+  const locks = normalizeDimensionLocks(row.dimensionLocks, count);
+  const list = section === 'frontPanels' ? locks.frontPanels : locks.doorWidths;
+  const safeIndex = Math.max(0, Math.min(list.length - 1, Number(index) || 0));
+  list[safeIndex] = Math.max(1, Math.round(value));
+  row.dimensionLocks = locks;
+}
+
+function dimensionCurrentValue(row, meta = {}) {
+  const c = compute(row);
+  if (meta.kind === 'total') return c.totalRun || row.total;
+  if (meta.kind === 'depth') return row.depth;
+  if (meta.kind === 'booth-width') return c.boothWidths?.[meta.boothIndex] || c.boothW;
+  if (meta.kind === 'door-width') return c.doorWidths?.[meta.boothIndex] || boothDoorWidthAt(row, meta.boothIndex);
+  if (meta.kind === 'front-panel') return Math.round(Number(meta.panel?.bigMm) || 0);
+  if (meta.kind === 'depth-panel-depth') return depthPanelActualDepth(row, meta.panelIndex || 0);
+  if (meta.kind === 'h-upright') return row.hUpright;
+  if (meta.kind === 'h-door') return row.hDoor;
+  if (meta.kind === 'h-mid') return row.hMid;
+  if (meta.kind === 'h-vis') return row.hVis;
+  return 0;
+}
+
+function commitDimensionValue(hit, value) {
+  const group = groups.find(item => item.id === hit?.groupId);
+  const row = group ? ensureRows(group).find(item => item.id === hit.rowId) : null;
+  const meta = hit?.meta || {};
+  const next = dimensionValueFromInput(value);
+  if (!group || !row || !(next > 0)) return false;
+  pushHistory();
+  activeGroupId = group.id;
+  activeRowId = row.id;
+  if (meta.kind === 'total') {
+    row.total = next;
+    row.widthsText = '';
+    committedWidthsText = '';
+    syncWidthCardsFromText('');
+    renderWidthCards();
+  }
+  else if (meta.kind === 'depth') row.depth = next;
+  else if (meta.kind === 'booth-width') setRowFixedBoothWidth(row, meta.boothIndex, next);
+  else if (meta.kind === 'door-width') {
+    setRowDimensionLock(row, 'doorWidths', meta.boothIndex, next);
+    const count = Math.max(1, Number(row.count) || 1);
+    row.boothDoorWidths = rowDoorWidthOverrides(row, count);
+    row.boothDoorWidths[Math.max(0, Math.min(count - 1, Number(meta.boothIndex) || 0))] = next;
+  } else if (meta.kind === 'front-panel') setRowDimensionLock(row, 'frontPanels', frontPanelLockIndex(meta.panel, row), next);
+  else if (meta.kind === 'depth-panel-depth') {
+    const count = depthPanelCount(row);
+    const index = Math.max(0, Math.min(count - 1, Number(meta.panelIndex) || 0));
+    row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, count);
+    row.depthPanelSpecials[index] = {...row.depthPanelSpecials[index], depth:Math.min(next, Number(row.depth) || next), protrusion:0};
+  } else if (meta.kind === 'h-upright') row.hUpright = next;
+  else if (meta.kind === 'h-door') row.hDoor = next;
+  else if (meta.kind === 'h-mid') row.hMid = next;
+  else if (meta.kind === 'h-vis') row.hVis = next;
+  else return false;
+  activeDimensionEdit = null;
+  loadGroupToForm(group, row);
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
+  updateGroupListState();
+  return true;
+}
+
+function startDimensionEdit(hit) {
+  const editor = document.getElementById('dimension-editor');
+  const group = groups.find(item => item.id === hit?.groupId);
+  const row = group ? ensureRows(group).find(item => item.id === hit.rowId) : null;
+  if (!editor || !hit || !row) return false;
+  activeDimensionEdit = {groupId:hit.groupId, rowId:hit.rowId, meta:hit.meta || {}, key:hit.key || dimensionMetaKey(hit.meta || {})};
+  editor.hidden = false;
+  editor.value = String(dimensionCurrentValue(row, hit.meta || {}) || '');
+  window.setTimeout(() => { editor.focus({preventScroll:true}); editor.select(); }, 0);
+  if (lastParams) drawView(lastParams, currentTab);
+  return true;
+}
+
+function finishDimensionEdit(commit = true) {
+  const editor = document.getElementById('dimension-editor');
+  if (!editor || editor.hidden) return;
+  const hit = activeDimensionEdit;
+  const value = editor.value;
+  editor.hidden = true;
+  activeDimensionEdit = null;
+  if (commit && hit) commitDimensionValue(hit, value);
+  else if (lastParams) drawView(lastParams, currentTab);
+}
+
 function hitPlanArea(x, y) {
   const hits = [...planHitAreas].reverse().filter(area => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
-  return hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'block') || null;
+  return hits.find(area => area.type === 'dimension') || hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'block') || null;
 }
 
 function hitPlanBlock(x, y) {
@@ -4989,6 +5307,8 @@ cv.addEventListener('wheel', e => {
 cv.addEventListener('mousedown', e => {
   if (e.button === 0 && currentTab === 'plan' && canvasMode === 'sheets') {
     const pt = canvasPlanPoint(e);
+    const anyHit = hitPlanArea(pt.x, pt.y);
+    if (anyHit?.type === 'dimension') return;
     const hit = hitPlanBlock(pt.x, pt.y);
     if (hit?.type === 'block') {
       e.preventDefault();
@@ -5009,6 +5329,16 @@ cv.addEventListener('mousedown', e => {
   cv.style.cursor = 'move';
 });
 
+cv.addEventListener('dblclick', e => {
+  if (isDragging) return;
+  const pt = canvasPlanPoint(e);
+  const hit = hitPlanArea(pt.x, pt.y);
+  if (hit?.type !== 'dimension') return;
+  e.preventDefault();
+  e.stopPropagation();
+  startDimensionEdit(hit);
+});
+
 cv.addEventListener('click', e => {
   if (suppressNextPlanClick) {
     suppressNextPlanClick = false;
@@ -5017,6 +5347,7 @@ cv.addEventListener('click', e => {
   if (currentTab !== 'plan' || isDragging) return;
   const pt = canvasPlanPoint(e);
   const hit = hitPlanArea(pt.x, pt.y);
+  if (hit?.type === 'dimension') return;
   if (!hit) {
     selectionScope = 'none';
     clearSelectedBooth();
@@ -5407,8 +5738,27 @@ document.getElementById('canvas-text-editor')?.addEventListener('keydown', e => 
   }
 });
 
+document.getElementById('dimension-editor')?.addEventListener('input', () => {
+  if (lastParams) drawView(lastParams, currentTab);
+});
+
+document.getElementById('dimension-editor')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    finishDimensionEdit(true);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    finishDimensionEdit(false);
+  }
+});
+
+document.getElementById('dimension-editor')?.addEventListener('blur', () => finishDimensionEdit(true));
+
 window.setInterval(() => {
   if (activeCanvasTextEditable() && document.activeElement === document.getElementById('canvas-text-editor') && lastParams) {
+    drawView(lastParams, currentTab);
+  }
+  if (activeDimensionEdit && document.activeElement === document.getElementById('dimension-editor') && lastParams) {
     drawView(lastParams, currentTab);
   }
 }, 530);
