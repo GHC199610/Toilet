@@ -315,14 +315,14 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <div class="vtab" id="tab-front" onclick="switchTab('front')">正立面图</div>
       <div class="vtab" id="tab-side" onclick="switchTab('side')">侧立面图</div>
       <div class="top-widths"><label>单间净宽</label><div class="width-card-row" id="width-card-row"></div></div>
-      <div class="paper-select"><label for="paper-size">纸张</label><select id="paper-size" onchange="setPaperSize(this.value)"><option value="a4">A4</option><option value="a3">A3</option><option value="auto">自适应</option></select></div>
+      <div class="paper-select"><label for="paper-size">纸张</label><select id="paper-size" onchange="setPaperSize(this.value)"><option value="a4">A4</option><option value="a3">A3</option></select></div>
     </div>
     <div class="sheet-actions" id="sheet-actions">
       <div class="quick-history-actions global-history-actions" aria-label="全局历史操作">
         <button class="quick-icon-btn" type="button" onclick="undoLayout()" title="撤销" aria-label="撤销"><svg viewBox="0 0 24 24"><path d="M9 7 5 11l4 4"/><path d="M5 11h8a5 5 0 0 1 5 5v1"/></svg></button>
         <button class="quick-icon-btn" type="button" onclick="redoLayout()" title="恢复" aria-label="恢复"><svg viewBox="0 0 24 24"><path d="m15 7 4 4-4 4"/><path d="M19 11h-8a5 5 0 0 0-5 5v1"/></svg></button>
       </div>
-      <button class="sheet-action-btn" type="button" onclick="autoDistributeSheets()">自动分配图纸</button>
+      <button class="sheet-action-btn" type="button" onclick="autoCompactSheetLayout()">自动排版</button>
       <button class="sheet-action-btn expand" type="button" onclick="toggleUrinalPanel()">小便板</button>
       <span class="sheet-page-info" id="sheet-page-info">第 1/1 页</span>
     </div>
@@ -387,7 +387,8 @@ let openGroupIds = new Set([1]);
 let lastAutoTotal = 3000;
 let committedWidthsText = '';
 let paperSize = localStorage.getItem('partition-paper-size') || 'a4';
-let canvasMode = paperSize === 'auto' ? 'free' : 'sheets';
+if (!['a4','a3'].includes(paperSize)) paperSize = 'a4';
+let canvasMode = 'sheets';
 let planAnnotationScale = 1;
 let canvasPixelRatio = window.devicePixelRatio || 1;
 let drawingForExport = false;
@@ -408,6 +409,7 @@ let redoStack = [];
 let pendingSelectionDraw = 0;
 let urinalSpec = {count:0, width:400, height:900, thick:12, shape:'矩形', hole:'无开孔', note:''};
 let quickNavKeep = null;
+let quickCompactDisplayMode = false;
 let lastQuickCellRef = null;
 let autoOpenTotalOnQuickFocus = false;
 let quickSelectAllActive = false;
@@ -1235,6 +1237,41 @@ function syncQuickLayoutFromGroup(group = activeGroup()) {
   normalizeQuickRows();
 }
 
+function syncQuickLayoutFromDrawingOrder(group = activeGroup()) {
+  const rows = ensureRows(group)
+    .filter(row => row.enabled === true)
+    .slice()
+    .sort((a, b) => {
+      const pageA = Number.isFinite(Number(a.drawSheetPage)) ? Number(a.drawSheetPage) : Number(a.sheetPage) || 0;
+      const pageB = Number.isFinite(Number(b.drawSheetPage)) ? Number(b.drawSheetPage) : Number(b.sheetPage) || 0;
+      const orderA = Number.isFinite(Number(a.sheetOrder)) ? Number(a.sheetOrder) : Number.MAX_SAFE_INTEGER;
+      const orderB = Number.isFinite(Number(b.sheetOrder)) ? Number(b.sheetOrder) : Number.MAX_SAFE_INTEGER;
+      return (pageA - pageB) || (orderA - orderB) || ((a.layoutRow || 1) - (b.layoutRow || 1)) || ((a.layoutCol || 1) - (b.layoutCol || 1)) || (a.id - b.id);
+    });
+  if (!rows.length) {
+    quickLayoutRows = [['', '', '']];
+    quickLayoutPages = [[['', '', '']]];
+    activeQuickPage = 0;
+    return;
+  }
+  const compactCols = 4;
+  const pageRows = [];
+  rows.forEach((row, index) => {
+    const rowIndex = Math.floor(index / compactCols);
+    const colIndex = index % compactCols;
+    if (!pageRows[rowIndex]) pageRows[rowIndex] = Array.from({length: compactCols}, () => '');
+    pageRows[rowIndex][colIndex] = String(Math.max(1, Number(row.count) || 1));
+    row.sheetPage = 0;
+    row.layoutRow = rowIndex + 1;
+    row.layoutCol = colIndex + 1;
+  });
+  quickLayoutPages = [pageRows.length ? pageRows : [['', '', '']]];
+  activeQuickPage = 0;
+  quickLayoutRows = quickLayoutPages[0];
+  quickNavKeep = null;
+  quickCompactDisplayMode = true;
+}
+
 function syncWidthCardsFromText(text = '') {
   const values = splitWidthTextParts(text).map(value => value.replace(/\D/g, '').slice(0, 5));
   const count = currentWidthCardCount();
@@ -1449,8 +1486,25 @@ function normalizeQuickRows() {
   });
   if (!quickLayoutRows.length) quickLayoutRows = [['','','']];
   quickLayoutPages[activeQuickPage] = quickLayoutRows;
+  if (quickCompactDisplayMode) compactQuickRowsForDisplay();
 }
 
+function compactQuickRowsForDisplay() {
+  const values = quickLayoutRows.flat().map(value => String(value || '')).filter(value => Number(value) > 0);
+  const compactCols = 4;
+  const nextRows = [];
+  values.forEach((value, index) => {
+    const rowIndex = Math.floor(index / compactCols);
+    const colIndex = index % compactCols;
+    if (!nextRows[rowIndex]) nextRows[rowIndex] = Array.from({length: compactCols}, () => '');
+    nextRows[rowIndex][colIndex] = value;
+  });
+  if (!nextRows.length) nextRows.push(['', '', '']);
+  const lastRow = nextRows[nextRows.length - 1];
+  if (lastRow.every(value => Number(value) > 0)) nextRows.push(['', '', '']);
+  quickLayoutRows = nextRows;
+  quickLayoutPages[activeQuickPage] = quickLayoutRows;
+}
 function syncQuickPageRows() {
   if (!Array.isArray(quickLayoutPages) || !quickLayoutPages.length) quickLayoutPages = [quickLayoutRows || [['','','']]];
   quickLayoutPages[activeQuickPage] = quickLayoutRows;
@@ -1629,6 +1683,7 @@ function handleQuickInput(input) {
   const col = Number(input.dataset.quickCol);
   const value = input.value.replace(/\D/g, '').slice(0, quickTenMode ? 2 : 1);
   quickNavKeep = null;
+  if (quickCompactDisplayMode && value) quickCompactDisplayMode = false;
   if (quickLayoutRows[row][col] !== value) pushHistory();
   quickLayoutRows[row][col] = value;
   syncQuickPageRows();
@@ -1739,6 +1794,16 @@ function handleQuickKey(e) {
   }
   if (e.key === 'Enter') {
     e.preventDefault();
+    if (quickTenMode) {
+      const value = input.value.replace(/\D/g, '').slice(0, 2);
+      if (value) {
+        input.value = value;
+        quickLayoutRows[row][col] = value;
+        syncQuickPageRows();
+        syncQuickCellToLayout(row, col, value);
+        return;
+      }
+    }
     applyQuickLayout();
     return;
   }
@@ -1876,6 +1941,65 @@ function saveUrinalSpec() {
   renderBOM(lastParams || getParams());
 }
 
+function autoCompactSheetLayout() {
+  const sourceBlocks = collectPlanBlocks(lastParams || getParams()).filter(block => block.row.enabled !== false);
+  if (!sourceBlocks.length) return;
+  pushHistory();
+  saveActiveGroup(false);
+  const makeBlock = (block, index) => ({
+    ...block,
+    originalRow: block.row,
+    row: {...block.row, sheetPage: undefined, drawSheetPage: undefined, sheetOrder: index},
+    metrics: planBlockMetrics(block.row)
+  });
+  const baseBlocks = sourceBlocks.map(makeBlock);
+  const p = getParams();
+  const layout = getSheetLayout(p);
+  const area = block => block.metrics.w * block.metrics.h;
+  const countOf = block => Math.max(1, Number(block.originalRow?.count || block.row?.count) || 1);
+  const candidates = [
+    baseBlocks,
+    [...baseBlocks].sort((a, b) => area(b) - area(a)),
+    [...baseBlocks].sort((a, b) => (b.metrics.h - a.metrics.h) || (b.metrics.w - a.metrics.w)),
+    [...baseBlocks].sort((a, b) => (b.metrics.w - a.metrics.w) || (b.metrics.h - a.metrics.h)),
+    [...baseBlocks].sort((a, b) => countOf(b) - countOf(a) || area(b) - area(a)),
+    [...baseBlocks].sort((a, b) => countOf(a) - countOf(b) || area(b) - area(a))
+  ];
+  const scorePages = pages => {
+    const rowCount = pages.reduce((sum, page) => sum + (page.rowCount || 0), 0);
+    const last = pages[pages.length - 1] || {usedW:0, usedH:0};
+    const firstFill = pages.slice(0, -1).reduce((sum, page) => sum + page.usedW * page.usedH, 0);
+    return pages.length * 1e9 + rowCount * 1e6 + last.usedH * 1e3 + last.usedW - firstFill / 1e6;
+  };
+  let best = null;
+  candidates.forEach(candidate => {
+    const P = layout.plot;
+    const maxBlockW = Math.max(1, ...candidate.map(block => block.metrics.w));
+    const maxBlockH = Math.max(1, ...candidate.map(block => block.metrics.h));
+    const maxScale = Math.min(1, P.w / maxBlockW, P.h / maxBlockH);
+    const sheetScale = chooseSheetPackScale(candidate, layout, maxScale);
+    const pages = autoPackPlanBlocksAtScale(candidate, layout, sheetScale);
+    const score = scorePages(pages);
+    if (!best || score < best.score) best = {pages, score};
+  });
+  (best?.pages || []).forEach((page, pageIndex) => {
+    const visualBlocks = page.blocks
+      .slice()
+      .sort((a, b) => (a.pageY - b.pageY) || (a.pageX - b.pageX));
+    visualBlocks.forEach((block, blockIndex) => {
+      const row = block.originalRow;
+      if (!row) return;
+      row.drawSheetPage = pageIndex;
+      row.sheetOrder = pageIndex * 1000 + blockIndex;
+    });
+  });
+  syncQuickLayoutFromDrawingOrder(activeGroup());
+  renderQuickLayout();
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
+  updateGroupListState();
+}
 function updateGroupListState() {
   renderBOM(lastParams || getParams());
 }
@@ -1913,7 +2037,7 @@ function selectGroup(id) {
   clearSelectedBooth();
   loadGroupToForm(activeGroup(), activeRow());
   updateGroupListState();
-  scheduleSelectionDrawing(!(currentTab === 'plan' && canvasMode === 'free'));
+  scheduleSelectionDrawing(true);
 }
 
 function toggleGroup(id) {
@@ -2459,19 +2583,12 @@ function drawView(p, tab) {
   updateSheetPageInfo(p);
 }
 
-function freePlanContentSize(p = lastParams || getParams()) {
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
-  const free = layoutFreePlanBlocks(blocks);
-  return {
-    w: Math.max(1180, free.usedW + 420),
-    h: Math.max(834, free.usedH + 460)
-  };
-}
 
 function renderSheetCanvas(tab = currentTab, p = lastParams || getParams(), options = {}) {
   const oldCanvasMode = canvasMode;
   if (options.canvasMode) canvasMode = options.canvasMode;
-  const layout = getSheetLayout(p);
+  const renderPlanPage = Number.isFinite(options.planPage) ? options.planPage : currentPlanPage;
+  const layout = sheetLayoutForRender(tab, p, renderPlanPage);
   const renderScale = Math.max(1, Number(options.renderScale || options.exportScale || QUALITY_RENDER_SCALE) || QUALITY_RENDER_SCALE);
   const out = document.createElement('canvas');
   out.width = Math.ceil(layout.sheetW * renderScale);
@@ -2486,7 +2603,7 @@ function renderSheetCanvas(tab = currentTab, p = lastParams || getParams(), opti
   if (Number.isFinite(options.planPage)) currentPlanPage = options.planPage;
   ctx.clearRect(0, 0, out.width, out.height);
   ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
-  drawSheet(tab === 'plan' ? '卫生间隔断平面图' : tab === 'front' ? '卫生间隔断正立面图' : '卫生间隔断侧立面图', p, 0, 0, tab === 'plan' ? currentPlanPage : 0);
+  drawSheet(tab === 'plan' ? '卫生间隔断平面图' : tab === 'front' ? '卫生间隔断正立面图' : '卫生间隔断侧立面图', p, 0, 0, tab === 'plan' ? currentPlanPage : 0, layout);
   if (tab === 'plan') drawPlan(p);
   else if (tab === 'front') drawFront(p);
   else drawSide(p);
@@ -2681,7 +2798,8 @@ function createSvgRenderer(width, height) {
 function renderSheetSvg(tab = currentTab, p = lastParams || getParams(), options = {}) {
   const oldCanvasMode = canvasMode;
   if (options.canvasMode) canvasMode = options.canvasMode;
-  const layout = getSheetLayout(p);
+  const renderPlanPage = Number.isFinite(options.planPage) ? options.planPage : currentPlanPage;
+  const layout = sheetLayoutForRender(tab, p, renderPlanPage);
   const svg = createSvgRenderer(layout.sheetW, layout.sheetH);
   const oldCtx = ctx;
   const oldPlanHitAreas = planHitAreas;
@@ -2691,7 +2809,7 @@ function renderSheetSvg(tab = currentTab, p = lastParams || getParams(), options
   planHitAreas = [];
   drawingForExport = true;
   if (Number.isFinite(options.planPage)) currentPlanPage = options.planPage;
-  drawSheet(tab === 'plan' ? '卫生间隔断平面图' : tab === 'front' ? '卫生间隔断正立面图' : '卫生间隔断侧立面图', p, 0, 0, tab === 'plan' ? currentPlanPage : 0);
+  drawSheet(tab === 'plan' ? '卫生间隔断平面图' : tab === 'front' ? '卫生间隔断正立面图' : '卫生间隔断侧立面图', p, 0, 0, tab === 'plan' ? currentPlanPage : 0, layout);
   if (tab === 'plan') drawPlan(p);
   else if (tab === 'front') drawFront(p);
   else drawSide(p);
@@ -2770,7 +2888,7 @@ function planBlockMetrics(row) {
 
 function collectPlanBlocks(p = lastParams || getParams()) {
   const rows = drawableGroupRows();
-  const source = rows.length ? rows : (canvasMode === 'free' ? [] : [{group: activeGroup(), row: p, index: 0}]);
+  const source = rows.length ? rows : [{group: activeGroup(), row: p, index: 0}];
   let labelStart = 0;
   const orderIndex = item => {
     const key = `${item.group.id}:${item.row.id}`;
@@ -2782,7 +2900,7 @@ function collectPlanBlocks(p = lastParams || getParams()) {
   };
   return source
     .slice()
-    .sort((a, b) => ((a.row.sheetPage || 0) - (b.row.sheetPage || 0)) || (orderIndex(a) - orderIndex(b)) || (a.group.id - b.group.id) || ((a.row.layoutRow || 1) - (b.row.layoutRow || 1)) || ((a.row.layoutCol || 1) - (b.row.layoutCol || 1)) || (a.row.id - b.row.id))
+    .sort((a, b) => ((Number.isFinite(Number(a.row.drawSheetPage)) ? Number(a.row.drawSheetPage) : (a.row.sheetPage || 0)) - (Number.isFinite(Number(b.row.drawSheetPage)) ? Number(b.row.drawSheetPage) : (b.row.sheetPage || 0))) || (orderIndex(a) - orderIndex(b)) || (a.group.id - b.group.id) || ((a.row.layoutRow || 1) - (b.row.layoutRow || 1)) || ((a.row.layoutCol || 1) - (b.row.layoutCol || 1)) || (a.row.id - b.row.id))
     .map(item => {
       const metrics = planBlockMetrics(item.row);
       const block = {...item, metrics, labelStart};
@@ -2891,8 +3009,10 @@ function paginatePlanBlocksAtScale(blocks, layout, sheetScale) {
   blocks.forEach(block => {
     const rawW = block.metrics.w;
     const rawH = block.metrics.h;
-    const targetSheetPage = Number.isFinite(Number(block.row?.sheetPage)) ? Math.max(0, Number(block.row.sheetPage)) : null;
-    if (targetSheetPage !== null && page.blocks.length && block.row?.sheetPage !== page.blocks[0]?.row?.sheetPage) pushPage();
+    const pageValue = Number.isFinite(Number(block.row?.drawSheetPage)) ? Number(block.row.drawSheetPage) : Number(block.row?.sheetPage);
+    const targetSheetPage = Number.isFinite(pageValue) ? Math.max(0, pageValue) : null;
+    const firstPageValue = Number.isFinite(Number(page.blocks[0]?.row?.drawSheetPage)) ? Number(page.blocks[0].row.drawSheetPage) : Number(page.blocks[0]?.row?.sheetPage);
+    if (targetSheetPage !== null && page.blocks.length && targetSheetPage !== firstPageValue) pushPage();
     let pageIndex = pages.length;
     const rowCapacity = maxRawW(pageIndex);
     if (cursorX > 0 && cursorX + rawW > rowCapacity + 0.5) {
@@ -2916,41 +3036,75 @@ function paginatePlanBlocksAtScale(blocks, layout, sheetScale) {
   return pages.length ? pages : [{blocks: [], usedW: 0, usedH: 0, rowCount: 0}];
 }
 
-function layoutFreePlanBlocks(blocks) {
-  const gapX = 1000;
-  const gapY = 1000;
-  const groupGapY = 1400;
-  const groupsInOrder = [...new Set(blocks.map(block => block.group.id))].sort((a, b) => a - b);
-  const placed = [];
-  let cursorY = 0;
-  let usedW = 0;
-  groupsInOrder.forEach(groupId => {
-    const groupBlocks = blocks.filter(block => block.group.id === groupId);
-    const rowNos = [...new Set(groupBlocks.map(block => block.row.layoutRow || 1))].sort((a, b) => a - b);
-    const colNos = [...new Set(groupBlocks.map(block => block.row.layoutCol || 1))].sort((a, b) => a - b);
-    const colWidths = colNos.map(colNo => Math.max(...groupBlocks.filter(block => (block.row.layoutCol || 1) === colNo).map(block => block.metrics.w), 1));
-    const rowHeights = rowNos.map(rowNo => Math.max(...groupBlocks.filter(block => (block.row.layoutRow || 1) === rowNo).map(block => block.metrics.h), 1));
-    const groupW = colWidths.reduce((sum, w) => sum + w, 0) + gapX * Math.max(0, colWidths.length - 1);
-    const groupH = rowHeights.reduce((sum, h) => sum + h, 0) + gapY * Math.max(0, rowHeights.length - 1);
-    groupBlocks.forEach(block => {
-      const colIndex = colNos.indexOf(block.row.layoutCol || 1);
-      const rowIndex = rowNos.indexOf(block.row.layoutRow || 1);
-      const x = colWidths.slice(0, colIndex).reduce((sum, w) => sum + w, 0) + gapX * colIndex;
-      const y = cursorY + rowHeights.slice(0, rowIndex).reduce((sum, h) => sum + h, 0) + gapY * rowIndex;
-      placed.push({...block, pageX:x, pageY:y});
-    });
-    usedW = Math.max(usedW, groupW);
-    cursorY += groupH + groupGapY;
-  });
-  usedW = Math.max(0, ...placed.map(block => block.pageX + block.metrics.w));
-  const usedH = Math.max(0, ...placed.map(block => block.pageY + block.metrics.h));
-  return {
-    blocks: placed,
-    usedW,
-    usedH: Math.max(usedH, cursorY - groupGapY)
-  };
-}
 
+function autoPackPlanBlocksAtScale(blocks, layout, sheetScale) {
+  const minScale = SHEET_LAYOUT_RULES.minReadableScale;
+  const packingScale = Math.max(0.0001, sheetScale || minScale);
+  const rawGapX = SHEET_LAYOUT_RULES.colGap / packingScale;
+  const rawGapY = SHEET_LAYOUT_RULES.rowGap / packingScale;
+  const maxRawW = pageIndex => sheetRowAvailableWidth(layout, pageIndex) / Math.max(0.0001, minScale);
+  const maxRawH = pageIndex => sheetAvailableHeight(layout, pageIndex) / Math.max(0.0001, minScale);
+  const pages = [];
+  const createPage = () => ({blocks: [], rows: [], usedW: 0, usedH: 0, rowCount: 0});
+  const packWidth = block => {
+    const count = Math.max(1, Number(block.row?.count) || Number(block.originalRow?.count) || 1);
+    if (count > 2) return block.metrics.w;
+    const run = Number(block.metrics?.c?.totalRun) || Number(block.row?.total) || Number(block.originalRow?.total) || 0;
+    const sharedLabelReserve = 260;
+    return Math.max(1, Math.min(block.metrics.w, run + sharedLabelReserve));
+  };
+  const canFitPageHeight = (page, row, rawH, pageIndex) => {
+    const nextLineH = Math.max(row.lineH, rawH);
+    const nextUsedH = Math.max(page.usedH, row.y + nextLineH);
+    return nextUsedH <= maxRawH(pageIndex) + 0.5;
+  };
+  const placeInRow = (page, row, block) => {
+    const rawW = packWidth(block);
+    const rawH = block.metrics.h;
+    const x = row.blocks.length ? row.usedW + rawGapX : 0;
+    const placed = {...block, pageX:x, pageY:row.y, sheetScale:packingScale};
+    row.blocks.push(placed);
+    row.usedW = x + rawW;
+    row.lineH = Math.max(row.lineH, rawH);
+    page.blocks.push(placed);
+    page.usedW = Math.max(page.usedW, row.usedW);
+    page.usedH = Math.max(page.usedH, row.y + row.lineH);
+    page.rowCount = page.rows.length;
+  };
+  const addRow = (page, pageIndex, block) => {
+    const prev = page.rows[page.rows.length - 1];
+    const y = prev ? prev.y + prev.lineH + rawGapY : 0;
+    const row = {blocks: [], y, usedW: 0, lineH: 0};
+    if (page.rows.length + 1 > maxRowsForSheetPage(pageIndex)) return false;
+    if (y + block.metrics.h > maxRawH(pageIndex) + 0.5) return false;
+    page.rows.push(row);
+    placeInRow(page, row, block);
+    return true;
+  };
+  blocks.forEach(block => {
+    const rawW = packWidth(block);
+    const rawH = block.metrics.h;
+    let placed = false;
+    for (let pageIndex = 0; pageIndex < pages.length && !placed; pageIndex++) {
+      const page = pages[pageIndex];
+      for (const row of page.rows) {
+        const nextW = row.blocks.length ? row.usedW + rawGapX + rawW : rawW;
+        if (nextW <= maxRawW(pageIndex) + 0.5 && canFitPageHeight(page, row, rawH, pageIndex)) {
+          placeInRow(page, row, block);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed && addRow(page, pageIndex, block)) placed = true;
+    }
+    if (!placed) {
+      const page = createPage();
+      pages.push(page);
+      addRow(page, pages.length - 1, block);
+    }
+  });
+  return pages.map(page => ({blocks: page.blocks, usedW: page.usedW, usedH: page.usedH, rowCount: page.rowCount}));
+}
 function getPlanPages(p = lastParams || getParams()) {
   return paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), getSheetLayout(p));
 }
@@ -2966,10 +3120,6 @@ function getSheetPlanPages(p = lastParams || getParams()) {
 function updateSheetPageInfo(p = lastParams || getParams()) {
   const el = document.getElementById('sheet-page-info');
   if (!el) return;
-  if (canvasMode === 'free') {
-    el.textContent = '自由画布';
-    return;
-  }
   const pages = getPlanPages(p);
   if (currentTab === 'plan' && canvasMode === 'sheets') {
     el.textContent = `共 ${pages.length} 页`;
@@ -2979,19 +3129,6 @@ function updateSheetPageInfo(p = lastParams || getParams()) {
   el.textContent = `第 ${page + 1}/${pages.length} 页`;
 }
 
-function autoDistributeSheets() {
-  canvasMode = 'sheets';
-  if (paperSize === 'auto') {
-    paperSize = 'a4';
-    applyPaperSize();
-    localStorage.setItem('partition-paper-size', paperSize);
-  }
-  currentPlanPage = 0;
-  const p = lastParams || getParams();
-  updateSheetPageInfo(p);
-  autoFit(p);
-  drawView(p, currentTab);
-}
 
 function drawHatch(x, y, w, h, gap = 42) {
   ctx.save();
@@ -3011,10 +3148,9 @@ function drawHatch(x, y, w, h, gap = 42) {
 
 function autoFit(p) {
   const layout = getSheetLayout(p);
-  const freeSize = currentTab === 'plan' && canvasMode === 'free' ? freePlanContentSize(p) : null;
-  const sheetPreview = currentTab === 'plan' && canvasMode === 'sheets' ? sheetPreviewContentSize(p, layout) : null;
-  const contentW = (freeSize?.w || sheetPreview?.w || layout.sheetW) + 80;
-  const contentH = (freeSize?.h || sheetPreview?.h || layout.sheetH) + 80;
+  const sheetPreview = currentTab === 'plan' ? sheetPreviewContentSize(p, layout) : null;
+  const contentW = (sheetPreview?.w || layout.sheetW) + 80;
+  const contentH = (sheetPreview?.h || layout.sheetH) + 80;
   const scale = Math.min(cv.width / contentW, cv.height / contentH, 0.8);
   zoomScale = scale;
   const anchorX = Math.max(20, Math.min(48, cv.width * 0.035));
@@ -3025,9 +3161,8 @@ function autoFit(p) {
 
 function minZoomScale(p = lastParams || getParams()) {
   const layout = getSheetLayout(p);
-  const freeSize = currentTab === 'plan' && canvasMode === 'free' ? freePlanContentSize(p) : null;
-  const sheetPreview = currentTab === 'plan' && canvasMode === 'sheets' ? sheetPreviewContentSize(p, layout) : null;
-  const fit = Math.min(cv.width / ((freeSize?.w || sheetPreview?.w || layout.sheetW) + 80), cv.height / ((freeSize?.h || sheetPreview?.h || layout.sheetH) + 80));
+  const sheetPreview = currentTab === 'plan' ? sheetPreviewContentSize(p, layout) : null;
+  const fit = Math.min(cv.width / ((sheetPreview?.w || layout.sheetW) + 80), cv.height / ((sheetPreview?.h || layout.sheetH) + 80));
   return Math.max(0.01, Math.min(0.1, fit * 0.85));
 }
 
@@ -3050,19 +3185,55 @@ function wheelMaxZoomScale(p = lastParams || getParams()) {
   return Math.max(5, 5 / Math.max(0.01, minFit));
 }
 
+function planPageForIndex(p = lastParams || getParams(), pageIndex = currentPlanPage) {
+  const baseLayout = getSheetLayout(p);
+  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
+  const pages = paginatePlanBlocks(blocks, baseLayout);
+  return pages[Math.max(0, Math.min(pageIndex, pages.length - 1))] || null;
+}
+
+function sheetLayoutForRender(tab = currentTab, p = lastParams || getParams(), pageIndex = currentPlanPage) {
+  if (tab !== 'plan') return getSheetLayout(p);
+  return sheetLayoutForPage(planPageForIndex(p, pageIndex), p);
+}
+function pageNeedsLandscape(page) {
+  return paperSize === 'a4' && (page?.blocks || []).some(block => Math.max(1, Number(block?.row?.count) || 1) > 9);
+}
+
+function sheetLayoutForPage(page = null, p = lastParams || getParams()) {
+  const layout = getSheetLayout(p);
+  if (!pageNeedsLandscape(page)) return layout;
+  const sheetW = layout.sheetH;
+  const sheetH = layout.sheetW;
+  const frameInset = 24.5;
+  const safeGap = 16;
+  const titleH = 50;
+  const plotX = frameInset + safeGap;
+  const plotY = frameInset + 52;
+  const plotW = sheetW - plotX - frameInset - safeGap;
+  const plotH = sheetH - plotY - titleH - frameInset;
+  return {
+    sheetW,
+    sheetH,
+    frame: {x:frameInset, y:frameInset, w:sheetW - frameInset * 2, h:sheetH - frameInset * 2},
+    plot: {x:plotX, y:plotY, w:Math.max(260, plotW), h:Math.max(220, plotH)},
+    safeGap,
+    paper: `${layout.paper}横向`
+  };
+}
 function sheetPreviewContentSize(p = lastParams || getParams(), layout = getSheetLayout(p)) {
   const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), layout);
-  const gap = Math.max(80, layout.sheetW * 0.12);
+  const pageLayouts = pages.map(page => sheetLayoutForPage(page, p));
+  const gap = Math.max(80, Math.max(...pageLayouts.map(item => item.sheetW), layout.sheetW) * 0.12);
   return {
-    w: pages.length * layout.sheetW + Math.max(0, pages.length - 1) * gap,
-    h: layout.sheetH
+    w: pageLayouts.reduce((sum, item) => sum + item.sheetW, 0) + Math.max(0, pageLayouts.length - 1) * gap,
+    h: Math.max(...pageLayouts.map(item => item.sheetH), layout.sheetH)
   };
 }
 
 const PAPER_SIZES = {
   a4: {w:834, h:1180, label:'A4'},
-  a3: {w:1680, h:1188, label:'A3'},
-  auto: {w:1180, h:834, label:'自适应'}
+  a3: {w:1680, h:1188, label:'A3'}
 };
 const SHEET_W = PAPER_SIZES.a4.w;
 const SHEET_H = PAPER_SIZES.a4.h;
@@ -3070,7 +3241,7 @@ const PLOT = {x:70, y:112, w:1040, h:545};
 
 function setPaperSize(size) {
   paperSize = PAPER_SIZES[size] ? size : 'a4';
-  canvasMode = paperSize === 'auto' ? 'free' : 'sheets';
+  canvasMode = 'sheets';
   localStorage.setItem('partition-paper-size', paperSize);
   if (lastParams) {
     autoFit(lastParams);
@@ -3089,20 +3260,13 @@ function getSheetLayout(p = lastParams || getParams()) {
   const maxRun = sourceRows.reduce((max, r) => Math.max(max, compute(r).totalRun || r.total || 0), 0);
   const maxDepth = sourceRows.reduce((max, r) => Math.max(max, r.depth || 0), 0);
   const base = PAPER_SIZES[paperSize] || PAPER_SIZES.a4;
-  let autoW = base.w;
-  let autoH = base.h;
-  if (canvasMode === 'free') {
-    const freeSize = freePlanContentSize(p);
-    autoW = Math.min(50000, freeSize.w);
-    autoH = Math.min(50000, freeSize.h);
-  }
-  const sheetW = canvasMode === 'free' ? autoW : base.w;
-  const sheetH = canvasMode === 'free' ? autoH : base.h;
+  const sheetW = base.w;
+  const sheetH = base.h;
   const frameInset = 24.5;
-  const safeGap = canvasMode === 'sheets' ? 16 : 42;
-  const titleH = canvasMode === 'sheets' ? 50 : 112;
+  const safeGap = 16;
+  const titleH = 50;
   const plotX = frameInset + safeGap;
-  const plotY = frameInset + (canvasMode === 'sheets' ? 52 : 88);
+  const plotY = frameInset + 52;
   const plotW = sheetW - plotX - frameInset - safeGap;
   const plotH = sheetH - plotY - titleH - frameInset;
   return {
@@ -3176,7 +3340,6 @@ function maxRowsForSheetPage(pageIndex = 0) {
 }
 
 function sheetContentGaps(pageIndex = 0) {
-  if (canvasMode !== 'sheets') return {top:0, right:0, bottom:0, left:0};
   return {
     top: pageIndex === 0 ? SHEET_LAYOUT_RULES.firstPageTopGap : SHEET_LAYOUT_RULES.laterPageTopGap,
     right: SHEET_LAYOUT_RULES.sideGap,
@@ -3185,8 +3348,8 @@ function sheetContentGaps(pageIndex = 0) {
   };
 }
 
-function drawSheet(title, p, offsetX = 0, offsetY = 0, pageIndex = 0) {
-  const layout = getSheetLayout(p);
+function drawSheet(title, p, offsetX = 0, offsetY = 0, pageIndex = 0, layoutOverride = null) {
+  const layout = layoutOverride || getSheetLayout(p);
   const sheetW = layout.sheetW, sheetH = layout.sheetH;
   ctx.save();
   ctx.translate(offsetX, offsetY);
@@ -4222,19 +4385,21 @@ function drawPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, p
 }
 
 function drawPlanSheetsPreview(p) {
-  const layout = getSheetLayout(p);
+  const baseLayout = getSheetLayout(p);
   const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
   if (!blocks.length) return;
-  const pages = paginatePlanBlocks(blocks, layout);
-  const gap = Math.max(80, layout.sheetW * 0.12);
+  const pages = paginatePlanBlocks(blocks, baseLayout);
+  const pageLayouts = pages.map(page => sheetLayoutForPage(page, p));
+  const gap = Math.max(80, Math.max(...pageLayouts.map(item => item.sheetW), baseLayout.sheetW) * 0.12);
+  let x = 0;
   pages.forEach((page, index) => {
-    const x = index * (layout.sheetW + gap);
+    const layout = pageLayouts[index];
     const contentGaps = sheetContentGaps(index);
     const hitX = x + layout.plot.x + contentGaps.left;
     const hitY = layout.plot.y + contentGaps.top;
     const hitW = Math.max(1, layout.plot.w - contentGaps.left - contentGaps.right);
     const hitH = Math.max(1, layout.plot.h - contentGaps.top - contentGaps.bottom);
-    drawSheet('卫生间隔断平面图', p, x, 0, index);
+    drawSheet('卫生间隔断平面图', p, x, 0, index, layout);
     ctx.save();
     ctx.beginPath();
     const clipTop = index === 0 ? layout.frame.y + 82 : layout.frame.y + 12;
@@ -4251,41 +4416,24 @@ function drawPlanSheetsPreview(p) {
     ctx.textBaseline = 'bottom';
     ctx.fillText(`第 ${index + 1}/${pages.length} 页`, x + layout.frame.x + layout.frame.w / 2, layout.frame.y + layout.frame.h - 16);
     ctx.restore();
+    x += layout.sheetW + gap;
   });
   drawSheetDragOverlay();
 }
-
 function drawPlan(p) {
-  const layout = getSheetLayout(p);
-  const P = layout.plot;
+  const baseLayout = getSheetLayout(p);
+  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
+  if (!blocks.length) return;
+  const pages = paginatePlanBlocks(blocks, baseLayout);
+  const pageIndex = Math.max(0, Math.min(currentPlanPage, pages.length - 1));
+  const page = pages[pageIndex];
+  const layout = sheetLayoutForPage(page, p);
   ctx.save();
   ctx.beginPath();
   ctx.rect(layout.frame.x + layout.safeGap * 0.35, layout.frame.y + layout.safeGap * 0.35, layout.frame.w - layout.safeGap * 0.7, layout.frame.h - layout.safeGap * 0.7);
   ctx.clip();
 
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
-  if (!blocks.length) { ctx.restore(); return; }
-  if (canvasMode === 'free') {
-    const free = layoutFreePlanBlocks(blocks);
-    const fit = Math.min(P.w / Math.max(1, free.usedW), P.h / Math.max(1, free.usedH), 1);
-    const prevAnnoScale = planAnnotationScale;
-    planAnnotationScale = 1;
-    const localX = P.x + (P.w - free.usedW * fit) / 2;
-    const localY = P.y + (P.h - free.usedH * fit) / 2;
-    ctx.save();
-    ctx.translate(localX, localY);
-    ctx.scale(fit, fit);
-    free.blocks.forEach(block => drawPlanBlock(block, block.pageX, block.pageY, fit, localX, localY));
-    ctx.restore();
-    planAnnotationScale = prevAnnoScale;
-    ctx.restore();
-    return;
-  }
-  const pages = paginatePlanBlocks(blocks, layout);
-  const pageIndex = Math.max(0, Math.min(currentPlanPage, pages.length - 1));
-  const page = pages[pageIndex];
-  drawPlanPageContent(page, layout, 0, 0);
-  if (pages.length > 1) {
+  drawPlanPageContent(page, layout, 0, 0);  if (pages.length > 1) {
     ctx.save();
     ctx.fillStyle = '#1f2328';
     ctx.font = `14px 'Microsoft YaHei', Arial, sans-serif`;
@@ -4633,9 +4781,9 @@ async function printPdf() {
     const pages = currentTab === 'plan'
       ? getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE}))
       : [renderSheetCanvas(currentTab, p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE})];
-    const blobUrls = await Promise.all(pages.map(canvas => new Promise(resolve => {
+    const pageImages = await Promise.all(pages.map(canvas => new Promise(resolve => {
       canvas.toBlob(blob => {
-        resolve(blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/png'));
+        resolve({url: blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/png'), landscape: canvas.width > canvas.height});
       }, 'image/png');
     })));
     const paper = paperSize === 'a3' ? {w:297, h:420, label:'A3'} : {w:210, h:297, label:'A4'};
@@ -4657,9 +4805,10 @@ async function printPdf() {
       html,body{margin:0;width:100%;height:100%;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       body{overflow:hidden}
       .page{width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page;overflow:hidden}
+      .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
       .page:last-child{page-break-after:auto;break-after:auto}
       img{width:100%;height:100%;object-fit:contain;display:block}
-    </style></head><body>${blobUrls.map((url, i) => `<div class="page"><img src="${url}" alt="图纸${i + 1}"></div>`).join('')}</body></html>`);
+    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}</body></html>`);
     doc.close();
     window.setTimeout(() => {
       try {
@@ -4673,8 +4822,8 @@ async function printPdf() {
         link.click();
         link.remove();
       }
-      window.setTimeout(() => blobUrls.forEach(url => {
-        if (String(url).startsWith('blob:')) URL.revokeObjectURL(url);
+      window.setTimeout(() => pageImages.forEach(item => {
+        if (String(item.url).startsWith('blob:')) URL.revokeObjectURL(item.url);
       }), 5000);
     }, 150);
   } catch (err) {
@@ -5266,15 +5415,6 @@ window.setInterval(() => {
 
 setTimeout(()=>{ applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindExportButtons(); generate(); }, 100);
 </script>
-
-
-
-
-
-
-
-
-
 
 
 
