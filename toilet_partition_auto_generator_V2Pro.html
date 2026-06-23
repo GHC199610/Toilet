@@ -48,7 +48,7 @@ h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,
 .theme-btn{width:2.5rem;height:2.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.25rem;line-height:1;transition:all .15s}
 .theme-btn:hover{border-color:#378ADD;color:#185FA5}
 body.theme-dark .theme-btn:hover{color:#79c0ff}
-.project-folder-btn{height:2rem;padding:0 0.625rem;margin-top:0.125rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap;align-self:start}
+.project-folder-btn{height:2.5rem;padding:0 0.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:700;cursor:pointer;white-space:nowrap;align-self:start}
 .project-folder-btn:hover{border-color:#378ADD;color:#185FA5}
 .save-drawing-btn{height:1.875rem;padding:0 0.75rem;margin-left:0.25rem;border:0.5px solid #185FA5;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap}
 .save-drawing-btn:hover{background:#0C447C;border-color:#0C447C}
@@ -61,6 +61,10 @@ body.theme-dark .theme-btn:hover{color:#79c0ff}
 .project-dialog-body{padding:1rem;overflow:auto}
 .project-save-form{display:grid;gap:0.75rem}
 .project-save-form input{height:2.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.9375rem;padding:0 0.75rem}
+.export-scope-row{display:none;grid-template-columns:1fr 1fr;gap:0.5rem}
+.export-scope-row label{display:flex;align-items:center;justify-content:center;gap:0.375rem;height:2.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);font-size:0.875rem;font-weight:700;color:var(--color-text-secondary);cursor:pointer}
+.export-scope-row input{width:1rem;height:1rem;accent-color:#185FA5}
+.export-scope-row.show{display:grid}
 .project-actions{display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem}
 .project-actions button,.project-file-row button{height:2.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .project-actions .primary,.project-file-row .primary{background:#185FA5;border-color:#185FA5;color:#fff}
@@ -251,8 +255,11 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .sb-head{position:sticky;top:0;z-index:3;grid-template-columns:1fr auto auto;gap:0.5rem;align-items:start;background:var(--color-background-secondary)}
   .sb-head p{font-size:1rem}
   .sb-head span{font-size:0.8125rem}
-  .project-folder-btn{height:2.25rem;margin-top:0.125rem;padding:0 0.625rem;font-size:0.75rem}
+  .project-folder-btn{height:2.75rem;padding:0 0.875rem;font-size:0.875rem}
   .theme-btn{width:2.75rem;height:2.75rem;font-size:1.375rem}
+  #material-section .sec-title{font-size:1.0625rem;color:var(--color-text-primary);font-weight:800;text-transform:none;letter-spacing:0;line-height:1.35}
+  .mobile-collapsible .mobile-collapsible-body > .sec-title{display:none}
+  .mobile-collapsible .quick-title-row .sec-title{display:none}
   .mobile-sec-toggle{width:100%;min-height:2.75rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;border:0;background:transparent;color:var(--color-text-primary);font-size:1.0625rem;font-weight:700;line-height:1.35;text-align:left;cursor:pointer;white-space:nowrap}
   .mobile-sec-toggle::after{content:"";width:0.5rem;height:0.5rem;border:0.12rem solid currentColor;border-left:0;border-top:0;transform:rotate(45deg);opacity:.7;transition:transform .15s}
   .mobile-collapsible.collapsed-mobile .mobile-sec-toggle::after{transform:rotate(-45deg)}
@@ -262,6 +269,16 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .sec-title{font-size:0.8125rem;white-space:nowrap}
   .field label,.check-field,.switch-toggle,.booth-swing-hint,.wall-btn,.special-card-field label{font-size:1rem}
   .field input[type=number],.field input[type=text],.field select,.booth-pick-input,.booth-pick-clear,.quick-btn{height:2.75rem;font-size:1rem}
+  .mobile-collapsible-body{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem 0.625rem;align-items:end}
+  .mobile-collapsible-body > .field-pair,
+  .mobile-collapsible-body > .door-width-row,
+  .mobile-collapsible-body > .rebate-row,
+  .mobile-collapsible-body > .quick-title-row,
+  .mobile-collapsible-body > .quick-layout,
+  .mobile-collapsible-body > .booth-swing-panel{grid-column:1 / -1}
+  .field{margin-bottom:0}
+  .field-pair,.door-width-row{grid-template-columns:1fr 1fr;gap:0.625rem;margin-bottom:0}
+  .rebate-row{grid-template-columns:minmax(0,1fr) auto;gap:0.625rem;margin:0}
   .quick-cell{width:3rem;height:2.75rem;font-size:1rem}
   .quick-title-row,.quick-history-actions,.quick-cells,.quick-page-actions,.quick-bottom-actions{gap:0.625rem}
   .quick-title-row{align-items:flex-start;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
@@ -284,7 +301,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .sheet-action-btn{height:2.5rem;font-size:0.9375rem;white-space:nowrap}
   .sheet-page-info{font-size:0.875rem;white-space:nowrap}
   .global-history-actions{margin-right:0;padding-right:0.5rem}
-  .canvas-area{height:72dvh;min-height:28rem;flex:0 0 auto;overflow:hidden}
+  .canvas-area{order:4;height:72dvh;min-height:28rem;flex:0 0 auto;overflow:hidden}
   .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:42dvh;padding:0.625rem;z-index:40}
   .bom-title{font-size:1rem;white-space:nowrap}
   .bom-toggle{display:inline-flex;align-items:center;justify-content:center;height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -293,7 +310,8 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .bom-area.mobile-collapsed .bom-head{margin-bottom:0}
   .bom-lines{grid-template-columns:1fr!important}
   .bom-line{white-space:normal;word-break:break-word}
-  .export-row{overflow-x:auto;padding:0.5rem 0.625rem}
+  .export-row{order:3;position:sticky;top:0;z-index:14;overflow-x:auto;padding:0.5rem 0.625rem;white-space:nowrap}
+  .ex-btn{height:2.25rem;flex:0 0 auto;font-size:0.875rem;font-weight:700}
   .urinal-panel{position:fixed;top:auto;left:0.625rem;right:0.625rem;bottom:0.625rem;width:auto;grid-template-columns:1fr 1fr;max-height:70dvh;overflow:auto}
 }
 @media (max-width:430px){
@@ -301,8 +319,8 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .sidebar{height:auto;min-height:0}
   .right{height:auto;min-height:72dvh}
   .sec{padding:0.75rem 0.875rem}
-  .field-pair,.door-width-row{grid-template-columns:1fr}
-  .rebate-row{grid-template-columns:1fr auto}
+  .field-pair,.door-width-row{grid-template-columns:1fr 1fr}
+  .rebate-row{grid-template-columns:minmax(0,1fr) auto}
   .wall-grid{grid-template-columns:1fr 1fr}
   .quick-cell{width:2.875rem;height:2.625rem}
   .field input[type=number],.field input[type=text],.field select,.booth-pick-input,.booth-pick-clear,.quick-btn{height:2.625rem}
@@ -361,7 +379,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .sheet-actions{flex:0 0 auto;min-height:2.75rem;height:auto;padding:0.375rem 0.5rem;gap:0.5rem;overflow-x:auto;white-space:nowrap}
   .sheet-action-btn{height:2.25rem;font-size:0.875rem}
   .canvas-area{height:auto;min-height:0;flex:1 1 auto;overflow:hidden}
-  .export-row{flex:0 0 auto;padding:0.375rem 0.5rem;overflow-x:auto;white-space:nowrap}
+  .export-row{order:3;flex:0 0 auto;padding:0.375rem 0.5rem;overflow-x:auto;white-space:nowrap}
   .bom-area{position:fixed;left:auto;right:0.5rem;bottom:0.5rem;width:min(20rem,58vw);max-height:46dvh;z-index:40}
   .bom-area.mobile-collapsed{width:auto;max-height:none}
   .top-btn{right:0.75rem;bottom:4.25rem}
@@ -557,6 +575,28 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     </div>
     <div class="project-dialog-body">
       <div class="project-file-list" id="project-file-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="project-modal" id="export-modal" aria-hidden="true">
+  <div class="project-dialog" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+    <div class="project-dialog-head">
+      <div class="project-dialog-title" id="export-modal-title">导出文件</div>
+      <button class="project-close" type="button" onclick="closeProjectModal('export-modal')" aria-label="关闭">×</button>
+    </div>
+    <div class="project-dialog-body">
+      <div class="project-save-form">
+        <input id="export-file-name" type="text" maxlength="60" placeholder="请输入导出文件名称">
+        <div class="export-scope-row" id="export-pdf-scope">
+          <label><input type="radio" name="export-pdf-scope" value="current" checked>当前视图</label>
+          <label><input type="radio" name="export-pdf-scope" value="all">全部视图</label>
+        </div>
+        <div class="project-actions">
+          <button type="button" onclick="closeProjectModal('export-modal')">取消</button>
+          <button class="primary" type="button" onclick="confirmNamedExport()">确认导出</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1806,7 +1846,7 @@ function openSaveDrawingDialog() {
   if (input) {
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
-    input.value = `图纸-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+    input.value = `??-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
   }
   openProjectModal('save-drawing-modal');
   window.setTimeout(() => input?.focus(), 0);
@@ -1816,7 +1856,7 @@ function saveCurrentProjectFile() {
   const input = document.getElementById('project-save-name');
   const name = String(input?.value || '').trim();
   if (!name) {
-    alert('请输入文件名称');
+    alert('???????');
     input?.focus();
     return;
   }
@@ -1850,15 +1890,15 @@ function renderProjectFileList() {
   if (!list) return;
   const files = readProjectFiles().sort((a, b) => (Number(b.savedAt) || 0) - (Number(a.savedAt) || 0));
   if (!files.length) {
-    list.innerHTML = '<div class="project-empty">暂无保存的项目文件</div>';
+    list.innerHTML = '<div class="project-empty">?????????</div>';
     return;
   }
   list.innerHTML = files.map(file => {
     const time = file.savedAt ? new Date(file.savedAt).toLocaleString('zh-CN', {hour12:false}) : '';
     return `<div class="project-file-row" data-project-id="${escapeHtml(file.id)}">
       <div class="project-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}<span class="project-file-time">${escapeHtml(time)}</span></div>
-      <button class="primary" type="button" data-project-action="load" data-project-id="${escapeHtml(file.id)}">打开</button>
-      <button type="button" data-project-action="delete" data-project-id="${escapeHtml(file.id)}">删除</button>
+      <button class="primary" type="button" data-project-action="load" data-project-id="${escapeHtml(file.id)}">??</button>
+      <button type="button" data-project-action="delete" data-project-id="${escapeHtml(file.id)}">??</button>
     </div>`;
   }).join('');
 }
@@ -1879,7 +1919,7 @@ function loadProjectFile(id) {
 }
 
 function deleteProjectFile(id) {
-  if (!confirm('确认删除这个项目文件吗？')) return;
+  if (!confirm('????????????')) return;
   writeProjectFiles(readProjectFiles().filter(item => item.id !== id));
   renderProjectFileList();
 }
@@ -5701,6 +5741,176 @@ function bindExportButtons() {
   });
 }
 
+let pendingExportMode = 'current-image';
+
+function sanitizeExportName(name, fallback = '隔断图纸') {
+  const cleaned = String(name || '').trim().replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ');
+  return cleaned || fallback;
+}
+
+function currentViewLabel() {
+  return {plan:'平面图', front:'正立面图', side:'侧立面图'}[currentTab] || '图纸';
+}
+
+function downloadCanvasPng(canvas, filename) {
+  try {
+    const link = document.createElement('a');
+    link.download = `${filename}.png`;
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch (err) {
+    canvas.toBlob(blob => {
+      if (!blob) return alert(`导出失败：${err.message || err}`);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `${filename}.png`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 500);
+    }, 'image/png');
+  }
+}
+
+function exportNamedImage(name = currentViewLabel()) {
+  const filename = sanitizeExportName(name, `隔断${currentViewLabel()}`);
+  const p = lastParams || getParams();
+  const sheetCanvas = (currentTab === 'plan' && canvasMode === 'sheets')
+    ? renderPlanSheetsStripCanvas(p, QUALITY_RENDER_SCALE)
+    : renderSheetCanvas(currentTab, p, {canvasMode, renderScale:QUALITY_RENDER_SCALE, planPage: currentTab === 'plan' ? currentPlanPage : undefined});
+  downloadCanvasPng(sheetCanvas, filename);
+}
+
+function exportNamedAllImages(baseName = '隔断全部视图') {
+  const p = lastParams || getParams();
+  const safeBase = sanitizeExportName(baseName, '隔断全部视图');
+  const oldMode = canvasMode;
+  canvasMode = 'sheets';
+  const planPages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), getSheetLayout(p));
+  canvasMode = oldMode;
+  const jobs = [];
+  planPages.forEach((_, pageIndex) => jobs.push({tab:'plan', name:`平面图${pageIndex + 1}`, options:{planPage:pageIndex}}));
+  jobs.push({tab:'front', name:'正立面图', options:{}});
+  jobs.push({tab:'side', name:'侧立面图', options:{}});
+  jobs.forEach((job, i) => {
+    setTimeout(() => {
+      const sheetCanvas = renderSheetCanvas(job.tab, p, {...job.options, canvasMode:'sheets', renderScale:QUALITY_RENDER_SCALE});
+      downloadCanvasPng(sheetCanvas, `${safeBase}-${job.name}`);
+    }, i * 300);
+  });
+}
+
+function exportPdfCanvasesForScope(p, scope = 'current') {
+  if (scope === 'all') {
+    const planPages = getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE}));
+    return [
+      ...planPages,
+      renderSheetCanvas('front', p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE}),
+      renderSheetCanvas('side', p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE})
+    ];
+  }
+  if (currentTab === 'plan') {
+    return getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE}));
+  }
+  return [renderSheetCanvas(currentTab, p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE})];
+}
+
+async function exportNamedPdf(name = '隔断图纸', scope = 'current') {
+  try {
+    const p = lastParams || getParams();
+    const pages = exportPdfCanvasesForScope(p, scope);
+    const pageImages = await Promise.all(pages.map(canvas => new Promise(resolve => {
+      canvas.toBlob(blob => {
+        resolve({url: blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/png'), landscape: canvas.width > canvas.height});
+      }, 'image/png');
+    })));
+    const paper = paperSize === 'a3' ? {w:297, h:420, label:'A3'} : {w:210, h:297, label:'A4'};
+    const oldFrame = document.getElementById('print-frame');
+    if (oldFrame) oldFrame.remove();
+    const frame = document.createElement('iframe');
+    frame.id = 'print-frame';
+    frame.style.position = 'fixed';
+    frame.style.right = '0';
+    frame.style.bottom = '0';
+    frame.style.width = '0';
+    frame.style.height = '0';
+    frame.style.border = '0';
+    document.body.appendChild(frame);
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    const title = sanitizeExportName(name, '隔断图纸');
+    doc.open();
+    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
+      @page{size:${paper.label} portrait;margin:0}
+      html,body{margin:0;width:100%;height:100%;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body{overflow:hidden}
+      .page{width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page;overflow:hidden}
+      .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
+      .page:last-child{page-break-after:auto;break-after:auto}
+      img{width:100%;height:100%;object-fit:contain;display:block}
+    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}</body></html>`);
+    doc.close();
+    window.setTimeout(() => {
+      try {
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+      } catch (e) {
+        const link = document.createElement('a');
+        link.download = `${title}.html`;
+        link.href = `data:text/html;charset=utf-8,${encodeURIComponent(doc.documentElement.outerHTML)}`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+      window.setTimeout(() => pageImages.forEach(item => {
+        if (String(item.url).startsWith('blob:')) URL.revokeObjectURL(item.url);
+      }), 5000);
+    }, 150);
+  } catch (err) {
+    alert(`PDF打印失败：${err.message || err}`);
+  }
+}
+
+function openExportDialog(mode) {
+  pendingExportMode = mode;
+  const input = document.getElementById('export-file-name');
+  const scopeRow = document.getElementById('export-pdf-scope');
+  const title = document.getElementById('export-modal-title');
+  const label = mode === 'all-image' ? '导出全部视图' : mode === 'pdf' ? '导出PDF' : '导出当前视图';
+  if (title) title.textContent = label;
+  if (input) input.value = mode === 'all-image' ? '隔断全部视图' : mode === 'pdf' ? '隔断图纸' : `隔断${currentViewLabel()}`;
+  scopeRow?.classList.toggle('show', mode === 'pdf');
+  openProjectModal('export-modal');
+  window.setTimeout(() => input?.focus(), 0);
+}
+
+function confirmNamedExport() {
+  const input = document.getElementById('export-file-name');
+  const name = sanitizeExportName(input?.value, '隔断图纸');
+  closeProjectModal('export-modal');
+  if (pendingExportMode === 'all-image') {
+    exportNamedAllImages(name);
+    return;
+  }
+  if (pendingExportMode === 'pdf') {
+    const scope = document.querySelector('input[name="export-pdf-scope"]:checked')?.value || 'current';
+    exportNamedPdf(name, scope);
+    return;
+  }
+  exportNamedImage(name);
+}
+
+function bindNamedExportButtons() {
+  const current = document.getElementById('btn-export-current');
+  const all = document.getElementById('btn-export-all');
+  const pdf = document.getElementById('btn-print-pdf');
+  if (current) current.onclick = () => openExportDialog('current-image');
+  if (all) all.onclick = () => openExportDialog('all-image');
+  if (pdf) pdf.onclick = () => openExportDialog('pdf');
+}
+
 function updateZoomInfo() {
   document.getElementById('zoom-info').textContent = Math.round(zoomScale*100)+'%';
 }
@@ -6642,6 +6852,12 @@ document.getElementById('project-save-name')?.addEventListener('keydown', e => {
   saveCurrentProjectFile();
 });
 
+document.getElementById('export-file-name')?.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  confirmNamedExport();
+});
+
 document.querySelectorAll('.project-modal').forEach(modal => {
   modal.addEventListener('click', e => {
     if (e.target === modal) closeProjectModal(modal.id);
@@ -6657,6 +6873,5 @@ window.setInterval(() => {
   }
 }, 530);
 
-setTimeout(()=>{ applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindExportButtons(); generate(); }, 100);
+setTimeout(()=>{ applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); }, 100);
 </script>
-
