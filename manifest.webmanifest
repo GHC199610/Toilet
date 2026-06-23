@@ -1,0 +1,19 @@
+{
+  "name": "卫生间隔断自动生成器",
+  "short_name": "隔断图纸",
+  "description": "卫生间隔断图纸、材料清单和导出工具。",
+  "start_url": "./toilet_partition_auto_generator_V2Pro.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f8fa",
+  "theme_color": "#185FA5",
+  "icons": [
+    {
+      "src": "./pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
