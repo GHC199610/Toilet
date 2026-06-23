@@ -6224,6 +6224,12 @@ cv.addEventListener('wheel', e => {
 
 let touchState = null;
 let lastTapInfo = null;
+function clearTouchLongPressTimer() {
+  if (touchState?.longPressTimer) {
+    window.clearTimeout(touchState.longPressTimer);
+    touchState.longPressTimer = null;
+  }
+}
 function touchPoint(touch, rect = cv.getBoundingClientRect()) {
   return {x: touch.clientX - rect.left, y: touch.clientY - rect.top};
 }
@@ -6293,6 +6299,7 @@ function finishTouchSheetDrag() {
 cv.addEventListener('touchstart', e => {
   if (!e.touches.length) return;
   e.preventDefault();
+  clearTouchLongPressTimer();
   if (e.touches.length >= 2) {
     const rect = cv.getBoundingClientRect();
     const mid = touchMidpoint(e.touches[0], e.touches[1], rect);
