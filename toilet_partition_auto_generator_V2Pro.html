@@ -1861,7 +1861,7 @@ function openSaveDrawingDialog() {
   if (input) {
     const now = new Date();
     const pad = n => String(n).padStart(2, '0');
-    input.value = `??-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+    input.value = `图纸-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
   }
   openProjectModal('save-drawing-modal');
   window.setTimeout(() => input?.focus(), 0);
@@ -1871,7 +1871,7 @@ function saveCurrentProjectFile() {
   const input = document.getElementById('project-save-name');
   const name = String(input?.value || '').trim();
   if (!name) {
-    alert('???????');
+    alert('请输入文件名称');
     input?.focus();
     return;
   }
@@ -1905,15 +1905,15 @@ function renderProjectFileList() {
   if (!list) return;
   const files = readProjectFiles().sort((a, b) => (Number(b.savedAt) || 0) - (Number(a.savedAt) || 0));
   if (!files.length) {
-    list.innerHTML = '<div class="project-empty">?????????</div>';
+    list.innerHTML = '<div class="project-empty">暂无保存文件</div>';
     return;
   }
   list.innerHTML = files.map(file => {
     const time = file.savedAt ? new Date(file.savedAt).toLocaleString('zh-CN', {hour12:false}) : '';
     return `<div class="project-file-row" data-project-id="${escapeHtml(file.id)}">
       <div class="project-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}<span class="project-file-time">${escapeHtml(time)}</span></div>
-      <button class="primary" type="button" data-project-action="load" data-project-id="${escapeHtml(file.id)}">??</button>
-      <button type="button" data-project-action="delete" data-project-id="${escapeHtml(file.id)}">??</button>
+      <button class="primary" type="button" data-project-action="load" data-project-id="${escapeHtml(file.id)}">打开</button>
+      <button type="button" data-project-action="delete" data-project-id="${escapeHtml(file.id)}">删除</button>
     </div>`;
   }).join('');
 }
@@ -1934,7 +1934,7 @@ function loadProjectFile(id) {
 }
 
 function deleteProjectFile(id) {
-  if (!confirm('????????????')) return;
+  if (!confirm('确定删除这个项目文件吗？')) return;
   writeProjectFiles(readProjectFiles().filter(item => item.id !== id));
   renderProjectFileList();
 }

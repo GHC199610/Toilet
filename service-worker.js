@@ -1,4 +1,4 @@
-const CACHE_NAME = 'toilet-partition-v2pro-20260623-2';
+const CACHE_NAME = 'toilet-partition-v2pro-20260623-3';
 const APP_ASSETS = [
   './',
   './toilet_partition_auto_generator_V2Pro.html',
