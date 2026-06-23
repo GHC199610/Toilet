@@ -208,6 +208,10 @@ body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px r
 .bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.375rem}
 .bom-title{font-size:0.9375rem;font-weight:700;color:#111827}
 .bom-toggle{display:none}
+.bom-actions{display:flex;align-items:center;gap:0.5rem;flex:0 0 auto}
+.bom-export{height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.bom-export:hover{border-color:#378ADD;color:#185FA5;background:#fff}
+body.theme-dark .bom-export:hover{border-color:#58a6ff;color:#b9dcff;background:#141a22}
 body.theme-dark .bom-title{color:#f6f8fa}
 .bom-grid{display:grid;grid-template-columns:1fr;gap:0.625rem}
 .bom-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.75rem;min-width:0}
@@ -300,9 +304,9 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .quick-icon-btn{width:2.5rem;height:2.75rem}
   .wall-btn{min-height:5.5rem;padding:0.625rem 0.5rem;white-space:nowrap}
   .wall-btn svg{width:3.25rem;height:2.5rem}
-  .right{height:auto;min-height:0;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;background:#eef1f4}
+  .right{height:auto;min-height:0;flex:1 1 auto;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:#eef1f4}
   body.theme-dark .right{background:#202734}
-  .view-tabs{position:sticky;top:0;z-index:12;flex-wrap:wrap;align-content:flex-start;overflow-x:hidden;gap:0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary)}
+  .view-tabs{position:sticky;top:0;z-index:32;flex:0 0 auto;flex-wrap:wrap;align-content:flex-start;overflow:hidden;gap:0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary)}
   .vtab{flex:0 0 auto;text-align:center;padding:0.875rem 1rem;font-size:0.9375rem;white-space:nowrap}
   .save-drawing-btn{flex:0 0 auto;height:2.25rem;margin:0.375rem 0.5rem 0.375rem 0.25rem;font-size:0.875rem}
   .top-widths{order:5;flex:1 0 100%;min-width:0;max-width:none;margin:0;padding:0.5rem 0.625rem;border-top:0.5px solid var(--color-border-tertiary)}
@@ -311,11 +315,11 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .width-card-row{flex:1;min-width:0}
   .paper-select{order:4;margin-left:auto;padding:0.5rem 0.625rem}
   .paper-select select{height:2rem;font-size:0.9375rem}
-  .sheet-actions{height:auto;min-height:3rem;padding:0.5rem 0.625rem;gap:0.5rem;overflow-x:auto;white-space:nowrap}
+  .sheet-actions{position:sticky;top:var(--mobile-sticky-tabs-height,5.25rem);z-index:31;height:auto;min-height:3rem;flex:0 0 auto;flex-wrap:wrap;padding:0.5rem 0.625rem;gap:0.5rem;overflow:visible;white-space:normal}
   .sheet-action-btn{height:2.5rem;font-size:0.9375rem;white-space:nowrap}
-  .sheet-page-info{font-size:0.875rem;white-space:nowrap}
+  .sheet-page-info{font-size:0.875rem;white-space:nowrap;margin-left:0}
   .global-history-actions{margin-right:0;padding-right:0.5rem}
-  .canvas-area{order:4;height:auto;min-height:0;flex:1 1 auto;overflow:hidden}
+  .canvas-area{order:4;height:72dvh;min-height:24rem;flex:0 0 auto;overflow:hidden}
   .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:42dvh;padding:0.625rem;z-index:40}
   .bom-title{font-size:1rem;white-space:nowrap}
   .bom-toggle{display:inline-flex;align-items:center;justify-content:center;height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -324,7 +328,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .bom-area.mobile-collapsed .bom-head{margin-bottom:0}
   .bom-lines{grid-template-columns:1fr!important}
   .bom-line{white-space:normal;word-break:break-word}
-  .export-row{order:3;position:sticky;top:0;z-index:14;overflow-x:auto;padding:0.5rem 0.625rem;white-space:nowrap}
+  .export-row{order:3;position:sticky;top:calc(var(--mobile-sticky-tabs-height,5.25rem) + var(--mobile-sticky-sheet-height,3.5rem));z-index:30;flex:0 0 auto;flex-wrap:wrap;overflow:visible;padding:0.5rem 0.625rem;white-space:normal}
   .ex-btn{height:2.25rem;flex:0 0 auto;font-size:0.875rem;font-weight:700}
   .urinal-panel{position:fixed;top:auto;left:0.625rem;right:0.625rem;bottom:0.625rem;width:auto;grid-template-columns:1fr 1fr;max-height:70dvh;overflow:auto;z-index:50}
 }
@@ -340,7 +344,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .field input[type=number],.field input[type=text],.field select,.booth-pick-input,.booth-pick-clear,.quick-btn{height:2.625rem}
   .mobile-sec-toggle{min-height:2.625rem;font-size:1rem}
   .sheet-page-info{margin-left:0;padding-right:0.5rem}
-  .canvas-area{height:auto;min-height:0}
+  .canvas-area{height:68dvh;min-height:20rem}
   .cv-controls{gap:0.25rem}
   .cv-btn{padding:0.3125rem 0.5rem}
   .bom-area{max-height:40dvh}
@@ -385,16 +389,16 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .sidebar{width:min(22rem,38vw);height:var(--mobile-sidebar-height,24rem);max-height:100dvh;border-right:0.5px solid var(--color-border-tertiary);border-bottom:0;overflow-y:auto;overscroll-behavior:contain;background:var(--color-background-secondary)}
   .mobile-sidebar-resizer{display:flex;flex:0 0 auto;border-left:0.5px solid var(--color-border-tertiary);border-right:0.5px solid var(--color-border-tertiary)}
   .sb-head{position:sticky;top:0;z-index:3;grid-template-columns:1fr auto auto;gap:0.5rem;background:var(--color-background-secondary)}
-  .right{height:100dvh;min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden;background:#eef1f4}
+  .right{height:100dvh;min-height:0;flex:1;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:#eef1f4}
   body.theme-dark .right{background:#202734}
-  .view-tabs{position:relative;top:auto;z-index:12;flex:0 0 auto;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;border-top:0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .view-tabs{position:relative;top:auto;z-index:12;flex:0 0 auto;flex-wrap:wrap;overflow:hidden;border-top:0;border-bottom:0.5px solid var(--color-border-tertiary)}
   .vtab{flex:0 0 auto;padding:0.625rem 0.875rem;font-size:0.875rem;white-space:nowrap}
   .top-widths{order:0;flex:1 1 12rem;min-width:12rem;max-width:20rem;margin-left:0.25rem;padding:0.375rem 0.5rem;border-top:0}
   .paper-select{order:0;margin-left:auto;padding:0.375rem 0.5rem}
-  .sheet-actions{flex:0 0 auto;min-height:2.75rem;height:auto;padding:0.375rem 0.5rem;gap:0.5rem;overflow-x:auto;white-space:nowrap}
+  .sheet-actions{flex:0 0 auto;flex-wrap:wrap;min-height:2.75rem;height:auto;padding:0.375rem 0.5rem;gap:0.5rem;overflow:visible;white-space:normal}
   .sheet-action-btn{height:2.25rem;font-size:0.875rem}
-  .canvas-area{height:auto;min-height:0;flex:1 1 auto;overflow:hidden}
-  .export-row{order:3;flex:0 0 auto;padding:0.375rem 0.5rem;overflow-x:auto;white-space:nowrap}
+  .canvas-area{height:70dvh;min-height:20rem;flex:0 0 auto;overflow:hidden}
+  .export-row{order:3;flex:0 0 auto;flex-wrap:wrap;padding:0.375rem 0.5rem;overflow:visible;white-space:normal}
   .bom-area{position:fixed;left:auto;right:0.5rem;bottom:0.5rem;width:min(20rem,58vw);max-height:46dvh;z-index:40}
   .bom-area.mobile-collapsed{width:auto;max-height:none}
   .top-btn{right:0.75rem;bottom:4.25rem}
@@ -549,7 +553,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area mobile-collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">材料清单</div><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div>
+        <div class="bom-head"><div class="bom-title">材料清单</div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button">导出清单</button><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -609,6 +613,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
           <label><input type="radio" name="export-pdf-scope" value="current" checked>当前视图</label>
           <label><input type="radio" name="export-pdf-scope" value="all">全部视图</label>
         </div>
+        <label class="check-field" id="export-include-bom-row"><span>包含材料清单</span><input type="checkbox" id="export-include-bom" checked></label>
         <div class="project-actions">
           <button type="button" onclick="closeProjectModal('export-modal')">取消</button>
           <button class="primary" type="button" onclick="confirmNamedExport()">确认导出</button>
@@ -5856,7 +5861,7 @@ function exportPdfCanvasesForScope(p, scope = 'current') {
   return [renderSheetCanvas(currentTab, p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE})];
 }
 
-async function exportNamedPdf(name = '隔断图纸', scope = 'current') {
+async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeBom = false) {
   try {
     const p = lastParams || getParams();
     const pages = exportPdfCanvasesForScope(p, scope);
@@ -5888,7 +5893,7 @@ async function exportNamedPdf(name = '隔断图纸', scope = 'current') {
       .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
       .page:last-child{page-break-after:auto;break-after:auto}
       img{width:100%;height:100%;object-fit:contain;display:block}
-    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}</body></html>`);
+    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('材料清单') : ''}</body></html>`);
     doc.close();
     window.setTimeout(() => {
       try {
@@ -5911,15 +5916,58 @@ async function exportNamedPdf(name = '隔断图纸', scope = 'current') {
   }
 }
 
+function currentBomHtml() {
+  const bom = document.getElementById('bom');
+  return bom?.innerHTML || '';
+}
+
+function bomPrintPageHtml(title = '材料清单') {
+  return `<section class="bom-print-page"><h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${currentBomHtml()}</div></section>`;
+}
+
+function exportBomPrint(name = '材料清单') {
+  const title = sanitizeExportName(name, '材料清单');
+  const oldFrame = document.getElementById('print-frame');
+  if (oldFrame) oldFrame.remove();
+  const frame = document.createElement('iframe');
+  frame.id = 'print-frame';
+  frame.style.position = 'fixed';
+  frame.style.right = '0';
+  frame.style.bottom = '0';
+  frame.style.width = '0';
+  frame.style.height = '0';
+  frame.style.border = '0';
+  document.body.appendChild(frame);
+  const doc = frame.contentDocument || frame.contentWindow.document;
+  doc.open();
+  doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
+    @page{size:A4 portrait;margin:12mm}
+    body{margin:0;background:#fff;color:#111827;font-family:"Microsoft YaHei",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bom-print-page{page-break-after:always;break-after:page}
+    .bom-print-page:last-child{page-break-after:auto;break-after:auto}
+    h1{font-size:24px;margin:0 0 14px;border-bottom:1px solid #d0d7de;padding-bottom:10px}
+    .bom-print-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .bom-card{border:1px solid #d8dee4;border-radius:6px;padding:10px;background:#fff;break-inside:avoid}
+    .bom-card-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;font-weight:700}
+    .name{font-size:15px}.val{font-size:13px;color:#0C447C;text-align:right}.bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700}
+    .bom-lines{display:grid!important;grid-template-columns:1fr!important;gap:4px}.bom-line{font-size:12px;line-height:1.5;color:#24292f}.bom-gap{height:6px}
+  </style></head><body>${bomPrintPageHtml(title)}</body></html>`);
+  doc.close();
+  window.setTimeout(() => { frame.contentWindow.focus(); frame.contentWindow.print(); }, 150);
+}
 function openExportDialog(mode) {
   pendingExportMode = mode;
   const input = document.getElementById('export-file-name');
   const scopeRow = document.getElementById('export-pdf-scope');
+  const bomRow = document.getElementById('export-include-bom-row');
+  const bomInput = document.getElementById('export-include-bom');
   const title = document.getElementById('export-modal-title');
-  const label = mode === 'all-image' ? '导出全部视图' : mode === 'pdf' ? '导出PDF' : '导出当前视图';
+  const label = mode === 'bom' ? '导出材料清单' : mode === 'all-image' ? '导出全部视图' : mode === 'pdf' ? '导出PDF' : '导出当前视图';
   if (title) title.textContent = label;
-  if (input) input.value = mode === 'all-image' ? '隔断全部视图' : mode === 'pdf' ? '隔断图纸' : `隔断${currentViewLabel()}`;
+  if (input) input.value = mode === 'bom' ? '材料清单' : mode === 'all-image' ? '隔断全部视图' : mode === 'pdf' ? '隔断图纸' : `隔断${currentViewLabel()}`;
   scopeRow?.classList.toggle('show', mode === 'pdf');
+  if (bomInput) bomInput.checked = true;
+  if (bomRow) bomRow.style.display = (mode === 'all-image' || mode === 'pdf') ? 'flex' : 'none';
   openProjectModal('export-modal');
   window.setTimeout(() => input?.focus(), 0);
 }
@@ -5927,14 +5975,20 @@ function openExportDialog(mode) {
 function confirmNamedExport() {
   const input = document.getElementById('export-file-name');
   const name = sanitizeExportName(input?.value, '隔断图纸');
+  const includeBom = document.getElementById('export-include-bom')?.checked !== false;
   closeProjectModal('export-modal');
+  if (pendingExportMode === 'bom') {
+    exportBomPrint(name);
+    return;
+  }
   if (pendingExportMode === 'all-image') {
     exportNamedAllImages(name);
+    if (includeBom) window.setTimeout(() => exportBomPrint(`${name}-材料清单`), 1200);
     return;
   }
   if (pendingExportMode === 'pdf') {
     const scope = document.querySelector('input[name="export-pdf-scope"]:checked')?.value || 'current';
-    exportNamedPdf(name, scope);
+    exportNamedPdf(name, scope, scope === 'all' && includeBom);
     return;
   }
   exportNamedImage(name);
@@ -5944,9 +5998,11 @@ function bindNamedExportButtons() {
   const current = document.getElementById('btn-export-current');
   const all = document.getElementById('btn-export-all');
   const pdf = document.getElementById('btn-print-pdf');
+  const bom = document.getElementById('btn-export-bom');
   if (current) current.onclick = () => openExportDialog('current-image');
   if (all) all.onclick = () => openExportDialog('all-image');
   if (pdf) pdf.onclick = () => openExportDialog('pdf');
+  if (bom) bom.onclick = () => openExportDialog('bom');
 }
 
 function updateZoomInfo() {
@@ -5981,6 +6037,14 @@ function applyMobileSidebarHeight(height) {
   document.documentElement.style.setProperty('--mobile-sidebar-height', `${next}px`);
 }
 
+function updateMobileStickyOffsets() {
+  if (!isMobileViewport()) return;
+  const tabs = document.querySelector('.view-tabs');
+  const sheet = document.querySelector('.sheet-actions');
+  if (tabs) document.documentElement.style.setProperty('--mobile-sticky-tabs-height', `${Math.ceil(tabs.getBoundingClientRect().height)}px`);
+  if (sheet) document.documentElement.style.setProperty('--mobile-sticky-sheet-height', `${Math.ceil(sheet.getBoundingClientRect().height)}px`);
+}
+
 function initMobileSidebarResize() {
   const sidebar = document.querySelector('.sidebar');
   const handle = document.getElementById('mobile-sidebar-resizer');
@@ -6005,6 +6069,7 @@ function initMobileSidebarResize() {
     const next = Math.round(sidebar.getBoundingClientRect().height);
     localStorage.setItem(mobileSidebarHeightKey, String(next));
     handle.releasePointerCapture?.(e.pointerId);
+    updateMobileStickyOffsets();
     if (lastParams) drawView(lastParams, currentTab);
   };
   handle.addEventListener('pointerup', endDrag);
@@ -6012,7 +6077,9 @@ function initMobileSidebarResize() {
   window.addEventListener('resize', () => {
     const current = sidebar.getBoundingClientRect().height;
     applyMobileSidebarHeight(current);
+    updateMobileStickyOffsets();
   });
+  updateMobileStickyOffsets();
 }
 
 function scrollMobileTop() {
@@ -6983,5 +7050,5 @@ window.setInterval(() => {
   }
 }, 530);
 
-setTimeout(()=>{ initMobileSidebarResize(); applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); }, 100);
+setTimeout(()=>{ initMobileSidebarResize(); applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); setTimeout(updateMobileStickyOffsets, 80); }, 100);
 </script>
