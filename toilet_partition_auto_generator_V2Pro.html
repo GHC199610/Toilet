@@ -49,6 +49,7 @@ body.theme-dark{background:#090d12}
 h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 .wrap{display:flex;gap:0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary);height:calc(100vh - 1.25rem);margin:0.625rem}
 .sidebar{width:19rem;flex-shrink:0;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);overflow-y:auto}
+.mobile-sidebar-resizer{display:none}
 .sb-head{padding:1rem 1rem 0.75rem;border-bottom:0.5px solid var(--color-border-tertiary);display:grid;grid-template-columns:1fr auto auto;gap:0.75rem;align-items:start}
 .sb-title{min-width:0}
 .sb-head p{font-size:0.9375rem;line-height:1.4;font-weight:600;color:var(--color-text-primary)}
@@ -255,10 +256,12 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
 }
 @media (max-width:700px){
   html{font-size:15px}
-  html,body{height:auto;min-height:100%;overflow:auto}
+  html,body{height:100%;min-height:100%;overflow:hidden}
   body{background:var(--color-background-primary)}
-  .wrap{display:flex;flex-direction:column;min-height:100dvh;height:auto;margin:0;border:0;border-radius:0;overflow:visible;background:var(--color-background-primary)}
-  .sidebar{width:100%;height:auto;max-height:none;border-right:0;border-bottom:0.5px solid var(--color-border-tertiary);overflow:visible;background:var(--color-background-secondary)}
+  .wrap{display:flex;flex-direction:column;height:100dvh;min-height:0;margin:0;border:0;border-radius:0;overflow:hidden;background:var(--color-background-primary)}
+  .sidebar{width:100%;height:var(--mobile-sidebar-height,24rem);max-height:none;flex:0 0 auto;border-right:0;border-bottom:0;overflow-y:auto;overscroll-behavior:contain;background:var(--color-background-secondary)}
+  .mobile-sidebar-resizer{display:flex;flex:0 0 1rem;height:1rem;align-items:center;justify-content:center;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);cursor:ns-resize;touch-action:none;user-select:none}
+  .mobile-sidebar-resizer::before{content:"";width:3.75rem;height:0.25rem;border-radius:999px;background:var(--color-border-primary)}
   .sb-head{position:sticky;top:0;z-index:3;grid-template-columns:1fr auto auto;gap:0.5rem;align-items:start;background:var(--color-background-secondary)}
   .sb-head p{font-size:1rem}
   .sb-head span{font-size:0.8125rem}
@@ -267,6 +270,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   #material-section .sec-title{font-size:1.0625rem;color:var(--color-text-primary);font-weight:800;text-transform:none;letter-spacing:0;line-height:1.35}
   .mobile-collapsible .mobile-collapsible-body > .sec-title{display:none}
   .mobile-collapsible .quick-title-row .sec-title{display:none}
+  #mobile-section-layout > .mobile-sec-toggle{display:none}
   .mobile-sec-toggle{width:100%;min-height:2.75rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;border:0;background:transparent;color:var(--color-text-primary);font-size:1.0625rem;font-weight:700;line-height:1.35;text-align:left;cursor:pointer;white-space:nowrap}
   .mobile-sec-toggle::after{content:"";width:0.5rem;height:0.5rem;border:0.12rem solid currentColor;border-left:0;border-top:0;transform:rotate(45deg);opacity:.7;transition:transform .15s}
   .mobile-collapsible.collapsed-mobile .mobile-sec-toggle::after{transform:rotate(-45deg)}
@@ -296,7 +300,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .quick-icon-btn{width:2.5rem;height:2.75rem}
   .wall-btn{min-height:5.5rem;padding:0.625rem 0.5rem;white-space:nowrap}
   .wall-btn svg{width:3.25rem;height:2.5rem}
-  .right{height:auto;min-height:70dvh;display:flex;flex-direction:column;background:#eef1f4}
+  .right{height:auto;min-height:0;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;background:#eef1f4}
   body.theme-dark .right{background:#202734}
   .view-tabs{position:sticky;top:0;z-index:12;flex-wrap:wrap;align-content:flex-start;overflow-x:hidden;gap:0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary)}
   .vtab{flex:0 0 auto;text-align:center;padding:0.875rem 1rem;font-size:0.9375rem;white-space:nowrap}
@@ -311,7 +315,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .sheet-action-btn{height:2.5rem;font-size:0.9375rem;white-space:nowrap}
   .sheet-page-info{font-size:0.875rem;white-space:nowrap}
   .global-history-actions{margin-right:0;padding-right:0.5rem}
-  .canvas-area{order:4;height:72dvh;min-height:28rem;flex:0 0 auto;overflow:hidden}
+  .canvas-area{order:4;height:auto;min-height:0;flex:1 1 auto;overflow:hidden}
   .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:42dvh;padding:0.625rem;z-index:40}
   .bom-title{font-size:1rem;white-space:nowrap}
   .bom-toggle{display:inline-flex;align-items:center;justify-content:center;height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -322,12 +326,12 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .bom-line{white-space:normal;word-break:break-word}
   .export-row{order:3;position:sticky;top:0;z-index:14;overflow-x:auto;padding:0.5rem 0.625rem;white-space:nowrap}
   .ex-btn{height:2.25rem;flex:0 0 auto;font-size:0.875rem;font-weight:700}
-  .urinal-panel{position:fixed;top:auto;left:0.625rem;right:0.625rem;bottom:0.625rem;width:auto;grid-template-columns:1fr 1fr;max-height:70dvh;overflow:auto}
+  .urinal-panel{position:fixed;top:auto;left:0.625rem;right:0.625rem;bottom:0.625rem;width:auto;grid-template-columns:1fr 1fr;max-height:70dvh;overflow:auto;z-index:50}
 }
 @media (max-width:430px){
   html{font-size:14px}
-  .sidebar{height:auto;min-height:0}
-  .right{height:auto;min-height:72dvh}
+  .sidebar{height:var(--mobile-sidebar-height,24rem);min-height:0;max-height:none}
+  .right{height:auto;min-height:0}
   .sec{padding:0.75rem 0.875rem}
   .field-pair,.door-width-row{grid-template-columns:1fr 1fr}
   .rebate-row{grid-template-columns:minmax(0,1fr) auto}
@@ -336,7 +340,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .field input[type=number],.field input[type=text],.field select,.booth-pick-input,.booth-pick-clear,.quick-btn{height:2.625rem}
   .mobile-sec-toggle{min-height:2.625rem;font-size:1rem}
   .sheet-page-info{margin-left:0;padding-right:0.5rem}
-  .canvas-area{height:70dvh;min-height:24rem}
+  .canvas-area{height:auto;min-height:0}
   .cv-controls{gap:0.25rem}
   .cv-btn{padding:0.3125rem 0.5rem}
   .bom-area{max-height:40dvh}
@@ -378,7 +382,8 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   html{font-size:14px}
   html,body{height:100%;overflow:hidden}
   .wrap{display:flex;flex-direction:row;height:100dvh;min-height:0;margin:0;border:0;border-radius:0;overflow:hidden;background:var(--color-background-primary)}
-  .sidebar{width:min(22rem,38vw);height:100dvh;max-height:none;border-right:0.5px solid var(--color-border-tertiary);border-bottom:0;overflow-y:auto;overscroll-behavior:contain;background:var(--color-background-secondary)}
+  .sidebar{width:min(22rem,38vw);height:var(--mobile-sidebar-height,24rem);max-height:100dvh;border-right:0.5px solid var(--color-border-tertiary);border-bottom:0;overflow-y:auto;overscroll-behavior:contain;background:var(--color-background-secondary)}
+  .mobile-sidebar-resizer{display:flex;flex:0 0 auto;border-left:0.5px solid var(--color-border-tertiary);border-right:0.5px solid var(--color-border-tertiary)}
   .sb-head{position:sticky;top:0;z-index:3;grid-template-columns:1fr auto auto;gap:0.5rem;background:var(--color-background-secondary)}
   .right{height:100dvh;min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden;background:#eef1f4}
   body.theme-dark .right{background:#202734}
@@ -508,6 +513,8 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     </div>
 
   </div>
+
+  <div class="mobile-sidebar-resizer" id="mobile-sidebar-resizer" role="separator" aria-orientation="horizontal" aria-label="调整功能区高度"></div>
 
   <div class="right">
     <div class="view-tabs">
@@ -1337,8 +1344,8 @@ function renderDepthPanelSpecialPanel() {
   panel.innerHTML = `
     <div class="booth-swing-hint">${escapeAttr(depthPanelName(row, index))}</div>
     <div class="special-card-row">
-      <div class="special-card-field"><label>墙凸</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" value="${item.protrusion || ''}" oninput="limitDepthPanelCardInput(this)" onkeydown="handleDepthPanelCardKey(event,'protrusion')" ${disabled}></div>
-      <div class="special-card-field"><label>指定板深度</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" value="${item.depth || ''}" oninput="limitDepthPanelCardInput(this)" onkeydown="handleDepthPanelCardKey(event,'depth')" ${disabled}></div>
+      <div class="special-card-field"><label>墙凸</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" value="${item.protrusion || ''}" oninput="limitDepthPanelCardInput(this)" onchange="applySelectedDepthPanelProtrusion(this.value)" onkeydown="handleDepthPanelCardKey(event,'protrusion')" ${disabled}></div>
+      <div class="special-card-field"><label>指定板深度</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" value="${item.depth || ''}" oninput="limitDepthPanelCardInput(this)" onchange="applySelectedDepthPanelDepth(this.value)" onkeydown="handleDepthPanelCardKey(event,'depth')" ${disabled}></div>
     </div>
     <div class="booth-pick-line">
       <button class="booth-pick-clear" type="button" onclick="resetSelectedDepthPanelSpecial()" ${disabled}>恢复默认深度</button>
@@ -1359,6 +1366,14 @@ function handleDepthPanelCardKey(e, type) {
 
 function applySelectedDepthPanelProtrusion(value) {
   if (selectionScope !== 'depth-panel' || !selectedDepthPanelRef) return;
+  const target = selectedDepthPanelRow();
+  if (!target) return;
+  const {row} = target;
+  const count = depthPanelCount(row);
+  row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, count);
+  const current = Math.round(Number(row.depthPanelSpecials[selectedDepthPanelRef.index]?.protrusion) || 0);
+  const next = Math.round(Number(value) || 0);
+  if (current === next) return;
   pushHistory();
   updateDepthPanelSpecial(selectedDepthPanelRef.index, {protrusion:value});
   lastParams = getParams();
@@ -1369,6 +1384,14 @@ function applySelectedDepthPanelProtrusion(value) {
 
 function applySelectedDepthPanelDepth(value) {
   if (selectionScope !== 'depth-panel' || !selectedDepthPanelRef) return;
+  const target = selectedDepthPanelRow();
+  if (!target) return;
+  const {row} = target;
+  const count = depthPanelCount(row);
+  row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, count);
+  const current = Math.round(Number(row.depthPanelSpecials[selectedDepthPanelRef.index]?.depth) || 0);
+  const next = Math.round(Number(value) || 0);
+  if (current === next) return;
   pushHistory();
   updateDepthPanelSpecial(selectedDepthPanelRef.index, {depth:value});
   lastParams = getParams();
@@ -5941,6 +5964,57 @@ function isMobileViewport() {
   return window.matchMedia('(max-width: 700px)').matches;
 }
 
+const mobileSidebarHeightKey = 'toilet-mobile-sidebar-height';
+
+function mobileSidebarBounds() {
+  const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+  const min = Math.min(260, Math.max(180, viewportH - 220));
+  const max = Math.max(min, viewportH - 180);
+  return {min, max};
+}
+
+function applyMobileSidebarHeight(height) {
+  const n = Math.round(Number(height) || 0);
+  if (!n) return;
+  const {min, max} = mobileSidebarBounds();
+  const next = Math.max(min, Math.min(max, n));
+  document.documentElement.style.setProperty('--mobile-sidebar-height', `${next}px`);
+}
+
+function initMobileSidebarResize() {
+  const sidebar = document.querySelector('.sidebar');
+  const handle = document.getElementById('mobile-sidebar-resizer');
+  if (!sidebar || !handle) return;
+  const saved = Number(localStorage.getItem(mobileSidebarHeightKey) || 0);
+  if (saved) applyMobileSidebarHeight(saved);
+
+  let drag = null;
+  handle.addEventListener('pointerdown', e => {
+    if (!isMobileViewport()) return;
+    e.preventDefault();
+    drag = {startY:e.clientY, startH:sidebar.getBoundingClientRect().height};
+    handle.setPointerCapture?.(e.pointerId);
+  });
+  handle.addEventListener('pointermove', e => {
+    if (!drag) return;
+    applyMobileSidebarHeight(drag.startH + e.clientY - drag.startY);
+  });
+  const endDrag = e => {
+    if (!drag) return;
+    drag = null;
+    const next = Math.round(sidebar.getBoundingClientRect().height);
+    localStorage.setItem(mobileSidebarHeightKey, String(next));
+    handle.releasePointerCapture?.(e.pointerId);
+    if (lastParams) drawView(lastParams, currentTab);
+  };
+  handle.addEventListener('pointerup', endDrag);
+  handle.addEventListener('pointercancel', endDrag);
+  window.addEventListener('resize', () => {
+    const current = sidebar.getBoundingClientRect().height;
+    applyMobileSidebarHeight(current);
+  });
+}
+
 function scrollMobileTop() {
   window.scrollTo({top:0, behavior:'smooth'});
   document.querySelector('.sidebar')?.scrollTo?.({top:0, behavior:'smooth'});
@@ -6112,6 +6186,15 @@ function finishDimensionEdit(commit = true) {
 function hitPlanArea(x, y) {
   const hits = [...planHitAreas].reverse().filter(area => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
   return hits.find(area => area.type === 'dimension') || hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'block') || null;
+}
+
+function hitPlanDimension(x, y) {
+  return [...planHitAreas].reverse().find(area => area.type === 'dimension' && x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h) || null;
+}
+
+function hitPlanSelectable(x, y) {
+  const hits = [...planHitAreas].reverse().filter(area => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
+  return hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'block') || null;
 }
 
 function hitPlanBlock(x, y) {
@@ -6329,8 +6412,8 @@ cv.addEventListener('touchstart', e => {
   const touch = e.touches[0];
   const screenPt = touchPoint(touch);
   const planPt = viewportToPlanPoint(touch.clientX, touch.clientY);
-  const hit = hitPlanArea(planPt.x, planPt.y);
-  const blockHit = currentTab === 'plan' && canvasMode === 'sheets' && hit?.type !== 'dimension' ? hitPlanBlock(planPt.x, planPt.y) : null;
+  const hit = hitPlanSelectable(planPt.x, planPt.y) || hitPlanDimension(planPt.x, planPt.y);
+  const blockHit = currentTab === 'plan' && canvasMode === 'sheets' && !hitPlanDimension(planPt.x, planPt.y) ? hitPlanBlock(planPt.x, planPt.y) : null;
   touchState = {
     mode:'pending',
     startX: screenPt.x,
@@ -6400,8 +6483,9 @@ cv.addEventListener('touchend', e => {
   if (touchState.mode === 'pending') {
     const now = Date.now();
     const closeToLastTap = lastTapInfo && now - lastTapInfo.time < 320 && Math.hypot(touchState.startX - lastTapInfo.x, touchState.startY - lastTapInfo.y) < 24;
-    if (closeToLastTap && touchState.hit?.type === 'dimension') {
-      startDimensionEdit(touchState.hit);
+    const dimensionHit = closeToLastTap ? hitPlanDimension(touchState.planStart.x, touchState.planStart.y) : null;
+    if (dimensionHit) {
+      startDimensionEdit(dimensionHit);
       lastTapInfo = null;
     } else {
       handlePlanTapFromPoint(touchState.planStart, false);
@@ -6414,8 +6498,7 @@ cv.addEventListener('touchend', e => {
 cv.addEventListener('mousedown', e => {
   if (e.button === 0 && currentTab === 'plan' && canvasMode === 'sheets') {
     const pt = canvasPlanPoint(e);
-    const anyHit = hitPlanArea(pt.x, pt.y);
-    if (anyHit?.type === 'dimension') return;
+    if (hitPlanDimension(pt.x, pt.y)) return;
     const hit = hitPlanBlock(pt.x, pt.y);
     if (hit?.type === 'block') {
       e.preventDefault();
@@ -6439,7 +6522,7 @@ cv.addEventListener('mousedown', e => {
 cv.addEventListener('dblclick', e => {
   if (isDragging) return;
   const pt = canvasPlanPoint(e);
-  const hit = hitPlanArea(pt.x, pt.y);
+  const hit = hitPlanDimension(pt.x, pt.y);
   if (hit?.type !== 'dimension') return;
   e.preventDefault();
   e.stopPropagation();
@@ -6448,8 +6531,7 @@ cv.addEventListener('dblclick', e => {
 
 function handlePlanTapFromPoint(pt, shiftKey = false) {
   if (currentTab !== 'plan' || isDragging) return;
-  const hit = hitPlanArea(pt.x, pt.y);
-  if (hit?.type === 'dimension') return;
+  const hit = hitPlanSelectable(pt.x, pt.y);
   if (!hit) {
     selectionScope = 'none';
     clearSelectedBooth();
@@ -6664,6 +6746,8 @@ document.getElementById('p-count').addEventListener('input', () => {
   syncBoothSwingsByCount();
   renderBoothSwingPanel();
   refreshDrawingAfterManualEdit(false);
+  syncWidthCardsFromText(committedWidthsText);
+  renderWidthCards();
 });
 
 document.getElementById('p-count').addEventListener('change', () => {
@@ -6671,6 +6755,8 @@ document.getElementById('p-count').addEventListener('change', () => {
   syncBoothSwingsByCount();
   renderBoothSwingPanel();
   refreshDrawingAfterManualEdit(false);
+  syncWidthCardsFromText(committedWidthsText);
+  renderWidthCards();
 });
 
 document.getElementById('p-count').addEventListener('keydown', e => {
@@ -6679,6 +6765,8 @@ document.getElementById('p-count').addEventListener('keydown', e => {
   syncBoothSwingsByCount();
   renderBoothSwingPanel();
   refreshDrawingAfterManualEdit(false);
+  syncWidthCardsFromText(committedWidthsText);
+  renderWidthCards();
 });
 
 function commitTotalInput(selectAfterCommit = false, advanceQuickCell = false) {
@@ -6895,5 +6983,5 @@ window.setInterval(() => {
   }
 }, 530);
 
-setTimeout(()=>{ applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); }, 100);
+setTimeout(()=>{ initMobileSidebarResize(); applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); }, 100);
 </script>
