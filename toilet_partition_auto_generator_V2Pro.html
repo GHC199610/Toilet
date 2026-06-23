@@ -275,7 +275,10 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .mobile-collapsible-body > .rebate-row,
   .mobile-collapsible-body > .quick-title-row,
   .mobile-collapsible-body > .quick-layout,
-  .mobile-collapsible-body > .booth-swing-panel{grid-column:1 / -1}
+  .mobile-collapsible-body > .booth-swing-panel,
+  .mobile-collapsible-body > .wall-grid{grid-column:1 / -1}
+  .collapsible-sec:not(.collapsed) .collapsible-body{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem 0.625rem;align-items:end}
+  .collapsible-sec .collapsible-body .field{margin-bottom:0}
   .field{margin-bottom:0}
   .field-pair,.door-width-row{grid-template-columns:1fr 1fr;gap:0.625rem;margin-bottom:0}
   .rebate-row{grid-template-columns:minmax(0,1fr) auto;gap:0.625rem;margin:0}
