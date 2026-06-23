@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -41,13 +41,34 @@ body.theme-dark{background:#090d12}
 h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 .wrap{display:flex;gap:0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary);height:calc(100vh - 1.25rem);margin:0.625rem}
 .sidebar{width:19rem;flex-shrink:0;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);overflow-y:auto}
-.sb-head{padding:1rem 1rem 0.75rem;border-bottom:0.5px solid var(--color-border-tertiary);display:grid;grid-template-columns:1fr auto;gap:0.75rem;align-items:start}
+.sb-head{padding:1rem 1rem 0.75rem;border-bottom:0.5px solid var(--color-border-tertiary);display:grid;grid-template-columns:1fr auto auto;gap:0.75rem;align-items:start}
 .sb-title{min-width:0}
 .sb-head p{font-size:0.9375rem;line-height:1.4;font-weight:600;color:var(--color-text-primary)}
 .sb-head span{display:block;margin-top:0.125rem;font-size:0.75rem;line-height:1.45;color:var(--color-text-tertiary)}
-.theme-btn{width:2rem;height:2rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;line-height:1;transition:all .15s}
+.theme-btn{width:2.5rem;height:2.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.25rem;line-height:1;transition:all .15s}
 .theme-btn:hover{border-color:#378ADD;color:#185FA5}
 body.theme-dark .theme-btn:hover{color:#79c0ff}
+.project-folder-btn{height:2rem;padding:0 0.625rem;margin-top:0.125rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap;align-self:start}
+.project-folder-btn:hover{border-color:#378ADD;color:#185FA5}
+.save-drawing-btn{height:1.875rem;padding:0 0.75rem;margin-left:0.25rem;border:0.5px solid #185FA5;border-radius:var(--border-radius-md);background:#185FA5;color:#fff;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.save-drawing-btn:hover{background:#0C447C;border-color:#0C447C}
+.project-modal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(15,23,42,.38)}
+.project-modal.open{display:flex}
+.project-dialog{width:min(32rem,calc(100vw - 2rem));max-height:min(80dvh,38rem);display:flex;flex-direction:column;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);box-shadow:0 20px 60px rgba(31,35,40,.24);overflow:hidden}
+.project-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.875rem 1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.project-dialog-title{font-size:1rem;font-weight:800;color:var(--color-text-primary)}
+.project-close{width:2rem;height:2rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:1.125rem;cursor:pointer}
+.project-dialog-body{padding:1rem;overflow:auto}
+.project-save-form{display:grid;gap:0.75rem}
+.project-save-form input{height:2.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.9375rem;padding:0 0.75rem}
+.project-actions{display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem}
+.project-actions button,.project-file-row button{height:2.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.project-actions .primary,.project-file-row .primary{background:#185FA5;border-color:#185FA5;color:#fff}
+.project-file-list{display:grid;gap:0.625rem}
+.project-file-row{display:grid;grid-template-columns:1fr auto auto;gap:0.5rem;align-items:center;padding:0.75rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary)}
+.project-file-name{font-size:0.9375rem;font-weight:700;color:var(--color-text-primary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.project-file-time{display:block;margin-top:0.125rem;font-size:0.75rem;font-weight:500;color:var(--color-text-tertiary)}
+.project-empty{font-size:0.875rem;color:var(--color-text-tertiary);text-align:center;padding:1rem}
 .quick-layout{display:grid;gap:var(--control-gap)}
 .quick-title-row{display:flex;align-items:center;justify-content:space-between;gap:var(--field-gap);margin-bottom:var(--field-gap)}
 .quick-title-row .sec-title{margin-bottom:0;white-space:nowrap;flex:0 0 auto}
@@ -90,6 +111,7 @@ body.theme-dark .quick-icon-btn:hover{border-color:#58a6ff;color:#b9dcff;backgro
 .collapsible-sec:not(.collapsed) .sec-title{margin-bottom:var(--field-gap)}
 .collapsible-sec:not(.collapsed) .sec-title::after{transform:rotate(225deg);margin-top:0.25rem}
 .collapsible-sec.collapsed .collapsible-body{display:none}
+.mobile-sec-toggle{display:none}
 .wall-section .sec-title{font-size:0.8125rem;margin-bottom:var(--field-gap)}
 .wall-section .wall-btn{font-size:var(--sidebar-content-font);min-height:5rem}
 .wall-section .wall-btn svg{width:3.375rem;height:2.5rem;margin-bottom:var(--field-gap)}
@@ -166,12 +188,14 @@ body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;backg
 .canvas-area{flex:1;position:relative;background:#eef1f4;overflow:hidden}
 body.theme-dark .canvas-area{background:#202734}
 canvas{display:block;width:100%;height:100%}
+@media (pointer:coarse){canvas{touch-action:none}}
 .canvas-text-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;resize:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;overflow:hidden}
 .dimension-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;outline:none}
 .bom-area{position:absolute;top:3rem;right:0.875rem;bottom:1.5rem;z-index:9;min-width:20rem;width:max-content;max-width:min(42rem,calc(100% - 1.75rem));border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.875rem;background:rgba(255,255,255,.92);box-shadow:0 14px 34px rgba(31,35,40,.14);overflow:auto}
 body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px rgba(0,0,0,.24)}
 .bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.375rem}
 .bom-title{font-size:0.9375rem;font-weight:700;color:#111827}
+.bom-toggle{display:none}
 body.theme-dark .bom-title{color:#f6f8fa}
 .bom-grid{display:grid;grid-template-columns:1fr;gap:0.625rem}
 .bom-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.75rem;min-width:0}
@@ -219,38 +243,75 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .cv-controls{top:0.5rem;right:0.5rem}
 }
 @media (max-width:700px){
-  html{font-size:14px}
-  body{overflow:hidden}
-  .wrap{display:flex;flex-direction:column;height:100dvh;background:var(--color-background-primary)}
-  .sidebar{width:100%;height:43dvh;min-height:18rem;max-height:24rem;border-right:0;border-bottom:0.5px solid var(--color-border-tertiary);overflow-y:auto;overscroll-behavior:contain}
-  .sb-head{position:sticky;top:0;z-index:3;background:var(--color-background-secondary)}
-  .right{height:57dvh;min-height:0}
-  .view-tabs{flex-wrap:wrap;align-content:flex-start;gap:0;border-bottom:0.5px solid var(--color-border-tertiary)}
-  .vtab{flex:1 0 auto;text-align:center;padding:0.625rem 0.5rem}
+  html{font-size:15px}
+  html,body{height:auto;min-height:100%;overflow:auto}
+  body{background:var(--color-background-primary)}
+  .wrap{display:flex;flex-direction:column;min-height:100dvh;height:auto;margin:0;border:0;border-radius:0;overflow:visible;background:var(--color-background-primary)}
+  .sidebar{width:100%;height:auto;max-height:none;border-right:0;border-bottom:0.5px solid var(--color-border-tertiary);overflow:visible;background:var(--color-background-secondary)}
+  .sb-head{position:sticky;top:0;z-index:3;grid-template-columns:1fr auto auto;gap:0.5rem;align-items:start;background:var(--color-background-secondary)}
+  .sb-head p{font-size:1rem}
+  .sb-head span{font-size:0.8125rem}
+  .project-folder-btn{height:2.25rem;margin-top:0.125rem;padding:0 0.625rem;font-size:0.75rem}
+  .theme-btn{width:2.75rem;height:2.75rem;font-size:1.375rem}
+  .mobile-sec-toggle{width:100%;min-height:2.75rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;border:0;background:transparent;color:var(--color-text-primary);font-size:1.0625rem;font-weight:700;line-height:1.35;text-align:left;cursor:pointer;white-space:nowrap}
+  .mobile-sec-toggle::after{content:"";width:0.5rem;height:0.5rem;border:0.12rem solid currentColor;border-left:0;border-top:0;transform:rotate(45deg);opacity:.7;transition:transform .15s}
+  .mobile-collapsible.collapsed-mobile .mobile-sec-toggle::after{transform:rotate(-45deg)}
+  .mobile-collapsible.collapsed-mobile .mobile-collapsible-body{display:none}
+  .mobile-collapsible .quick-title-row{margin-top:0.625rem}
+  .sec{padding:0.875rem 1rem}
+  .sec-title{font-size:0.8125rem;white-space:nowrap}
+  .field label,.check-field,.switch-toggle,.booth-swing-hint,.wall-btn,.special-card-field label{font-size:1rem}
+  .field input[type=number],.field input[type=text],.field select,.booth-pick-input,.booth-pick-clear,.quick-btn{height:2.75rem;font-size:1rem}
+  .quick-cell{width:3rem;height:2.75rem;font-size:1rem}
+  .quick-title-row,.quick-history-actions,.quick-cells,.quick-page-actions,.quick-bottom-actions{gap:0.625rem}
+  .quick-title-row{align-items:flex-start;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+  .quick-title-row .sec-title,.quick-history-actions{flex:0 0 auto}
+  .quick-icon-btn{width:2.5rem;height:2.75rem}
+  .wall-btn{min-height:5.5rem;padding:0.625rem 0.5rem;white-space:nowrap}
+  .wall-btn svg{width:3.25rem;height:2.5rem}
+  .right{height:auto;min-height:70dvh;display:flex;flex-direction:column;background:#eef1f4}
+  body.theme-dark .right{background:#202734}
+  .view-tabs{position:sticky;top:0;z-index:12;flex-wrap:wrap;align-content:flex-start;overflow-x:hidden;gap:0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary)}
+  .vtab{flex:0 0 auto;text-align:center;padding:0.875rem 1rem;font-size:0.9375rem;white-space:nowrap}
+  .save-drawing-btn{flex:0 0 auto;height:2.25rem;margin:0.375rem 0.5rem 0.375rem 0.25rem;font-size:0.875rem}
   .top-widths{order:5;flex:1 0 100%;min-width:0;max-width:none;margin:0;padding:0.5rem 0.625rem;border-top:0.5px solid var(--color-border-tertiary)}
-  .paper-select{margin-left:0;padding:0.5rem 0.625rem}
-  .sheet-actions{padding:0.5rem 0.625rem;gap:0.5rem}
+  .top-widths label,.paper-select label{font-size:0.9375rem}
+  .width-card{width:3.75rem;height:2rem;font-size:0.9375rem}
+  .width-card-row{flex:1;min-width:0}
+  .paper-select{order:4;margin-left:auto;padding:0.5rem 0.625rem}
+  .paper-select select{height:2rem;font-size:0.9375rem}
+  .sheet-actions{height:auto;min-height:3rem;padding:0.5rem 0.625rem;gap:0.5rem;overflow-x:auto;white-space:nowrap}
+  .sheet-action-btn{height:2.5rem;font-size:0.9375rem;white-space:nowrap}
+  .sheet-page-info{font-size:0.875rem;white-space:nowrap}
   .global-history-actions{margin-right:0;padding-right:0.5rem}
-  .canvas-area{min-height:0;flex:1}
-  .bom-area{top:auto;right:0.5rem;left:0.5rem;bottom:0.75rem;min-width:0;width:auto;max-width:none;max-height:38%;padding:0.625rem}
+  .canvas-area{height:72dvh;min-height:28rem;flex:0 0 auto;overflow:hidden}
+  .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:42dvh;padding:0.625rem;z-index:40}
+  .bom-title{font-size:1rem;white-space:nowrap}
+  .bom-toggle{display:inline-flex;align-items:center;justify-content:center;height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap}
+  .bom-area.mobile-collapsed{max-height:none;width:auto}
+  .bom-area.mobile-collapsed .bom-grid{display:none}
+  .bom-area.mobile-collapsed .bom-head{margin-bottom:0}
   .bom-lines{grid-template-columns:1fr!important}
   .bom-line{white-space:normal;word-break:break-word}
   .export-row{overflow-x:auto;padding:0.5rem 0.625rem}
   .urinal-panel{position:fixed;top:auto;left:0.625rem;right:0.625rem;bottom:0.625rem;width:auto;grid-template-columns:1fr 1fr;max-height:70dvh;overflow:auto}
 }
 @media (max-width:430px){
-  html{font-size:13px}
-  .sidebar{height:46dvh;min-height:17rem}
-  .right{height:54dvh}
-  .sec{padding:0.625rem}
+  html{font-size:14px}
+  .sidebar{height:auto;min-height:0}
+  .right{height:auto;min-height:72dvh}
+  .sec{padding:0.75rem 0.875rem}
   .field-pair,.door-width-row{grid-template-columns:1fr}
   .rebate-row{grid-template-columns:1fr auto}
   .wall-grid{grid-template-columns:1fr 1fr}
-  .quick-cell{width:2.5rem;height:2.25rem}
+  .quick-cell{width:2.875rem;height:2.625rem}
+  .field input[type=number],.field input[type=text],.field select,.booth-pick-input,.booth-pick-clear,.quick-btn{height:2.625rem}
+  .mobile-sec-toggle{min-height:2.625rem;font-size:1rem}
   .sheet-page-info{margin-left:0;padding-right:0.5rem}
+  .canvas-area{height:70dvh;min-height:24rem}
   .cv-controls{gap:0.25rem}
   .cv-btn{padding:0.3125rem 0.5rem}
-  .bom-area{max-height:34%}
+  .bom-area{max-height:40dvh}
 }
 .export-row{display:flex;gap:0.5rem;padding:0.625rem 0.875rem;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
 .ex-btn{padding:0.3125rem 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.25rem}
@@ -262,6 +323,7 @@ body.theme-dark .ex-btn:hover{border-color:#58a6ff;color:#b9dcff}
 body.theme-dark .cv-btn{background:rgba(20,26,34,.92)}
 body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141a22}
 .zoom-info{font-size:0.6875rem;color:var(--color-text-tertiary);min-width:2.25rem;text-align:right;font-family:Consolas,'Microsoft YaHei',monospace}
+.top-btn{display:none}
 @media (max-width:900px){
   .export-row{overflow-x:auto;white-space:nowrap}
   .ex-btn{flex:0 0 auto}
@@ -271,10 +333,38 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .export-row{padding:0.5rem 0.625rem;gap:0.5rem}
   .cv-controls{top:0.5rem;right:0.5rem;gap:0.25rem}
   .cv-btn{padding:0.3125rem 0.5rem}
+  .top-btn{position:fixed;right:0.75rem;bottom:4.25rem;z-index:45;display:inline-flex;align-items:center;justify-content:center;height:2.5rem;min-width:3.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:999px;background:rgba(255,255,255,.96);color:#185FA5;font-size:0.875rem;font-weight:800;box-shadow:0 8px 24px rgba(31,35,40,.18);cursor:pointer;white-space:nowrap}
+  body.theme-dark .top-btn{background:rgba(20,26,34,.96);color:#b9dcff}
+  .project-modal{padding:0.75rem}
+  .project-dialog{width:calc(100vw - 1.5rem);max-height:82dvh}
+  .project-file-row{grid-template-columns:1fr auto auto;padding:0.625rem;gap:0.375rem}
 }
 @media (max-width:430px){
   .cv-controls{max-width:calc(100% - 1rem);overflow-x:auto}
   .zoom-info{min-width:2rem}
+  .top-btn{right:0.625rem;bottom:4rem;height:2.375rem;min-width:3rem;font-size:0.8125rem}
+  .project-file-row{grid-template-columns:1fr;align-items:stretch}
+  .project-file-row button{width:100%}
+}
+@media (max-width:900px) and (orientation:landscape){
+  html{font-size:14px}
+  html,body{height:100%;overflow:hidden}
+  .wrap{display:flex;flex-direction:row;height:100dvh;min-height:0;margin:0;border:0;border-radius:0;overflow:hidden;background:var(--color-background-primary)}
+  .sidebar{width:min(22rem,38vw);height:100dvh;max-height:none;border-right:0.5px solid var(--color-border-tertiary);border-bottom:0;overflow-y:auto;overscroll-behavior:contain;background:var(--color-background-secondary)}
+  .sb-head{position:sticky;top:0;z-index:3;grid-template-columns:1fr auto auto;gap:0.5rem;background:var(--color-background-secondary)}
+  .right{height:100dvh;min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden;background:#eef1f4}
+  body.theme-dark .right{background:#202734}
+  .view-tabs{position:relative;top:auto;z-index:12;flex:0 0 auto;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;border-top:0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .vtab{flex:0 0 auto;padding:0.625rem 0.875rem;font-size:0.875rem;white-space:nowrap}
+  .top-widths{order:0;flex:1 1 12rem;min-width:12rem;max-width:20rem;margin-left:0.25rem;padding:0.375rem 0.5rem;border-top:0}
+  .paper-select{order:0;margin-left:auto;padding:0.375rem 0.5rem}
+  .sheet-actions{flex:0 0 auto;min-height:2.75rem;height:auto;padding:0.375rem 0.5rem;gap:0.5rem;overflow-x:auto;white-space:nowrap}
+  .sheet-action-btn{height:2.25rem;font-size:0.875rem}
+  .canvas-area{height:auto;min-height:0;flex:1 1 auto;overflow:hidden}
+  .export-row{flex:0 0 auto;padding:0.375rem 0.5rem;overflow-x:auto;white-space:nowrap}
+  .bom-area{position:fixed;left:auto;right:0.5rem;bottom:0.5rem;width:min(20rem,58vw);max-height:46dvh;z-index:40}
+  .bom-area.mobile-collapsed{width:auto;max-height:none}
+  .top-btn{right:0.75rem;bottom:4.25rem}
 }
 @media print{
   @page{margin:0}
@@ -306,36 +396,43 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
         <p>隔断参数设置</p>
         <span>填写后自动生成图纸</span>
       </div>
+      <button class="project-folder-btn" type="button" onclick="openProjectFolder()">项目文件夹</button>
       <button class="theme-btn" id="theme-toggle" type="button" onclick="toggleTheme()" title="切换深色主题" aria-label="切换深色主题">&#9790;</button>
     </div>
 
-    <div class="sec">
-      <div class="quick-title-row">
-        <div class="sec-title">快速布局</div>
-        <div class="quick-history-actions">
-          <button class="quick-btn" type="button" onclick="selectAllQuickLayoutRows()">全选</button>
-          <button class="switch-toggle" id="quick-ten-toggle" type="button" onclick="toggleQuickTenMode()"><span>10间+</span><span class="switch-track" aria-hidden="true"></span><span class="switch-state">关闭</span></button>
+    <div class="sec mobile-collapsible" id="mobile-section-quick">
+      <button class="mobile-sec-toggle" type="button" onclick="toggleMobileSection('mobile-section-quick')">快速布局</button>
+      <div class="mobile-collapsible-body">
+        <div class="quick-title-row">
+          <div class="sec-title">快速布局</div>
+          <div class="quick-history-actions">
+            <button class="quick-btn" type="button" onclick="selectAllQuickLayoutRows()">全选</button>
+            <button class="switch-toggle" id="quick-ten-toggle" type="button" onclick="toggleQuickTenMode()"><span>10间+</span><span class="switch-track" aria-hidden="true"></span><span class="switch-state">关闭</span></button>
+          </div>
         </div>
+        <div class="quick-layout" id="quick-layout"></div>
       </div>
-      <div class="quick-layout" id="quick-layout"></div>
     </div>
 
-    <div class="sec">
-      <div class="sec-title">隔间布局</div>
-      <div class="field count-field"><label>间数（个） <span id="layout-target-label"></span></label><input type="number" id="p-count" value="3" min="1" max="999" step="1"></div>
-      <div class="field"><label>总长度（mm）</label><input type="number" id="p-total" value="3000" min="600" max="20000" step="100"></div>
-      <div class="field"><label>隔间深度（mm）</label><input type="number" id="p-depth" value="1220" min="800" max="2000" step="50"></div>
-      <div class="door-width-row">
-        <div class="field"><label>门宽（mm）</label><input type="number" id="p-door" value="600" min="400" max="1000" step="50"></div>
-        <div class="booth-swing-panel" id="booth-door-width-panel"></div>
-      </div>
-      <div class="field-pair">
-        <div class="field"><label>门缝（mm）</label><input type="number" id="p-gap" value="10" min="4" max="100" step="1"></div>
-        <div class="field"><label>隔断板厚</label><input type="number" id="t-panel" value="12" min="6" max="25" step="1"></div>
-      </div>
-      <div class="rebate-row">
-        <div class="field"><label>单边启口值（mm）</label><input type="number" id="p-rebate-depth" value="10" min="0" max="100" step="1"></div>
-        <label class="check-field"><input class="switch-source" type="checkbox" id="p-rebate"><span class="switch-toggle" id="rebate-toggle"><span class="switch-track" aria-hidden="true"></span><span class="switch-state">关闭</span></span></label>
+    <div class="sec mobile-collapsible" id="mobile-section-layout">
+      <button class="mobile-sec-toggle" type="button" onclick="toggleMobileSection('mobile-section-layout')">隔间布局</button>
+      <div class="mobile-collapsible-body">
+        <div class="sec-title">隔间布局</div>
+        <div class="field count-field"><label>间数（个） <span id="layout-target-label"></span></label><input type="number" id="p-count" value="3" min="1" max="999" step="1"></div>
+        <div class="field"><label>总长度（mm）</label><input type="number" id="p-total" value="3000" min="600" max="20000" step="100"></div>
+        <div class="field"><label>隔间深度（mm）</label><input type="number" id="p-depth" value="1220" min="800" max="2000" step="50"></div>
+        <div class="door-width-row">
+          <div class="field"><label>门宽（mm）</label><input type="number" id="p-door" value="600" min="400" max="1000" step="50"></div>
+          <div class="booth-swing-panel" id="booth-door-width-panel"></div>
+        </div>
+        <div class="field-pair">
+          <div class="field"><label>门缝（mm）</label><input type="number" id="p-gap" value="10" min="4" max="100" step="1"></div>
+          <div class="field"><label>隔断板厚</label><input type="number" id="t-panel" value="12" min="6" max="25" step="1"></div>
+        </div>
+        <div class="rebate-row">
+          <div class="field"><label>单边启口值（mm）</label><input type="number" id="p-rebate-depth" value="10" min="0" max="100" step="1"></div>
+          <label class="check-field"><input class="switch-source" type="checkbox" id="p-rebate"><span class="switch-toggle" id="rebate-toggle"><span class="switch-track" aria-hidden="true"></span><span class="switch-state">关闭</span></span></label>
+        </div>
       </div>
     </div>
 
@@ -349,31 +446,37 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       </div>
     </div>
 
-    <div class="sec">
-      <div class="wall-grid" id="swing-grid"></div>
-      <div class="booth-swing-panel" id="booth-swing-panel"></div>
+    <div class="sec mobile-collapsible collapsed-mobile" id="mobile-section-swing">
+      <button class="mobile-sec-toggle" type="button" onclick="toggleMobileSection('mobile-section-swing')">开门方向</button>
+      <div class="mobile-collapsible-body">
+        <div class="wall-grid" id="swing-grid"></div>
+        <div class="booth-swing-panel" id="booth-swing-panel"></div>
+      </div>
     </div>
 
-    <div class="sec wall-section">
-      <div class="wall-grid">
-        <button class="wall-btn active" data-wall="three" onclick="setWall(this)">
-          <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="4" height="24" fill="#378ADD"/><rect x="28" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
-          三面靠墙
-        </button>
-        <button class="wall-btn" data-wall="left" onclick="setWall(this)">
-          <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
-          左边靠墙
-        </button>
-        <button class="wall-btn" data-wall="right" onclick="setWall(this)">
-          <svg width="32" height="24" viewBox="0 0 32 24"><rect x="28" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
-          右边靠墙
-        </button>
-        <button class="wall-btn" data-wall="back" onclick="setWall(this)">
-          <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
-          只有背墙
-        </button>
+    <div class="sec wall-section mobile-collapsible collapsed-mobile" id="mobile-section-wall">
+      <button class="mobile-sec-toggle" type="button" onclick="toggleMobileSection('mobile-section-wall')">墙体条件</button>
+      <div class="mobile-collapsible-body">
+        <div class="wall-grid">
+          <button class="wall-btn active" data-wall="three" onclick="setWall(this)">
+            <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="4" height="24" fill="#378ADD"/><rect x="28" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
+            三面靠墙
+          </button>
+          <button class="wall-btn" data-wall="left" onclick="setWall(this)">
+            <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
+            左边靠墙
+          </button>
+          <button class="wall-btn" data-wall="right" onclick="setWall(this)">
+            <svg width="32" height="24" viewBox="0 0 32 24"><rect x="28" y="0" width="4" height="24" fill="#378ADD"/><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
+            右边靠墙
+          </button>
+          <button class="wall-btn" data-wall="back" onclick="setWall(this)">
+            <svg width="32" height="24" viewBox="0 0 32 24"><rect x="0" y="0" width="32" height="4" fill="#378ADD"/></svg>
+            只有背墙
+          </button>
+        </div>
+        <div class="booth-swing-panel" id="depth-panel-special-panel"></div>
       </div>
-      <div class="booth-swing-panel" id="depth-panel-special-panel"></div>
     </div>
 
   </div>
@@ -383,6 +486,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <div class="vtab active" id="tab-plan" onclick="switchTab('plan')">平面图</div>
       <div class="vtab" id="tab-front" onclick="switchTab('front')">正立面图</div>
       <div class="vtab" id="tab-side" onclick="switchTab('side')">侧立面图</div>
+      <button class="save-drawing-btn" type="button" onclick="openSaveDrawingDialog()">保存</button>
       <div class="top-widths"><label>单间净宽</label><div class="width-card-row" id="width-card-row"></div></div>
       <div class="paper-select"><label for="paper-size">纸张</label><select id="paper-size" onchange="setPaperSize(this.value)"><option value="a4">A4</option><option value="a3">A3</option></select></div>
     </div>
@@ -409,8 +513,8 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <canvas id="cv"></canvas>
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
-      <div class="bom-area" id="bom-area">
-        <div class="bom-head"><div class="bom-title">材料清单</div></div>
+      <div class="bom-area mobile-collapsed" id="bom-area">
+        <div class="bom-head"><div class="bom-title">材料清单</div><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -422,6 +526,37 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <button class="ex-btn" id="btn-export-current" type="button"><i class="ti ti-download" aria-hidden="true" style="font-size:14px"></i> 导出当前视图</button>
       <button class="ex-btn" id="btn-export-all" type="button"><i class="ti ti-file-export" aria-hidden="true" style="font-size:14px"></i> 导出全部视图</button>
       <button class="ex-btn" id="btn-print-pdf" type="button"><i class="ti ti-printer" aria-hidden="true" style="font-size:14px"></i> PDF打印</button>
+    </div>
+  </div>
+  <button class="top-btn" type="button" onclick="scrollMobileTop()">TOP</button>
+</div>
+
+<div class="project-modal" id="save-drawing-modal" aria-hidden="true">
+  <div class="project-dialog" role="dialog" aria-modal="true" aria-labelledby="save-drawing-title">
+    <div class="project-dialog-head">
+      <div class="project-dialog-title" id="save-drawing-title">保存图纸</div>
+      <button class="project-close" type="button" onclick="closeProjectModal('save-drawing-modal')" aria-label="关闭">×</button>
+    </div>
+    <div class="project-dialog-body">
+      <div class="project-save-form">
+        <input id="project-save-name" type="text" maxlength="40" placeholder="请输入文件名称">
+        <div class="project-actions">
+          <button type="button" onclick="closeProjectModal('save-drawing-modal')">取消</button>
+          <button class="primary" type="button" onclick="saveCurrentProjectFile()">确认保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="project-modal" id="project-folder-modal" aria-hidden="true">
+  <div class="project-dialog" role="dialog" aria-modal="true" aria-labelledby="project-folder-title">
+    <div class="project-dialog-head">
+      <div class="project-dialog-title" id="project-folder-title">项目文件夹</div>
+      <button class="project-close" type="button" onclick="closeProjectModal('project-folder-modal')" aria-label="关闭">×</button>
+    </div>
+    <div class="project-dialog-body">
+      <div class="project-file-list" id="project-file-list"></div>
     </div>
   </div>
 </div>
@@ -1636,6 +1771,119 @@ function redoLayout() {
   restoreState(state);
 }
 
+const PROJECT_STORAGE_KEY = 'partition-project-files-v1';
+
+function readProjectFiles() {
+  try {
+    const files = JSON.parse(localStorage.getItem(PROJECT_STORAGE_KEY) || '[]');
+    return Array.isArray(files) ? files : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function writeProjectFiles(files) {
+  localStorage.setItem(PROJECT_STORAGE_KEY, JSON.stringify(files));
+}
+
+function openProjectModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeProjectModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+function openSaveDrawingDialog() {
+  saveActiveGroup(true);
+  const input = document.getElementById('project-save-name');
+  if (input) {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    input.value = `图纸-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+  }
+  openProjectModal('save-drawing-modal');
+  window.setTimeout(() => input?.focus(), 0);
+}
+
+function saveCurrentProjectFile() {
+  const input = document.getElementById('project-save-name');
+  const name = String(input?.value || '').trim();
+  if (!name) {
+    alert('请输入文件名称');
+    input?.focus();
+    return;
+  }
+  saveActiveGroup(true);
+  const files = readProjectFiles();
+  const now = Date.now();
+  const file = {
+    id: `project-${now}-${Math.random().toString(16).slice(2)}`,
+    name,
+    savedAt: now,
+    paperSize,
+    currentTab,
+    canvasMode,
+    state: cloneState()
+  };
+  const sameIndex = files.findIndex(item => item.name === name);
+  if (sameIndex >= 0) files.splice(sameIndex, 1, file);
+  else files.unshift(file);
+  writeProjectFiles(files.slice(0, 60));
+  closeProjectModal('save-drawing-modal');
+  renderProjectFileList();
+}
+
+function openProjectFolder() {
+  renderProjectFileList();
+  openProjectModal('project-folder-modal');
+}
+
+function renderProjectFileList() {
+  const list = document.getElementById('project-file-list');
+  if (!list) return;
+  const files = readProjectFiles().sort((a, b) => (Number(b.savedAt) || 0) - (Number(a.savedAt) || 0));
+  if (!files.length) {
+    list.innerHTML = '<div class="project-empty">暂无保存的项目文件</div>';
+    return;
+  }
+  list.innerHTML = files.map(file => {
+    const time = file.savedAt ? new Date(file.savedAt).toLocaleString('zh-CN', {hour12:false}) : '';
+    return `<div class="project-file-row" data-project-id="${escapeHtml(file.id)}">
+      <div class="project-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}<span class="project-file-time">${escapeHtml(time)}</span></div>
+      <button class="primary" type="button" data-project-action="load" data-project-id="${escapeHtml(file.id)}">打开</button>
+      <button type="button" data-project-action="delete" data-project-id="${escapeHtml(file.id)}">删除</button>
+    </div>`;
+  }).join('');
+}
+
+function loadProjectFile(id) {
+  const file = readProjectFiles().find(item => item.id === id);
+  if (!file?.state) return;
+  pushHistory();
+  paperSize = file.paperSize || paperSize;
+  localStorage.setItem('partition-paper-size', paperSize);
+  const paperSelect = document.getElementById('paper-size');
+  if (paperSelect) paperSelect.value = paperSize;
+  currentTab = file.currentTab || currentTab;
+  canvasMode = file.canvasMode || canvasMode;
+  restoreState(file.state);
+  applyViewMode();
+  closeProjectModal('project-folder-modal');
+}
+
+function deleteProjectFile(id) {
+  if (!confirm('确认删除这个项目文件吗？')) return;
+  writeProjectFiles(readProjectFiles().filter(item => item.id !== id));
+  renderProjectFileList();
+}
+
 function normalizeQuickRows() {
   if (!Array.isArray(quickLayoutPages) || !quickLayoutPages.length) quickLayoutPages = [quickLayoutRows || [['','','']]];
   if (!quickLayoutPages[activeQuickPage]) quickLayoutPages[activeQuickPage] = [['','','']];
@@ -1736,6 +1984,18 @@ function toggleQuickTenMode() {
 
 function toggleSection(id) {
   document.getElementById(id)?.classList.toggle('collapsed');
+}
+
+function toggleMobileSection(id) {
+  document.getElementById(id)?.classList.toggle('collapsed-mobile');
+}
+
+function toggleMobileBom() {
+  const area = document.getElementById('bom-area');
+  if (!area) return;
+  const collapsed = area.classList.toggle('mobile-collapsed');
+  const btn = area.querySelector('.bom-toggle');
+  if (btn) btn.textContent = collapsed ? '展开' : '收起';
 }
 
 function handleSectionToggleKey(e, id) {
@@ -3625,10 +3885,12 @@ function autoFit(p) {
   const sheetPreview = currentTab === 'plan' ? sheetPreviewContentSize(p, layout) : null;
   const contentW = (sheetPreview?.w || layout.sheetW) + 80;
   const contentH = (sheetPreview?.h || layout.sheetH) + 80;
-  const scale = Math.min(cv.width / contentW, cv.height / contentH, 0.8);
+  const viewW = cv.clientWidth || (cv.width / canvasPixelRatio);
+  const viewH = cv.clientHeight || (cv.height / canvasPixelRatio);
+  const scale = isMobileViewport() ? 0.45 : Math.min(viewW / contentW, viewH / contentH, 0.8);
   zoomScale = scale;
-  const anchorX = Math.max(20, Math.min(48, cv.width * 0.035));
-  const anchorY = Math.max(18, Math.min(36, cv.height * 0.04));
+  const anchorX = isMobileViewport() ? Math.max(12, (viewW - (sheetPreview?.w || layout.sheetW) * scale) / 2) : Math.max(20, Math.min(48, viewW * 0.035));
+  const anchorY = isMobileViewport() ? Math.max(16, Math.min(36, viewH * 0.04)) : Math.max(18, Math.min(36, viewH * 0.04));
   panX = anchorX;
   panY = anchorY;
 }
@@ -5450,11 +5712,28 @@ function resetZoom() {
   }
 }
 
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 700px)').matches;
+}
+
+function scrollMobileTop() {
+  window.scrollTo({top:0, behavior:'smooth'});
+  document.querySelector('.sidebar')?.scrollTo?.({top:0, behavior:'smooth'});
+}
+
 function canvasPlanPoint(e) {
   const rect = cv.getBoundingClientRect();
   return {
     x: (e.clientX - rect.left - panX) / zoomScale,
     y: (e.clientY - rect.top - panY) / zoomScale
+  };
+}
+
+function viewportToPlanPoint(clientX, clientY) {
+  const rect = cv.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left - panX) / zoomScale,
+    y: (clientY - rect.top - panY) / zoomScale
   };
 }
 
@@ -5730,6 +6009,176 @@ cv.addEventListener('wheel', e => {
   if(lastParams) drawView(lastParams, currentTab);
 }, {passive:false});
 
+let touchState = null;
+let lastTapInfo = null;
+function touchPoint(touch, rect = cv.getBoundingClientRect()) {
+  return {x: touch.clientX - rect.left, y: touch.clientY - rect.top};
+}
+function touchDistance(a, b) {
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+}
+function touchMidpoint(a, b, rect = cv.getBoundingClientRect()) {
+  return {
+    x: (a.clientX + b.clientX) / 2 - rect.left,
+    y: (a.clientY + b.clientY) / 2 - rect.top
+  };
+}
+function beginTouchSheetDrag(state) {
+  if (!state?.blockHit || sheetOrderDrag || currentTab !== 'plan' || canvasMode !== 'sheets') return false;
+  const group = groups.find(g => g.id === state.blockHit.groupId);
+  const row = group ? ensureRows(group).find(r => r.id === state.blockHit.rowId) : null;
+  if (!group || !row) return false;
+  pushHistory();
+  sheetOrderDrag = {key:state.blockHit.orderKey, pageIndex:state.blockHit.pageIndex, pageOrder:pageOrderKeys(state.blockHit.pageIndex), pageBlocks:pageBlockSnapshot(state.blockHit.pageIndex), allPageBlocks:pageBlockSnapshot(null), baseOrder:currentSheetOrderKeys(), lastMouse:state.planStart, direction:'down', moved:false};
+  previewSheetOrder = null;
+  sheetDragVisual = {drag:{w:state.blockHit.w, h:state.blockHit.h}, block:state.blockHit.block, fit:state.blockHit.fit || 1, mouseX:state.planStart.x, mouseY:state.planStart.y, target:null};
+  state.mode = 'sheet-drag';
+  cv.style.cursor = 'grabbing';
+  if (lastParams) drawView(lastParams, currentTab);
+  return true;
+}
+function updateTouchSheetDrag(clientX, clientY) {
+  if (!sheetOrderDrag) return;
+  const pt = viewportToPlanPoint(clientX, clientY);
+  const dx = pt.x - (sheetOrderDrag.lastMouse?.x ?? pt.x);
+  const dy = pt.y - (sheetOrderDrag.lastMouse?.y ?? pt.y);
+  if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) sheetOrderDrag.direction = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+  sheetOrderDrag.lastMouse = pt;
+  const pageHit = hitSheetPage(pt.x, pt.y);
+  const targetPageIndex = pageHit ? pageHit.pageIndex : sheetOrderDrag.pageIndex;
+  previewSheetOrder = previewOrderForPointer(targetPageIndex, pt.x, pt.y);
+  const hit = hitSnapshotBlock(pt.x, pt.y) || nearestBlockForPoint(targetPageIndex, pt.x, pt.y);
+  if (sheetDragVisual) {
+    sheetDragVisual.mouseX = pt.x;
+    sheetDragVisual.mouseY = pt.y;
+    sheetDragVisual.target = hit && hit.orderKey !== sheetOrderDrag.key ? hit : null;
+  }
+  if (hit?.type === 'block' && hit.orderKey) {
+    sheetOrderDrag.dropTargetKey = hit.orderKey;
+    sheetOrderDrag.moved = true;
+    sheetDragNudge = null;
+  } else {
+    sheetDragNudge = null;
+  }
+  if (lastParams) drawView(lastParams, currentTab);
+}
+function finishTouchSheetDrag() {
+  if (!sheetOrderDrag) return;
+  const finalOrder = sheetOrderDrag.moved ? (previewSheetOrder || previewOrderForTarget(sheetOrderDrag.dropTargetKey, sheetOrderDrag.dropAfter)) : null;
+  if (finalOrder) applySheetOrderKeys(finalOrder);
+  sheetOrderDrag = null;
+  previewSheetOrder = null;
+  sheetDragVisual = null;
+  sheetDragNudge = null;
+  suppressNextPlanClick = true;
+  cv.style.cursor = 'default';
+  if (lastParams) {
+    lastParams = getParams();
+    drawView(lastParams, currentTab);
+  }
+}
+cv.addEventListener('touchstart', e => {
+  if (!e.touches.length) return;
+  e.preventDefault();
+  if (e.touches.length >= 2) {
+    const rect = cv.getBoundingClientRect();
+    const mid = touchMidpoint(e.touches[0], e.touches[1], rect);
+    touchState = {
+      mode:'pinch',
+      distance: Math.max(1, touchDistance(e.touches[0], e.touches[1])),
+      scale: zoomScale,
+      panX,
+      panY,
+      midX: mid.x,
+      midY: mid.y
+    };
+    return;
+  }
+  const touch = e.touches[0];
+  const screenPt = touchPoint(touch);
+  const planPt = viewportToPlanPoint(touch.clientX, touch.clientY);
+  const hit = hitPlanArea(planPt.x, planPt.y);
+  const blockHit = currentTab === 'plan' && canvasMode === 'sheets' && hit?.type !== 'dimension' ? hitPlanBlock(planPt.x, planPt.y) : null;
+  touchState = {
+    mode:'pending',
+    startX: screenPt.x,
+    startY: screenPt.y,
+    clientX: touch.clientX,
+    clientY: touch.clientY,
+    panX,
+    panY,
+    planStart: planPt,
+    hit,
+    blockHit,
+    startedAt: Date.now(),
+    longPressTimer: blockHit ? window.setTimeout(() => beginTouchSheetDrag(touchState), 360) : null
+  };
+}, {passive:false});
+cv.addEventListener('touchmove', e => {
+  if (!e.touches.length || !touchState) return;
+  e.preventDefault();
+  if (e.touches.length >= 2) {
+    if (touchState.longPressTimer) window.clearTimeout(touchState.longPressTimer);
+    if (touchState.mode !== 'pinch') {
+      const rect = cv.getBoundingClientRect();
+      const mid = touchMidpoint(e.touches[0], e.touches[1], rect);
+      touchState = {mode:'pinch', distance:Math.max(1, touchDistance(e.touches[0], e.touches[1])), scale:zoomScale, panX, panY, midX:mid.x, midY:mid.y};
+      return;
+    }
+    const rect = cv.getBoundingClientRect();
+    const mid = touchMidpoint(e.touches[0], e.touches[1], rect);
+    const nextScale = Math.max(minZoomScale(), Math.min(touchState.scale * (touchDistance(e.touches[0], e.touches[1]) / touchState.distance), wheelMaxZoomScale()));
+    const ratio = nextScale / touchState.scale;
+    zoomScale = nextScale;
+    panX = mid.x - (touchState.midX - touchState.panX) * ratio;
+    panY = mid.y - (touchState.midY - touchState.panY) * ratio;
+    if (lastParams) drawView(lastParams, currentTab);
+    return;
+  }
+  const touch = e.touches[0];
+  const pt = touchPoint(touch);
+  const moved = Math.hypot(pt.x - touchState.startX, pt.y - touchState.startY);
+  if (moved > 8 && touchState.longPressTimer) {
+    window.clearTimeout(touchState.longPressTimer);
+    touchState.longPressTimer = null;
+  }
+  if (touchState.mode === 'sheet-drag') {
+    updateTouchSheetDrag(touch.clientX, touch.clientY);
+    return;
+  }
+  if (touchState.mode === 'pending' && moved > 8) touchState.mode = 'pan';
+  if (touchState.mode === 'pan') {
+    panX = touchState.panX + pt.x - touchState.startX;
+    panY = touchState.panY + pt.y - touchState.startY;
+    if (lastParams) drawView(lastParams, currentTab);
+  }
+}, {passive:false});
+cv.addEventListener('touchend', e => {
+  if (!touchState) return;
+  if (touchState.longPressTimer) window.clearTimeout(touchState.longPressTimer);
+  if (touchState.mode === 'sheet-drag') {
+    finishTouchSheetDrag();
+    touchState = null;
+    return;
+  }
+  if (e.touches.length > 0) {
+    touchState = null;
+    return;
+  }
+  if (touchState.mode === 'pending') {
+    const now = Date.now();
+    const closeToLastTap = lastTapInfo && now - lastTapInfo.time < 320 && Math.hypot(touchState.startX - lastTapInfo.x, touchState.startY - lastTapInfo.y) < 24;
+    if (closeToLastTap && touchState.hit?.type === 'dimension') {
+      startDimensionEdit(touchState.hit);
+      lastTapInfo = null;
+    } else {
+      handlePlanTapFromPoint(touchState.planStart, false);
+      lastTapInfo = {time:now, x:touchState.startX, y:touchState.startY};
+    }
+    suppressNextPlanClick = true;
+  }
+  touchState = null;
+}, {passive:false});
 cv.addEventListener('mousedown', e => {
   if (e.button === 0 && currentTab === 'plan' && canvasMode === 'sheets') {
     const pt = canvasPlanPoint(e);
@@ -5765,13 +6214,8 @@ cv.addEventListener('dblclick', e => {
   startDimensionEdit(hit);
 });
 
-cv.addEventListener('click', e => {
-  if (suppressNextPlanClick) {
-    suppressNextPlanClick = false;
-    return;
-  }
+function handlePlanTapFromPoint(pt, shiftKey = false) {
   if (currentTab !== 'plan' || isDragging) return;
-  const pt = canvasPlanPoint(e);
   const hit = hitPlanArea(pt.x, pt.y);
   if (hit?.type === 'dimension') return;
   if (!hit) {
@@ -5786,7 +6230,7 @@ cv.addEventListener('click', e => {
     drawView(lastParams || getParams(), currentTab);
     return;
   }
-  if (e.shiftKey && hitCanMultiSelect(hit)) {
+  if (shiftKey && hitCanMultiSelect(hit)) {
     if (hit.type === 'sheet-note') toggleMultiSelection('sheet-note', 'sheet', 'header');
     else toggleMultiSelection(hit.type, hit.groupId, hit.rowId, hitSelectionIndex(hit));
     if (hit.type === 'sheet-note') {
@@ -5875,8 +6319,15 @@ cv.addEventListener('click', e => {
   focusCanvasTextEditor();
   lastParams = getParams();
   drawView(lastParams, currentTab);
-});
+}
 
+cv.addEventListener('click', e => {
+  if (suppressNextPlanClick) {
+    suppressNextPlanClick = false;
+    return;
+  }
+  handlePlanTapFromPoint(canvasPlanPoint(e), e.shiftKey);
+});
 window.addEventListener('mousemove', e => {
   if (pendingSheetOrderDrag && !sheetOrderDrag) {
     const moved = Math.hypot(e.clientX - pendingSheetOrderDrag.startX, e.clientY - pendingSheetOrderDrag.startY);
@@ -6176,6 +6627,26 @@ document.getElementById('dimension-editor')?.addEventListener('keydown', e => {
 });
 
 document.getElementById('dimension-editor')?.addEventListener('blur', () => finishDimensionEdit(true));
+
+document.getElementById('project-file-list')?.addEventListener('click', e => {
+  const btn = e.target.closest('[data-project-action]');
+  if (!btn) return;
+  const id = btn.dataset.projectId;
+  if (btn.dataset.projectAction === 'load') loadProjectFile(id);
+  if (btn.dataset.projectAction === 'delete') deleteProjectFile(id);
+});
+
+document.getElementById('project-save-name')?.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  saveCurrentProjectFile();
+});
+
+document.querySelectorAll('.project-modal').forEach(modal => {
+  modal.addEventListener('click', e => {
+    if (e.target === modal) closeProjectModal(modal.id);
+  });
+});
 
 window.setInterval(() => {
   if (activeCanvasTextEditable() && document.activeElement === document.getElementById('canvas-text-editor') && lastParams) {
