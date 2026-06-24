@@ -1,0 +1,262 @@
+[
+  {
+    "label": "desktop-1440x1000",
+    "logs": [
+      {
+        "type": "warning",
+        "text": "Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently"
+      }
+    ],
+    "results": [
+      {
+        "name": "goto",
+        "ok": true,
+        "ms": 1,
+        "detail": "卫生间隔断自动生成器"
+      },
+      {
+        "name": "initial-visible",
+        "ok": true,
+        "ms": 0,
+        "detail": {
+          "sidebar": true,
+          "canvas": true,
+          "body": {
+            "x": 0,
+            "y": 10,
+            "width": 1440,
+            "height": 1000
+          }
+        }
+      },
+      {
+        "name": "canvas-nonblank",
+        "ok": true,
+        "ms": 1,
+        "detail": {
+          "width": 1114,
+          "height": 842,
+          "nonWhite": 60,
+          "nonTransparent": 100
+        }
+      },
+      {
+        "name": "default-bom",
+        "ok": true,
+        "ms": 1,
+        "detail": "当前图纸\n空白\n输入参数或点击生成后显示"
+      },
+      {
+        "name": "tabs-switch",
+        "ok": true,
+        "ms": 1,
+        "detail": "vtab active"
+      },
+      {
+        "name": "input-count-updates-width-cards",
+        "ok": false,
+        "ms": 5006,
+        "error": "timeout 5000ms in input-count-updates-width-cards"
+      },
+      {
+        "name": "wall-buttons-active",
+        "ok": false,
+        "ms": 214,
+        "error": "locator.getAttribute: Error: strict mode violation: locator('.wall-btn.active') resolved to 2 elements:\n    1) <button data-swing=\"in-right\" class=\"wall-btn active\" onclick=\"setSwing(this)\">…</button> aka getByRole('button', { name: '右内开' })\n    2) <button data-wall=\"left\" class=\"wall-btn active\" onclick=\"setWall(this)\">…</button> aka getByRole('button', { name: '左边靠墙' })\n\nCall log:\n\u001b[2m  - waiting for locator('.wall-btn.active')\u001b[22m\n"
+      },
+      {
+        "name": "rebate-toggle",
+        "ok": true,
+        "ms": 0,
+        "detail": {
+          "before": false,
+          "after": true
+        }
+      },
+      {
+        "name": "quick-layout-select",
+        "ok": true,
+        "ms": 0,
+        "detail": {}
+      },
+      {
+        "name": "save-dialog-open-close",
+        "ok": true,
+        "ms": 1,
+        "detail": {
+          "open": true,
+          "hidden": "true"
+        }
+      },
+      {
+        "name": "urinal-panel-save",
+        "ok": true,
+        "ms": 1,
+        "detail": {
+          "visible": true,
+          "bom": true
+        }
+      },
+      {
+        "name": "export-current-dialog",
+        "ok": false,
+        "ms": 5002,
+        "error": "timeout 5000ms in export-current-dialog"
+      },
+      {
+        "name": "close-export-dialog",
+        "ok": false,
+        "ms": 2007,
+        "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#export-name-modal .project-close')\u001b[22m\n"
+      },
+      {
+        "name": "zoom-reset-and-wheel",
+        "ok": false,
+        "ms": 2114,
+        "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '重置视图' })\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"cv-btn\" onclick=\"resetZoom()\">重置视图</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    4 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+      },
+      {
+        "name": "screenshot",
+        "ok": true,
+        "ms": 1,
+        "detail": "desktop-1440x1000.png"
+      }
+    ]
+  },
+  {
+    "label": "mobile-390x844",
+    "logs": [
+      {
+        "type": "warning",
+        "text": "Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently"
+      }
+    ],
+    "results": [
+      {
+        "name": "goto",
+        "ok": true,
+        "ms": 0,
+        "detail": "卫生间隔断自动生成器"
+      },
+      {
+        "name": "initial-visible",
+        "ok": true,
+        "ms": 1,
+        "detail": {
+          "sidebar": true,
+          "canvas": true,
+          "body": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 1514.0625
+          }
+        }
+      },
+      {
+        "name": "canvas-nonblank",
+        "ok": true,
+        "ms": 1,
+        "detail": {
+          "width": 780,
+          "height": 1180,
+          "nonWhite": 11,
+          "nonTransparent": 100
+        }
+      },
+      {
+        "name": "default-bom",
+        "ok": true,
+        "ms": 0,
+        "detail": "\n    \n      当前图纸空白\n      输入参数或点击生成后显示\n    "
+      },
+      {
+        "name": "tabs-switch",
+        "ok": true,
+        "ms": 1,
+        "detail": "vtab active"
+      },
+      {
+        "name": "input-count-updates-width-cards",
+        "ok": false,
+        "ms": 5001,
+        "error": "timeout 5000ms in input-count-updates-width-cards"
+      },
+      {
+        "name": "wall-buttons-active",
+        "ok": false,
+        "ms": 2000,
+        "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.wall-btn[data-wall=\"left\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"wall-btn\" data-wall=\"left\" onclick=\"setWall(this)\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    4 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+      },
+      {
+        "name": "rebate-toggle",
+        "ok": true,
+        "ms": 1,
+        "detail": {
+          "before": false,
+          "after": true
+        }
+      },
+      {
+        "name": "quick-layout-select",
+        "ok": true,
+        "ms": 0,
+        "detail": {}
+      },
+      {
+        "name": "save-dialog-open-close",
+        "ok": true,
+        "ms": 0,
+        "detail": {
+          "open": true,
+          "hidden": "true"
+        }
+      },
+      {
+        "name": "urinal-panel-save",
+        "ok": true,
+        "ms": 0,
+        "detail": {
+          "visible": true,
+          "bom": true
+        }
+      },
+      {
+        "name": "export-current-dialog",
+        "ok": false,
+        "ms": 5004,
+        "error": "timeout 5000ms in export-current-dialog"
+      },
+      {
+        "name": "close-export-dialog",
+        "ok": false,
+        "ms": 2000,
+        "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#export-name-modal .project-close')\u001b[22m\n"
+      },
+      {
+        "name": "zoom-reset-and-wheel",
+        "ok": false,
+        "ms": 2109,
+        "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '重置视图' })\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"cv-btn\" onclick=\"resetZoom()\">重置视图</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <input type=\"text\" maxlength=\"60\" id=\"export-file-name\" placeholder=\"请输入导出文件名称\"/> from <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <input type=\"text\" maxlength=\"60\" id=\"export-file-name\" placeholder=\"请输入导出文件名称\"/> from <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n"
+      },
+      {
+        "name": "mobile-collapse-toggles",
+        "ok": false,
+        "ms": 2011,
+        "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#mobile-section-swing').locator('.mobile-sec-toggle')\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"mobile-sec-toggle\" onclick=\"toggleMobileSection('mobile-section-swing')\">开门方向</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <input type=\"text\" maxlength=\"60\" id=\"export-file-name\" placeholder=\"请输入导出文件名称\"/> from <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <input type=\"text\" maxlength=\"60\" id=\"export-file-name\" placeholder=\"请输入导出文件名称\"/> from <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <input type=\"text\" maxlength=\"60\" id=\"export-file-name\" placeholder=\"请输入导出文件名称\"/> from <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n"
+      },
+      {
+        "name": "mobile-top-button",
+        "ok": false,
+        "ms": 2005,
+        "error": "locator.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.top-btn')\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"top-btn\" onclick=\"scrollMobileTop()\">TOP</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    4 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div id=\"export-modal\" aria-hidden=\"false\" class=\"project-modal open\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+      },
+      {
+        "name": "screenshot",
+        "ok": true,
+        "ms": 0,
+        "detail": "mobile-390x844.png"
+      }
+    ]
+  }
+]
