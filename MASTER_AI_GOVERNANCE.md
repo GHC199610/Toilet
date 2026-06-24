@@ -735,3 +735,9 @@ UI类修改必须验证：
 * 为了修某个特殊场景，改变默认场景。
 * 为了让当前截图正确，扩大公共函数行为范围。
 * 在没有验证非目标分支前，说“不会影响”。
+
+---
+
+# Regression Prevention Addendum
+
+All future changes touching export, print, BOM, drawing text editing, mobile keyboard behavior, canvas hit testing, or pagination must follow `REGRESSION_PREVENTION_RULES.md` before implementation and before delivery. If any rule conflicts with a quick fix, the rule wins unless the user explicitly approves the risk.
