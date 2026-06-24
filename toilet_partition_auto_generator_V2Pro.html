@@ -307,7 +307,8 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .field{margin-bottom:0}
   .field-pair,.door-width-row{grid-template-columns:1fr 1fr;gap:0.625rem;margin-bottom:0}
   .rebate-row{grid-template-columns:minmax(0,1fr) auto;gap:0.625rem;margin:0}
-  .quick-cell{width:3rem;height:2.75rem;font-size:1rem}
+  .quick-cells{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:0.125rem}
+  .quick-cell{width:3rem;height:2.75rem;font-size:1rem;flex:0 0 auto}
   .quick-title-row,.quick-history-actions,.quick-cells,.quick-page-actions,.quick-bottom-actions{gap:0.625rem}
   .quick-title-row{align-items:flex-start;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
   .quick-title-row .sec-title,.quick-history-actions{flex:0 0 auto}
@@ -441,10 +442,14 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .export-row{order:0;flex:0 0 auto;display:flex;align-items:center;flex-wrap:nowrap;height:2.5rem;padding:0.3125rem 0.5rem;gap:0.375rem;overflow:hidden;white-space:nowrap}
   .ex-btn{height:1.875rem;padding:0 0.625rem;font-size:0.8125rem}
   .canvas-area{height:auto;min-height:0;flex:1 1 auto;overflow:hidden}
-  .bom-area{position:absolute;left:auto;right:0.5rem;top:0.5rem;bottom:auto;width:min(18rem,42vw);min-width:0;max-width:calc(100% - 1rem);max-height:calc(100% - 1rem);padding:0.625rem;z-index:40;overflow:hidden;transition:max-height .26s ease,padding .26s ease}
-  .bom-area.mobile-collapsed{width:auto;max-height:3rem;padding:0.5rem 0.625rem}
+  .bom-area{position:absolute;left:auto;right:0.5rem;top:0.5rem;bottom:auto;width:min(18rem,42vw);min-width:0;max-width:calc(100% - 1rem);max-height:calc(100% - 1rem);padding:0.625rem;z-index:40;overflow:hidden;transition:max-height .26s ease,width .26s ease,padding .26s ease}
+  .bom-area.mobile-collapsed{top:50%;right:0;width:2.5rem;max-width:2.5rem;min-width:0;max-height:none;padding:0.5rem 0.25rem;transform:translateY(-50%);border-radius:var(--border-radius-md) 0 0 var(--border-radius-md)}
   .bom-area.mobile-collapsed .bom-grid{max-height:0;opacity:0;overflow:hidden;pointer-events:none}
-  .bom-area.mobile-collapsed .bom-head{margin-bottom:0}
+  .bom-area.mobile-collapsed .bom-head{height:auto;margin-bottom:0;padding-bottom:0;display:grid;justify-items:center;gap:0.5rem;background:transparent}
+  .bom-area.mobile-collapsed .bom-title{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:0.08em;white-space:nowrap}
+  .bom-area.mobile-collapsed .bom-actions{display:grid;gap:0.375rem;justify-items:center}
+  .bom-area.mobile-collapsed .bom-export{display:none}
+  .bom-area.mobile-collapsed .bom-toggle{width:1.875rem;height:auto;min-height:3.25rem;padding:0.375rem 0;writing-mode:vertical-rl;line-height:1.1}
   .bom-grid{max-height:calc(100dvh - 5rem)}
   .bom-title{font-size:0.9375rem}
   .bom-toggle,.bom-export{height:1.875rem;padding:0 0.625rem;font-size:0.8125rem}
@@ -746,6 +751,7 @@ let pendingSelectionDraw = 0;
 let urinalSpec = {count:0, width:400, height:900, thick:12, shape:'矩形', hole:'无开孔', note:''};
 let quickNavKeep = null;
 let quickCompactDisplayMode = false;
+const QUICK_COMPACT_COLS = 10;
 let lastQuickCellRef = null;
 let autoOpenTotalOnQuickFocus = false;
 let quickSelectAllActive = false;
@@ -1709,7 +1715,7 @@ function syncQuickLayoutFromDrawingOrder(group = activeGroup()) {
     activeQuickPage = 0;
     return;
   }
-  const compactCols = 4;
+  const compactCols = QUICK_COMPACT_COLS;
   const pageRows = [];
   rows.forEach((row, index) => {
     const rowIndex = Math.floor(index / compactCols);
@@ -2059,7 +2065,7 @@ function normalizeQuickRows() {
 
 function compactQuickRowsForDisplay() {
   const values = quickLayoutRows.flat().map(value => String(value || '')).filter(value => Number(value) > 0);
-  const compactCols = 4;
+  const compactCols = QUICK_COMPACT_COLS;
   const nextRows = [];
   values.forEach((value, index) => {
     const rowIndex = Math.floor(index / compactCols);
@@ -2077,8 +2083,8 @@ function compactQuickRowsForDisplay() {
 
 function nextCompactQuickCell(rowIndex, colIndex) {
   const flat = quickLayoutRows.flat();
-  const nextFlatIndex = rowIndex * 4 + colIndex + 1;
-  return {row: Math.floor(nextFlatIndex / 4), col: nextFlatIndex % 4};
+  const nextFlatIndex = rowIndex * QUICK_COMPACT_COLS + colIndex + 1;
+  return {row: Math.floor(nextFlatIndex / QUICK_COMPACT_COLS), col: nextFlatIndex % QUICK_COMPACT_COLS};
 }
 
 function lastQuickBlankCellRef() {
@@ -2409,6 +2415,18 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
   normalizeLayoutGrid(group);
   const byCell = new Map(existingRows.map(row => [`${row.sheetPage || 0}:${row.layoutRow || 1}:${row.layoutCol || 1}`, row]));
   const template = activeRow() || existingRows.find(row => row.enabled === true) || defaultRow;
+  const orderedExisting = existingRows
+    .filter(row => row.enabled !== false)
+    .slice()
+    .sort((a, b) => ((Number.isFinite(Number(a.drawSheetPage)) ? Number(a.drawSheetPage) : 0) - (Number.isFinite(Number(b.drawSheetPage)) ? Number(b.drawSheetPage) : 0))
+      || ((Number.isFinite(Number(a.sheetOrder)) ? Number(a.sheetOrder) : Number.MAX_SAFE_INTEGER) - (Number.isFinite(Number(b.sheetOrder)) ? Number(b.sheetOrder) : Number.MAX_SAFE_INTEGER))
+      || ((a.layoutRow || 1) - (b.layoutRow || 1))
+      || ((a.layoutCol || 1) - (b.layoutCol || 1))
+      || (a.id - b.id));
+  const lastVisualRow = orderedExisting[orderedExisting.length - 1] || null;
+  const lastVisualPage = Number.isFinite(Number(lastVisualRow?.drawSheetPage)) ? Number(lastVisualRow.drawSheetPage) : 0;
+  const maxSheetOrder = Math.max(-1, ...existingRows.map(row => Number.isFinite(Number(row.sheetOrder)) ? Number(row.sheetOrder) : -1));
+  let nextNewSheetOrder = maxSheetOrder + 1;
   const generated = [];
   let id = 1;
   let activeTarget = null;
@@ -2424,6 +2442,7 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
       const total = (!existing || isActiveCell) ? count * 1000 : base.total;
       const widthsText = existing ? (base.widthsText || '') : '';
       const boothDoorWidths = existing ? rowDoorWidthOverrides(base, count) : Array.from({length: count}, () => 0);
+      const newSheetOrder = existing ? base.sheetOrder : nextNewSheetOrder++;
       const next = {
         ...base,
         id: id++,
@@ -2431,6 +2450,8 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
         layoutRow,
         layoutCol,
         sheetPage: 0,
+        drawSheetPage: existing ? base.drawSheetPage : lastVisualPage,
+        sheetOrder: newSheetOrder,
         enabled: true,
         count,
         total,
@@ -2685,11 +2706,16 @@ function autoCompactSheetLayout() {
     });
   });
   syncQuickLayoutFromDrawingOrder(activeGroup());
-  renderQuickLayout(lastQuickBlankCellRef());
+  lastQuickCellRef = null;
+  if (document.activeElement?.classList?.contains('quick-cell')) document.activeElement.blur();
+  renderQuickLayout();
   lastParams = getParams();
+  resizeCanvas();
+  autoFit(lastParams);
   drawView(lastParams, currentTab);
   renderBOM(lastParams);
   updateGroupListState();
+  centerCanvasViewport();
 }
 function updateGroupListState() {
   renderBOM(lastParams || getParams());
@@ -6094,49 +6120,123 @@ function bomPrintDocumentHtml(title = '材料清单') {
   </style></head><body>${bomPrintPageHtml(title)}</body></html>`;
 }
 
-function bomImageDocumentHtml(title = '材料清单') {
-  return `<div xmlns="http://www.w3.org/1999/xhtml" style="width:760px;padding:24px;background:#fff;color:#111827;font-family:'Microsoft YaHei',Arial,sans-serif;box-sizing:border-box">
-    <style>
-      h1{font-size:26px;margin:0 0 16px;border-bottom:1px solid #d0d7de;padding-bottom:12px}
-      .bom-print-grid{display:grid;grid-template-columns:1fr;gap:10px}
-      .bom-card{border:1px solid #d8dee4;border-radius:6px;padding:10px;background:#fff;break-inside:avoid}
-      .bom-card-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;font-weight:700}
-      .name{font-size:15px;color:#111827}.val{font-size:13px;color:#0C447C;text-align:right}.bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700}
-      .bom-lines{display:grid!important;grid-template-columns:1fr!important;gap:4px}.bom-line{font-size:12px;line-height:1.5;color:#24292f}.bom-gap{height:6px}
-    </style>
-    <h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${currentBomHtml()}</div>
-  </div>`;
+function collectBomImageItems() {
+  return [...document.querySelectorAll('#bom .bom-card')].map(card => ({
+    name: card.querySelector('.name')?.textContent?.trim() || '',
+    val: card.querySelector('.val')?.textContent?.trim() || '',
+    lines: [...card.querySelectorAll('.bom-line,.bom-gap')].map(line => ({
+      gap: line.classList.contains('bom-gap'),
+      text: line.textContent.replace(/\s+/g, ' ').trim()
+    })).filter(item => item.gap || item.text)
+  })).filter(item => item.name || item.val || item.lines.length);
 }
 
-async function exportBomImage(name = '材料清单') {
+function wrapCanvasText(ctx, text, maxWidth) {
+  const source = String(text || '');
+  const rows = [];
+  let line = '';
+  for (const ch of source) {
+    const next = line + ch;
+    if (line && ctx.measureText(next).width > maxWidth) {
+      rows.push(line);
+      line = ch;
+    } else {
+      line = next;
+    }
+  }
+  if (line) rows.push(line);
+  return rows.length ? rows : [''];
+}
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+function exportBomImage(name = '材料清单') {
   const title = sanitizeExportName(name, '材料清单');
-  const measure = document.createElement('div');
-  measure.style.cssText = 'position:fixed;left:-9999px;top:0;width:760px;background:#fff;z-index:-1';
-  measure.innerHTML = bomImageDocumentHtml(title);
-  document.body.appendChild(measure);
-  const width = Math.ceil(measure.scrollWidth || 760);
-  const height = Math.ceil(measure.scrollHeight || 1000);
-  const html = measure.innerHTML;
-  measure.remove();
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="100%" height="100%">${html}</foreignObject></svg>`;
-  const blob = new Blob([svg], {type:'image/svg+xml;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const img = new Image();
-  img.decoding = 'async';
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-    img.src = url;
-  });
+  const items = collectBomImageItems();
+  const width = 900;
+  const pad = 32;
+  const cardGap = 14;
+  const lineH = 22;
   const scale = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  const measure = document.createElement('canvas').getContext('2d');
+  measure.font = '15px Microsoft YaHei, Arial, sans-serif';
+  const cardInnerW = width - pad * 2 - 24;
+  let height = pad + 50;
+  items.forEach(item => {
+    let cardH = 48;
+    const lines = item.lines.length ? item.lines : [{text:'无'}];
+    lines.forEach(line => {
+      if (line.gap) cardH += 10;
+      else cardH += wrapCanvasText(measure, line.text, cardInnerW - 18).length * lineH;
+    });
+    item._cardH = cardH + 12;
+    height += item._cardH + cardGap;
+  });
+  height += pad;
   const out = document.createElement('canvas');
   out.width = Math.ceil(width * scale);
   out.height = Math.ceil(height * scale);
   const outCtx = out.getContext('2d');
+  outCtx.scale(scale, scale);
   outCtx.fillStyle = '#fff';
-  outCtx.fillRect(0, 0, out.width, out.height);
-  outCtx.drawImage(img, 0, 0, out.width, out.height);
-  URL.revokeObjectURL(url);
+  outCtx.fillRect(0, 0, width, height);
+  outCtx.fillStyle = '#111827';
+  outCtx.font = '700 28px Microsoft YaHei, Arial, sans-serif';
+  outCtx.fillText(title, pad, pad + 28);
+  outCtx.strokeStyle = '#d0d7de';
+  outCtx.lineWidth = 1;
+  outCtx.beginPath();
+  outCtx.moveTo(pad, pad + 46);
+  outCtx.lineTo(width - pad, pad + 46);
+  outCtx.stroke();
+  let y = pad + 64;
+  items.forEach(item => {
+    roundRectPath(outCtx, pad, y, width - pad * 2, item._cardH, 8);
+    outCtx.fillStyle = '#fff';
+    outCtx.fill();
+    outCtx.strokeStyle = '#d8dee4';
+    outCtx.stroke();
+    outCtx.fillStyle = '#111827';
+    outCtx.font = '700 17px Microsoft YaHei, Arial, sans-serif';
+    outCtx.fillText(item.name || '材料', pad + 14, y + 28);
+    outCtx.fillStyle = '#0C447C';
+    outCtx.font = '700 15px Microsoft YaHei, Arial, sans-serif';
+    outCtx.textAlign = 'right';
+    outCtx.fillText(item.val || '', width - pad - 14, y + 28);
+    outCtx.textAlign = 'left';
+    let lineY = y + 56;
+    outCtx.font = '14px Microsoft YaHei, Arial, sans-serif';
+    outCtx.fillStyle = '#24292f';
+    const lines = item.lines.length ? item.lines : [{text:'无'}];
+    lines.forEach(line => {
+      if (line.gap) {
+        lineY += 10;
+        return;
+      }
+      const wrapped = wrapCanvasText(outCtx, line.text, cardInnerW - 18);
+      wrapped.forEach((text, index) => {
+        if (index === 0) {
+          outCtx.fillStyle = '#57606a';
+          outCtx.beginPath();
+          outCtx.arc(pad + 20, lineY - 5, 3, 0, Math.PI * 2);
+          outCtx.fill();
+        }
+        outCtx.fillStyle = '#24292f';
+        outCtx.fillText(text, pad + 34, lineY);
+        lineY += lineH;
+      });
+    });
+    y += item._cardH + cardGap;
+  });
   downloadCanvasPng(out, title);
 }
 
@@ -6201,7 +6301,10 @@ function confirmNamedExport() {
   if (pendingExportMode === 'bom') {
     const format = document.querySelector('input[name="export-bom-format"]:checked')?.value || 'image';
     if (format === 'pdf') exportBomPrint(name);
-    else exportBomImage(name).catch(err => alert(`导出图片失败：${err.message || err}`));
+    else {
+      try { exportBomImage(name); }
+      catch (err) { alert(`导出图片失败：${err.message || err}`); }
+    }
     return;
   }
   if (pendingExportMode === 'all-image') {
@@ -6238,6 +6341,14 @@ function resetZoom() {
     autoFit(lastParams);
     drawView(lastParams, currentTab);
   }
+}
+
+function centerCanvasViewport() {
+  const area = document.getElementById('carea');
+  if (!area || !isMobileViewport()) return;
+  window.setTimeout(() => {
+    area.scrollIntoView({block:'center', inline:'nearest', behavior:'smooth'});
+  }, 60);
 }
 
 function isMobileViewport() {
