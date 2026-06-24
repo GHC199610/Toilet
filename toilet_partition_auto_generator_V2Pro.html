@@ -266,9 +266,9 @@ body.theme-dark .bom-line::before{background:#d0d7de;opacity:.92}
 .bom-gap{height:0.625rem}
 .bom-gap::before{display:none}
 .bom-chip{display:inline-block;margin:0 0.1875rem 0.1875rem 0;padding:0.125rem 0.4375rem;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:0.75rem;font-weight:700;line-height:1.45;white-space:nowrap}
-.bom-mobile-groups{--bom-mobile-cell:3.875rem;--bom-mobile-gap:0.5rem;--bom-mobile-title:4.75rem;display:grid;gap:1.375rem;max-width:100%;overflow-x:hidden}
+.bom-mobile-groups{--bom-mobile-cell:3.875rem;--bom-mobile-gap:0.5rem;--bom-mobile-title:6.25rem;display:grid;gap:1.375rem;max-width:100%;overflow-x:hidden}
 .bom-mobile-group{display:grid;grid-template-columns:var(--bom-mobile-title) minmax(0,1fr);gap:0.5rem;align-items:start;min-width:0;max-width:100%}
-.bom-mobile-group-title{display:flex;align-items:center;height:1.625rem;color:#185FA5;font-size:0.8125rem;font-weight:900;white-space:nowrap;padding-right:0.125rem}
+.bom-mobile-group-title{display:flex;align-items:center;height:1.625rem;color:#185FA5;font-size:0.8125rem;font-weight:900;white-space:nowrap;padding-right:0.375rem;overflow:visible}
 .bom-mobile-tags{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--bom-mobile-cell),var(--bom-mobile-cell)));gap:0.5rem var(--bom-mobile-gap);align-items:start;max-width:calc(var(--bom-mobile-cell) * 8 + var(--bom-mobile-gap) * 7);overflow:hidden}
 .bom-mobile-tag{display:flex;align-items:center;justify-content:center;min-width:0;height:1.625rem;padding:0 0.25rem;border-radius:0.375rem;background:#F6F8FA;color:#000;font-size:0.8125rem;font-weight:800;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
 body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
@@ -6284,7 +6284,7 @@ function parseBomDisplayPart(line, state) {
   return {plain:line};
 }
 
-function formatBomMobileLines(value) {
+function bomMobileGroupsFromSub(value) {
   const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
   const state = {process:'', height:''};
   const groups = [];
@@ -6308,11 +6308,65 @@ function formatBomMobileLines(value) {
     }
     current.tags.push(parsed.size);
   });
+  return groups;
+}
+
+function formatBomMobileLines(value) {
+  const groups = bomMobileGroupsFromSub(value);
   return `<div class="bom-mobile-groups">${groups.map(group => `<div class="bom-mobile-group">${group.title ? `<div class="bom-mobile-group-title">${escapeHtml(group.title)}</div>` : '<div></div>'}<div class="bom-mobile-tags">${group.tags.map(tag => `<span class="bom-mobile-tag">${escapeHtml(tag)}</span>`).join('')}</div></div>`).join('')}</div>`;
 }
 
+function bomTextLinesFromSub(value) {
+  const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
+  const state = {process:'', height:''};
+  return (lines.length ? lines : ['无']).map(line => {
+    const parsed = parseBomDisplayPart(line, state);
+    if (parsed.gap) return {gap:true, text:''};
+    if (parsed.plain) return {text:parsed.plain};
+    const processLabel = parsed.process || '平口';
+    const heightText = parsed.height ? `${parsed.height} x ` : '';
+    return {text:`${processLabel} ${heightText}${parsed.size}`.replace(/\s+/g, ' ').trim()};
+  });
+}
+
+function bomStructuredLinesFromSub(value) {
+  const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
+  const state = {process:'', height:''};
+  return (lines.length ? lines : ['无']).map(line => {
+    const parsed = parseBomDisplayPart(line, state);
+    if (parsed.gap) return {gap:true};
+    if (parsed.plain) return {plain:parsed.plain};
+    const explicitProcess = !line.includes('[process-cont:') && /^.+?\s+\[size-/.test(line);
+    const continued = line.includes('[size-cont]') || line.includes('[process-cont:');
+    return {
+      process:explicitProcess ? (parsed.process || '') : '',
+      height:parsed.height || '',
+      size:parsed.size || '',
+      continued
+    };
+  });
+}
+
+function collectBomTextItemsFromData(items) {
+  const allItems = [...items];
+  const urinal = urinalBomItem();
+  if (urinal) allItems.push(urinal);
+  return allItems.map(item => ({
+    name:item.name || '',
+    val:String(item.val || '').replace(/<[^>]*>/g, '').trim(),
+    lines:bomTextLinesFromSub(item.sub)
+  })).filter(item => item.name || item.val || item.lines.length);
+}
+
+function currentBomTextItems() {
+  const rows = drawableGroupRows();
+  if (rows.length) return collectBomTextItemsFromData(buildMaterialListItems(rows.map(item => item.row)));
+  if (activeRow()?.enabled === true) return collectBomTextItemsFromData(buildMaterialListItems([lastParams || getParams()]));
+  return collectBomTextItemsFromData([{name:'当前图纸', val:'空白', sub:'输入参数或点击生成后显示'}]);
+}
+
 function formatBomLines(value, itemName = '') {
-  if (isMobileViewport() && itemName === '前沿板') return formatBomMobileLines(value);
+  if (itemName === '前沿板') return formatBomMobileLines(value);
   const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
   const htmlLines = (lines.length ? lines : ['无']).map(line => {
     if (line === '[bom-gap]') return '<div class="bom-gap" aria-hidden="true"></div>';
@@ -6420,7 +6474,7 @@ async function printPdf() {
     doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>PDF打印</title><style>
       @page{size:${paper.label} portrait;margin:0}
       html,body{margin:0;width:100%;height:100%;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      body{overflow:hidden}
+      body{overflow:visible}
       .page{width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page;overflow:hidden}
       .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
       .page:last-child{page-break-after:auto;break-after:auto}
@@ -6555,6 +6609,47 @@ function exportPdfCanvasesForScope(p, scope = 'current') {
   return [renderSheetCanvas(currentTab, p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE})];
 }
 
+function triggerFramePrint(frame, delay = 250) {
+  let printed = false;
+  const run = () => {
+    if (printed) return;
+    printed = true;
+    window.setTimeout(() => {
+    try {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    } catch (e) {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      const link = document.createElement('a');
+      link.download = `${doc.title || '打印文件'}.html`;
+      link.href = `data:text/html;charset=utf-8,${encodeURIComponent(doc.documentElement.outerHTML)}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+    }, delay);
+  };
+  const doc = frame.contentDocument || frame.contentWindow.document;
+  if (doc.readyState === 'complete') run();
+  else frame.onload = run;
+  window.setTimeout(run, delay + 700);
+}
+
+function triggerWindowPrint(win, delay = 300) {
+  let printed = false;
+  const run = () => {
+    if (printed) return;
+    printed = true;
+    window.setTimeout(() => {
+    win.focus();
+    win.print();
+    }, delay);
+  };
+  if (win.document.readyState === 'complete') run();
+  else win.onload = run;
+  window.setTimeout(run, delay + 700);
+}
+
 async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeBom = false) {
   try {
     const p = lastParams || getParams();
@@ -6587,24 +6682,15 @@ async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeB
       .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
       .page:last-child{page-break-after:auto;break-after:auto}
       img{width:100%;height:100%;object-fit:contain;display:block}
+      ${includeBom ? `${bomExportCss('embed')}.bom-print-page{width:190mm;min-height:277mm;padding:10mm;}` : ''}
     </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`);
     doc.close();
+    triggerFramePrint(frame, 250);
     window.setTimeout(() => {
-      try {
-        frame.contentWindow.focus();
-        frame.contentWindow.print();
-      } catch (e) {
-        const link = document.createElement('a');
-        link.download = `${title}.html`;
-        link.href = `data:text/html;charset=utf-8,${encodeURIComponent(doc.documentElement.outerHTML)}`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }
       window.setTimeout(() => pageImages.forEach(item => {
         if (String(item.url).startsWith('blob:')) URL.revokeObjectURL(item.url);
       }), 5000);
-    }, 150);
+    }, 250);
   } catch (err) {
     alert(`PDF打印失败：${err.message || err}`);
   }
@@ -6615,35 +6701,144 @@ function currentBomHtml() {
   return bom?.innerHTML || '';
 }
 
+function currentBomSourceItems() {
+  const rows = drawableGroupRows();
+  if (rows.length) return buildMaterialListItems(rows.map(item => item.row));
+  if (activeRow()?.enabled === true) return buildMaterialListItems([lastParams || getParams()]);
+  return [{name:'当前图纸', val:'空白', sub:'输入参数或点击生成后显示'}];
+}
+
+function bomPrintCardsHtml() {
+  const items = currentBomSourceItems();
+  const urinal = urinalBomItem();
+  if (urinal) items.push(urinal);
+  return items.map(item => `<div class="bom-card"><div class="bom-card-head"><div class="name">${escapeHtml(item.name)}</div><div class="val">${formatBomChips(item.val)}</div></div>${item.name === '前沿板' ? formatBomMobileLines(item.sub) : formatBomLines(item.sub, item.name)}</div>`).join('');
+}
+
+function bomExportCss(mode = 'print') {
+  const isSnapshot = mode === 'snapshot';
+  const isEmbed = mode === 'embed';
+  const titleSize = isSnapshot ? 28 : isEmbed ? 22 : 22;
+  const pageWidth = isSnapshot ? '900px' : isEmbed ? '190mm' : '190mm';
+  const pagePad = isSnapshot ? '32px' : '0';
+  const cardGap = isSnapshot ? '14px' : '8px';
+  const cardPad = isSnapshot ? '12px 14px' : '8px 10px';
+  const nameSize = isSnapshot ? '17px' : '15px';
+  const valSize = isSnapshot ? '15px' : '13px';
+  const lineSize = isSnapshot ? '14px' : '12px';
+  const mobileCell = isSnapshot ? '54px' : '54px';
+  const mobileGap = isSnapshot ? '7px' : '7px';
+  const mobileTitle = isSnapshot ? '100px' : '100px';
+  const mobileTagH = isSnapshot ? '24px' : '24px';
+  const mobileTagSize = isSnapshot ? '13px' : '13px';
+  return `
+    *{box-sizing:border-box}
+    html,body{margin:0;background:#fff;color:#000;font-family:"Microsoft YaHei",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{${isSnapshot || isEmbed ? '' : `width:${pageWidth};margin:0 auto;`}}
+    .bom-print-page,.bom-snapshot{width:${pageWidth};${isSnapshot ? `padding:${pagePad};` : ''}background:#fff;color:#000;page-break-after:always;break-after:page}
+    .bom-print-page:last-child{page-break-after:auto;break-after:auto}
+    h1{font-size:${titleSize}px;line-height:1.25;margin:0 0 ${isSnapshot ? 18 : 10}px;border-bottom:1px solid #d0d7de;padding-bottom:${isSnapshot ? 14 : 8}px;color:#000;font-weight:800}
+    .bom-print-grid{display:grid;grid-template-columns:1fr;gap:${cardGap}}
+    .bom-card{border:1px solid #d8dee4;border-radius:${isSnapshot ? 8 : 6}px;padding:${cardPad};background:#fff;break-inside:avoid;page-break-inside:avoid;min-width:0;color:#000}
+    .bom-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:${isSnapshot ? 10 : 8}px;font-weight:700;min-width:0}
+    .bom-card .name,.name{font-size:${nameSize};font-weight:700;color:#000;line-height:1.35;white-space:nowrap}
+    .bom-card .val,.val{font-size:${valSize};font-weight:700;color:#0C447C;line-height:1.35;text-align:right;word-break:keep-all}
+    .bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700;line-height:1.45;white-space:nowrap}
+    .bom-lines{display:grid;grid-template-columns:1fr;row-gap:${isSnapshot ? 6 : 4}px;overflow:visible;max-width:100%}
+    .bom-line-row{display:grid;grid-template-columns:repeat(var(--bom-row-columns,1),max-content);column-gap:${isSnapshot ? 28 : 18}px;align-items:start;max-width:100%}
+    .bom-column{display:grid;grid-template-columns:1fr;row-gap:${isSnapshot ? 6 : 4}px;align-items:start}
+    .bom-line{display:flex;align-items:flex-start;gap:8px;font-size:${lineSize};line-height:1.55;color:#000;word-break:normal;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .bom-line::before{content:"";width:5px;height:5px;margin-top:${isSnapshot ? 9 : 7}px;border-radius:999px;background:#57606a;opacity:.9;flex:0 0 auto}
+    .bom-size-line{display:inline-grid;grid-template-columns:auto 3.45em auto;column-gap:.3em;align-items:baseline}
+    .bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-line{grid-template-columns:auto auto}
+    .bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-left{display:none}
+    .bom-size-process{white-space:nowrap;text-align:left;color:#185FA5;font-weight:800}
+    .bom-size-process.align-three{letter-spacing:.5em}
+    .bom-process-placeholder{visibility:hidden}
+    .bom-size-left,.bom-size-right{white-space:nowrap;text-align:left;color:#000}
+    .bom-gap{height:${isSnapshot ? 8 : 6}px}.bom-gap::before{display:none}
+    .bom-mobile-groups{--bom-mobile-cell:${mobileCell};--bom-mobile-gap:${mobileGap};--bom-mobile-title:${mobileTitle};display:grid;gap:${isSnapshot ? 14 : 12}px;max-width:100%;overflow:hidden}
+    .bom-mobile-group{display:grid;grid-template-columns:var(--bom-mobile-title) minmax(0,1fr);gap:8px;align-items:start;min-width:0;max-width:100%}
+    .bom-mobile-group-title{display:flex;align-items:center;height:${mobileTagH};color:#185FA5;font-size:${mobileTagSize};font-weight:900;white-space:nowrap;padding-right:4px;overflow:visible}
+    .bom-mobile-tags{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--bom-mobile-cell),var(--bom-mobile-cell)));gap:7px var(--bom-mobile-gap);align-items:start;max-width:calc(var(--bom-mobile-cell) * 8 + var(--bom-mobile-gap) * 7);overflow:hidden}
+    .bom-mobile-tag{display:flex;align-items:center;justify-content:center;min-width:0;height:${mobileTagH};padding:0 4px;border-radius:5px;background:#F6F8FA;color:#000;font-size:${mobileTagSize};font-weight:800;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
+  `;
+}
+
 function bomPrintPageHtml(title = '开料清单') {
-  return `<section class="bom-print-page"><h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${currentBomHtml()}</div></section>`;
+  return `<section class="bom-print-page"><h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${bomPrintCardsHtml()}</div></section>`;
 }
 
 function bomPrintDocumentHtml(title = '开料清单') {
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
     @page{size:A4 portrait;margin:10mm}
-    *{box-sizing:border-box}
-    body{width:190mm;margin:0 auto;background:#fff;color:#000;font-family:"Microsoft YaHei",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .bom-print-page{width:100%;page-break-after:always;break-after:page}
-    .bom-print-page:last-child{page-break-after:auto;break-after:auto}
-    h1{font-size:22px;line-height:1.25;margin:0 0 10px;border-bottom:1px solid #d0d7de;padding-bottom:8px}
-    .bom-print-grid{display:grid;grid-template-columns:1fr;gap:8px}
-    .bom-card{border:1px solid #d8dee4;border-radius:6px;padding:8px 10px;background:#fff;break-inside:avoid;page-break-inside:avoid}
-    .bom-card-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;font-weight:700}
-    .name{font-size:15px}.val{font-size:13px;color:#0C447C;text-align:right}.bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700}
-    .bom-lines{display:grid!important;grid-template-columns:1fr!important;gap:4px}.bom-line{font-size:12px;line-height:1.5;color:#000}.bom-gap{height:6px}
+    ${bomExportCss('print')}
   </style></head><body>${bomPrintPageHtml(title)}</body></html>`;
 }
 
 function collectBomImageItems() {
-  return [...document.querySelectorAll('#bom .bom-card')].map(card => ({
-    name: card.querySelector('.name')?.textContent?.trim() || '',
-    val: card.querySelector('.val')?.textContent?.trim() || '',
-    lines: [...card.querySelectorAll('.bom-line,.bom-gap')].map(line => ({
-      gap: line.classList.contains('bom-gap'),
-      text: line.textContent.replace(/\s+/g, ' ').trim()
-    })).filter(item => item.gap || item.text)
-  })).filter(item => item.name || item.val || item.lines.length);
+  const items = currentBomSourceItems();
+  const urinal = urinalBomItem();
+  if (urinal) items.push(urinal);
+  return items.map(item => ({
+    name:item.name || '',
+    val:String(item.val || '').replace(/<[^>]*>/g, '').trim(),
+    sub:item.sub || '',
+    mobileGroups:item.name === '前沿板' ? bomMobileGroupsFromSub(item.sub) : null,
+    lines:item.name === '前沿板' ? [] : bomStructuredLinesFromSub(item.sub)
+  })).filter(item => item.name || item.val || item.lines.length || item.mobileGroups?.length);
+}
+
+function bomSnapshotHtml(title) {
+  return `<div xmlns="http://www.w3.org/1999/xhtml" class="bom-snapshot"><style>
+    ${bomExportCss('snapshot')}
+  </style><h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${bomPrintCardsHtml()}</div></div>`;
+}
+
+function exportBomDomImage(name = '开料清单') {
+  const title = sanitizeExportName(name, '开料清单');
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;visibility:hidden;pointer-events:none';
+  probe.innerHTML = bomSnapshotHtml(title);
+  document.body.appendChild(probe);
+  const target = probe.firstElementChild;
+  const width = 900;
+  const height = Math.ceil(target.getBoundingClientRect().height || 600);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="100%" height="100%">${bomSnapshotHtml(title)}</foreignObject></svg>`;
+  const img = new Image();
+  const url = URL.createObjectURL(new Blob([svg], {type:'image/svg+xml;charset=utf-8'}));
+  let done = false;
+  const cleanup = () => {
+    URL.revokeObjectURL(url);
+    probe.remove();
+  };
+  const fallback = () => {
+    if (done) return;
+    done = true;
+    cleanup();
+    exportBomCanvasImage(title);
+  };
+  img.onload = () => {
+    if (done) return;
+    done = true;
+    const scale = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.ceil(width * scale);
+    canvas.height = Math.ceil(height * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+    try {
+      ctx.drawImage(img, 0, 0, width, height);
+      cleanup();
+      downloadCanvasPng(canvas, title);
+    } catch (err) {
+      cleanup();
+      exportBomCanvasImage(title);
+    }
+  };
+  img.onerror = fallback;
+  img.src = url;
+  window.setTimeout(fallback, 900);
 }
 
 function wrapCanvasText(ctx, text, maxWidth) {
@@ -6674,13 +6869,57 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function exportBomImage(name = '开料清单') {
+function drawBomCanvasStructuredLine(ctx, line, x, y, maxWidth) {
+  if (line.plain) {
+    const rows = wrapCanvasText(ctx, line.plain, maxWidth - 18);
+    rows.forEach((text, index) => {
+      if (index === 0) {
+        ctx.fillStyle = '#57606a';
+        ctx.beginPath();
+        ctx.arc(x + 6, y - 5, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#000';
+      ctx.fillText(text, x + 20, y);
+      y += 22;
+    });
+    return y;
+  }
+  const process = line.process || '';
+  const heightText = line.height ? `${line.height} x ` : '';
+  const sizeText = line.size || '';
+  const processW = 64;
+  const heightW = 74;
+  ctx.fillStyle = '#57606a';
+  ctx.beginPath();
+  ctx.arc(x + 6, y - 5, 3, 0, Math.PI * 2);
+  ctx.fill();
+  const contentX = x + 20;
+  if (process) {
+    ctx.fillStyle = '#185FA5';
+    ctx.font = '800 14px Microsoft YaHei, Arial, sans-serif';
+    ctx.fillText(process, contentX, y);
+  }
+  ctx.fillStyle = '#000';
+  ctx.font = '14px Microsoft YaHei, Arial, sans-serif';
+  if (!line.continued && heightText) ctx.fillText(heightText, contentX + processW, y);
+  ctx.fillText(sizeText, contentX + processW + heightW, y);
+  return y + 22;
+}
+
+function exportBomCanvasImage(name = '开料清单') {
   const title = sanitizeExportName(name, '开料清单');
   const items = collectBomImageItems();
   const width = 900;
   const pad = 32;
   const cardGap = 14;
   const lineH = 22;
+  const frontTitleW = 100;
+  const frontCellW = 54;
+  const frontCellH = 24;
+  const frontGapX = 7;
+  const frontGapY = 7;
+  const frontCols = 8;
   const scale = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
   const measure = document.createElement('canvas').getContext('2d');
   measure.font = '15px Microsoft YaHei, Arial, sans-serif';
@@ -6688,11 +6927,18 @@ function exportBomImage(name = '开料清单') {
   let height = pad + 50;
   items.forEach(item => {
     let cardH = 48;
-    const lines = item.lines.length ? item.lines : [{text:'无'}];
-    lines.forEach(line => {
-      if (line.gap) cardH += 10;
-      else cardH += wrapCanvasText(measure, line.text, cardInnerW - 18).length * lineH;
-    });
+    if (item.mobileGroups?.length) {
+      item.mobileGroups.forEach(group => {
+        const rows = Math.max(1, Math.ceil((group.tags.length || 1) / frontCols));
+        cardH += Math.max(frontCellH, rows * frontCellH + (rows - 1) * frontGapY) + 14;
+      });
+    } else {
+      const lines = item.lines.length ? item.lines : [{plain:'无'}];
+      lines.forEach(line => {
+        if (line.gap) cardH += 10;
+        else cardH += line.plain ? wrapCanvasText(measure, line.plain, cardInnerW - 18).length * lineH : lineH;
+      });
+    }
     item._cardH = cardH + 12;
     height += item._cardH + cardGap;
   });
@@ -6729,45 +6975,63 @@ function exportBomImage(name = '开料清单') {
     outCtx.fillText(item.val || '', width - pad - 14, y + 28);
     outCtx.textAlign = 'left';
     let lineY = y + 56;
-    outCtx.font = '14px Microsoft YaHei, Arial, sans-serif';
-    outCtx.fillStyle = '#000';
-    const lines = item.lines.length ? item.lines : [{text:'无'}];
-    lines.forEach(line => {
-      if (line.gap) {
-        lineY += 10;
-        return;
-      }
-      const wrapped = wrapCanvasText(outCtx, line.text, cardInnerW - 18);
-      wrapped.forEach((text, index) => {
-        if (index === 0) {
-          outCtx.fillStyle = '#57606a';
-          outCtx.beginPath();
-          outCtx.arc(pad + 20, lineY - 5, 3, 0, Math.PI * 2);
+    if (item.mobileGroups?.length) {
+      item.mobileGroups.forEach(group => {
+        outCtx.fillStyle = '#185FA5';
+        outCtx.font = '900 13px Microsoft YaHei, Arial, sans-serif';
+        outCtx.fillText(group.title || '', pad + 14, lineY + 17);
+        outCtx.font = '800 13px Microsoft YaHei, Arial, sans-serif';
+        const tags = group.tags.length ? group.tags : ['无'];
+        tags.forEach((tag, index) => {
+          const col = index % frontCols;
+          const row = Math.floor(index / frontCols);
+          const x = pad + 14 + frontTitleW + 8 + col * (frontCellW + frontGapX);
+          const ty = lineY + row * (frontCellH + frontGapY);
+          roundRectPath(outCtx, x, ty, frontCellW, frontCellH, 5);
+          outCtx.fillStyle = '#F6F8FA';
           outCtx.fill();
-        }
-        outCtx.fillStyle = '#000';
-        outCtx.fillText(text, pad + 34, lineY);
-        lineY += lineH;
+          outCtx.fillStyle = '#000';
+          outCtx.textAlign = 'center';
+          outCtx.fillText(String(tag), x + frontCellW / 2, ty + 17);
+          outCtx.textAlign = 'left';
+        });
+        const rows = Math.max(1, Math.ceil(tags.length / frontCols));
+        lineY += Math.max(frontCellH, rows * frontCellH + (rows - 1) * frontGapY) + 14;
       });
-    });
+    } else {
+      outCtx.font = '14px Microsoft YaHei, Arial, sans-serif';
+      outCtx.fillStyle = '#000';
+      const lines = item.lines.length ? item.lines : [{plain:'无'}];
+      lines.forEach(line => {
+        if (line.gap) {
+          lineY += 10;
+          return;
+        }
+        lineY = drawBomCanvasStructuredLine(outCtx, line, pad + 14, lineY, cardInnerW - 18);
+      });
+    }
     y += item._cardH + cardGap;
   });
   downloadCanvasPng(out, title);
 }
 
+function exportBomImage(name = '开料清单') {
+  exportBomDomImage(name);
+}
+
 function exportBomPrint(name = '开料清单') {
   const title = sanitizeExportName(name, '开料清单');
   const html = bomPrintDocumentHtml(title);
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    triggerWindowPrint(win, 300);
+    return;
+  }
   if (isMobileViewport()) {
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-      window.setTimeout(() => { win.focus(); win.print(); }, 250);
-    } else {
-      alert('浏览器阻止了PDF打印窗口，请允许弹出窗口后重试。');
-    }
+    alert('浏览器阻止了PDF打印窗口，请允许弹出窗口后重试。');
     return;
   }
   const oldFrame = document.getElementById('print-frame');
@@ -6785,7 +7049,7 @@ function exportBomPrint(name = '开料清单') {
   doc.open();
   doc.write(html);
   doc.close();
-  window.setTimeout(() => { frame.contentWindow.focus(); frame.contentWindow.print(); }, 150);
+  triggerFramePrint(frame, 250);
 }
 function openExportDialog(mode) {
   pendingExportMode = mode;
@@ -6824,16 +7088,16 @@ function confirmNamedExport() {
   }
   if (pendingExportMode === 'all-image') {
     exportNamedAllImages(name);
-    if (includeBom) window.setTimeout(() => exportBomPrint(`${name}-开料清单`), 1200);
+    if (includeBom) window.setTimeout(() => exportBomImage(`${name}-开料清单`), 1200);
     return;
   }
   if (pendingExportMode === 'pdf') {
     const scope = document.querySelector('input[name="export-pdf-scope"]:checked')?.value || 'current';
-    exportNamedPdf(name, scope, scope === 'all' && includeBom);
+    exportNamedPdf(name, scope, includeBom);
     return;
   }
   exportNamedImage(name);
-  if (includeBom) window.setTimeout(() => exportBomPrint(`${name}-开料清单`), 600);
+  if (includeBom) window.setTimeout(() => exportBomImage(`${name}-开料清单`), 600);
 }
 
 function bindNamedExportButtons() {
