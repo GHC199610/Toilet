@@ -210,10 +210,10 @@ body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;backg
 .canvas-area{flex:1;position:relative;background:#eef1f4;overflow:hidden;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
 body.theme-dark .canvas-area{background:#202734}
 canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-user-select:none;user-select:none}
-.canvas-text-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;resize:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;overflow:hidden}
-.canvas-text-editor.active{position:fixed;width:min(18rem,calc(100vw - 2rem));min-height:2.75rem;max-height:7rem;opacity:1;pointer-events:auto;z-index:70;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);caret-color:auto;padding:0.625rem 0.75rem;font-size:1rem;font-weight:700;line-height:1.35;text-align:center;box-shadow:0 10px 28px rgba(31,35,40,.18)}
-.dimension-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;outline:none}
-.dimension-editor.active{width:7.5rem;height:2.5rem;opacity:1;pointer-events:auto;z-index:70;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);caret-color:auto;padding:0 0.75rem;font-size:1rem;font-weight:700;text-align:center;box-shadow:0 10px 28px rgba(31,35,40,.18)}
+.canvas-text-editor{position:fixed;left:8px;top:8px;width:1px;height:1px;opacity:.01;pointer-events:none;resize:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;overflow:hidden;outline:none}
+.canvas-text-editor.active{left:8px;top:8px;width:1px;height:1px;opacity:.01;pointer-events:none;z-index:70;border:0;background:transparent;color:transparent;caret-color:transparent;padding:0;resize:none;box-shadow:none;outline:none;overflow:hidden}
+.dimension-editor{position:fixed;left:8px;top:8px;width:1px;height:1px;opacity:.01;pointer-events:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;outline:none}
+.dimension-editor.active{left:8px;top:8px;width:1px;height:1px;opacity:.01;pointer-events:none;z-index:70;border:0;background:transparent;color:transparent;caret-color:transparent;padding:0;box-shadow:none;outline:none}
 .bom-area{position:absolute;top:3rem;right:0.875rem;bottom:1.5rem;z-index:9;min-width:20rem;width:max-content;max-width:min(42rem,calc(100% - 1.75rem));border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.875rem;background:rgba(255,255,255,.92);box-shadow:0 14px 34px rgba(31,35,40,.14);overflow:auto}
 body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px rgba(0,0,0,.24)}
 .bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.875rem;margin-bottom:0.625rem}
@@ -377,7 +377,7 @@ body.theme-dark .bom-mobile-group-title{color:#b9dcff}
   .sheet-page-info{font-size:0.875rem;white-space:nowrap;margin-left:0}
   .global-history-actions{margin-right:0;padding-right:0.5rem}
   .canvas-area{order:4;height:72dvh;min-height:24rem;flex:0 0 auto;overflow:hidden}
-  .canvas-text-editor.active,.dimension-editor.active{position:fixed;left:50%;top:auto;bottom:calc(var(--mobile-keyboard-inset,0px) + 1rem);transform:translateX(-50%)}
+  .dimension-editor.active{left:8px;top:8px;bottom:auto;transform:none}
   .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:68dvh;padding:0.625rem;z-index:40;overflow:hidden;transition:max-height .26s ease,padding .26s ease}
   .bom-title{font-size:1rem;white-space:nowrap}
   .bom-head{flex-wrap:wrap;gap:0.5rem}
@@ -810,6 +810,8 @@ let lastQuickCellRef = null;
 let autoOpenTotalOnQuickFocus = false;
 let quickSelectAllActive = false;
 let noteInputValue = '';
+let lastCanvasTextHitArea = null;
+let suppressNextCanvasClick = false;
 let lastBomPieces = [];
 let lastBoardFitWarningSignature = '';
 let hintToastTimer = null;
@@ -1179,6 +1181,7 @@ function focusCanvasTextEditor() {
   const value = normalizeTwoLineText(target.text || '');
   editor.classList.add('active');
   editor.value = value;
+  editor.setAttribute('aria-hidden', 'false');
   updateMobileKeyboardInset();
   positionCanvasTextEditor();
   const focusEditor = () => {
@@ -1187,6 +1190,7 @@ function focusCanvasTextEditor() {
     editor.focus({preventScroll:true});
     editor.setSelectionRange(editor.value.length, editor.value.length);
     updateMobileKeyboardInset();
+    positionCanvasTextEditor();
   };
   focusEditor();
   window.setTimeout(focusEditor, 40);
@@ -1194,17 +1198,11 @@ function focusCanvasTextEditor() {
 
 function positionCanvasTextEditor() {
   const editor = document.getElementById('canvas-text-editor');
-  const area = document.getElementById('carea');
-  if (!editor || !area || !activeCanvasTextEditable() || isMobileViewport()) return;
-  const hit = activeCanvasTextHitArea();
-  if (!hit) return;
-  const rect = area.getBoundingClientRect();
-  const centerX = rect.left + panX + (hit.x + hit.w / 2) * zoomScale;
-  const centerY = rect.top + panY + (hit.y + hit.h / 2) * zoomScale;
-  const width = Math.min(360, Math.max(180, hit.w * zoomScale + 40));
-  editor.style.width = `${Math.round(width)}px`;
-  editor.style.left = `${Math.round(centerX - width / 2)}px`;
-  editor.style.top = `${Math.round(centerY - 24)}px`;
+  if (!editor || !activeCanvasTextEditable()) return;
+  editor.style.left = '8px';
+  editor.style.top = '8px';
+  editor.style.width = '1px';
+  editor.style.height = '1px';
 }
 
 function applyCanvasTextEditorValue(value) {
@@ -1215,6 +1213,7 @@ function applyCanvasTextEditorValue(value) {
   noteInputValue = normalized;
   selectedNoteTarget().set(normalized);
   if (lastParams) drawView(lastParams, currentTab);
+  positionCanvasTextEditor();
 }
 
 function clearSelectedBooth() {
@@ -3617,6 +3616,24 @@ function drawView(p, tab) {
   ctx.restore();
   updateZoomInfo();
   updateSheetPageInfo(p);
+  syncActiveCanvasTextEditorPosition();
+  syncActiveDimensionEditorPosition();
+}
+
+function syncActiveCanvasTextEditorPosition() {
+  const editor = document.getElementById('canvas-text-editor');
+  if (!editor?.classList.contains('active')) return;
+  if (!activeCanvasTextEditable() || document.activeElement !== editor) {
+    editor.classList.remove('active');
+    return;
+  }
+  positionCanvasTextEditor();
+}
+
+function syncActiveDimensionEditorPosition() {
+  const editor = document.getElementById('dimension-editor');
+  if (!activeDimensionEdit || !editor?.classList.contains('active') || document.activeElement !== editor) return;
+  positionDimensionEditor(activeDimensionEdit);
 }
 
 
@@ -4610,7 +4627,7 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
   ctx.lineWidth = 1;
   ctx.strokeRect(x, y, w, h);
   if (selectionScope === 'sheet-note' || isMultiSelected('sheet-note', 'sheet', 'header')) drawPlanSelectionBox(x, y, w, h, 6, true);
-  if (sheetHeaderText) {
+  if (sheetHeaderText || canvasTextCaretVisible('sheet-note')) {
     ctx.fillStyle = '#1f2328';
     const fit = fitCanvasTextLines(sheetHeaderText, w - 36, 2, {maxFont:22, minFont:10});
     ctx.font = `${fit.fontSize}px 'Microsoft YaHei', Arial, sans-serif`;
@@ -7229,15 +7246,21 @@ function updateMobileKeyboardInset() {
 
 function activeCanvasTextHitArea() {
   if (!activeCanvasTextEditable()) return null;
-  if (selectionScope === 'sheet-note') return planHitAreas.find(area => area.type === 'sheet-note') || null;
-  if (selectionScope === 'tag') return planHitAreas.find(area => area.type === 'tag' && area.groupId === activeGroupId && area.rowId === activeRowId) || planHitAreas.find(area => area.type === 'tag') || null;
+  if (selectionScope === 'sheet-note') return planHitAreas.find(area => area.type === 'sheet-note') || (lastCanvasTextHitArea?.type === 'sheet-note' ? lastCanvasTextHitArea : null);
+  if (selectionScope === 'tag') return planHitAreas.find(area => area.type === 'tag' && area.groupId === activeGroupId && area.rowId === activeRowId) || (lastCanvasTextHitArea?.type === 'tag' ? lastCanvasTextHitArea : null);
   return null;
 }
 
 function keepActiveCanvasEditorVisible() {
-  if (!isMobileViewport() || document.activeElement !== document.getElementById('canvas-text-editor')) return;
+  if (!isMobileViewport()) return;
   const area = document.getElementById('carea');
-  const hit = activeCanvasTextHitArea();
+  const textEditor = document.getElementById('canvas-text-editor');
+  const dimensionEditor = document.getElementById('dimension-editor');
+  const hit = document.activeElement === textEditor
+    ? activeCanvasTextHitArea()
+    : document.activeElement === dimensionEditor
+      ? activeDimensionHitArea()
+      : null;
   if (!area || !hit) return;
   const viewport = window.visualViewport;
   const viewportTop = viewport?.offsetTop || 0;
@@ -7249,6 +7272,14 @@ function keepActiveCanvasEditorVisible() {
   panY += delta;
   if (lastParams) drawView(lastParams, currentTab);
   area.scrollIntoView({block:'center', inline:'nearest', behavior:'smooth'});
+}
+
+function activeDimensionHitArea() {
+  if (!activeDimensionEdit) return null;
+  return [...planHitAreas].reverse().find(area => area.type === 'dimension'
+    && area.groupId === activeDimensionEdit.groupId
+    && area.rowId === activeDimensionEdit.rowId
+    && area.key === activeDimensionEdit.key) || null;
 }
 
 window.visualViewport?.addEventListener('resize', updateMobileKeyboardInset);
@@ -7558,6 +7589,19 @@ function commitDimensionValue(hit, value) {
   return true;
 }
 
+function positionDimensionEditor(hit = activeDimensionEdit) {
+  const editor = document.getElementById('dimension-editor');
+  if (!editor || !hit) return;
+  editor.style.position = 'fixed';
+  editor.style.left = '8px';
+  editor.style.top = '8px';
+  editor.style.right = '';
+  editor.style.bottom = '';
+  editor.style.width = '1px';
+  editor.style.height = '1px';
+  editor.style.transform = 'none';
+}
+
 function startDimensionEdit(hit) {
   const editor = document.getElementById('dimension-editor');
   const group = groups.find(item => item.id === hit?.groupId);
@@ -7568,6 +7612,7 @@ function startDimensionEdit(hit) {
   editor.classList.add('active');
   editor.value = String(dimensionCurrentValue(row, hit.meta || {}) || '');
   updateMobileKeyboardInset();
+  positionDimensionEditor(hit);
   const focusEditor = () => { editor.focus({preventScroll:true}); editor.select(); updateMobileKeyboardInset(); };
   focusEditor();
   window.setTimeout(focusEditor, 40);
@@ -7582,6 +7627,12 @@ function finishDimensionEdit(commit = true) {
   const value = editor.value;
   editor.classList.remove('active');
   editor.hidden = true;
+  editor.style.left = '';
+  editor.style.top = '';
+  editor.style.right = '';
+  editor.style.bottom = '';
+  editor.style.position = '';
+  editor.style.transform = '';
   updateMobileKeyboardInset();
   activeDimensionEdit = null;
   if (commit && hit) commitDimensionValue(hit, value);
@@ -7954,6 +8005,7 @@ cv.addEventListener('dblclick', e => {
   if (hit?.type === 'dimension') {
     e.preventDefault();
     e.stopPropagation();
+    suppressNextCanvasClick = true;
     startDimensionEdit(hit);
     return;
   }
@@ -7961,14 +8013,17 @@ cv.addEventListener('dblclick', e => {
   if (textHit?.type === 'sheet-note' || textHit?.type === 'tag') {
     e.preventDefault();
     e.stopPropagation();
+    suppressNextCanvasClick = true;
     handlePlanTapFromPoint(pt, false);
   }
 });
 
 function handlePlanTapFromPoint(pt, shiftKey = false) {
   if (currentTab !== 'plan' || isDragging) return;
+  if (hitPlanDimension(pt.x, pt.y)) return;
   const hit = hitPlanSelectable(pt.x, pt.y);
   if (!hit) {
+    lastCanvasTextHitArea = null;
     selectionScope = 'none';
     clearSelectedBooth();
     clearSelectedDepthPanel();
@@ -8020,11 +8075,13 @@ function handlePlanTapFromPoint(pt, shiftKey = false) {
     renderBoothSwingPanel();
     renderDepthPanelSpecialPanel();
     syncPlanNoteInputFromSelection();
+    lastCanvasTextHitArea = (hit.type === 'sheet-note' || hit.type === 'tag') ? {...hit} : null;
     drawView(lastParams || getParams(), currentTab);
     focusCanvasTextEditor();
     return;
   }
   if (hit.type === 'sheet-note') {
+    lastCanvasTextHitArea = {...hit};
     saveActiveGroup();
     selectionScope = 'sheet-note';
     clearSelectedBooth();
@@ -8050,10 +8107,12 @@ function handlePlanTapFromPoint(pt, shiftKey = false) {
     clearSelectedBooth();
     setSelectedDepthPanel(group.id, row.id, hit.index);
   } else if (hit.type === 'tag') {
+    lastCanvasTextHitArea = {...hit};
     selectionScope = 'tag';
     clearSelectedBooth();
     clearSelectedDepthPanel();
   } else {
+    lastCanvasTextHitArea = null;
     selectionScope = 'row';
     clearSelectedBooth();
     clearSelectedDepthPanel();
@@ -8072,6 +8131,10 @@ function handlePlanTapFromPoint(pt, shiftKey = false) {
 }
 
 cv.addEventListener('click', e => {
+  if (suppressNextCanvasClick) {
+    suppressNextCanvasClick = false;
+    return;
+  }
   if (suppressNextPlanClick) {
     suppressNextPlanClick = false;
     return;
@@ -8383,9 +8446,16 @@ document.getElementById('canvas-text-editor')?.addEventListener('keydown', e => 
 
 document.getElementById('canvas-text-editor')?.addEventListener('blur', e => {
   e.currentTarget.classList.remove('active');
+  e.currentTarget.setAttribute('aria-hidden', 'true');
   e.currentTarget.style.left = '';
   e.currentTarget.style.top = '';
   e.currentTarget.style.width = '';
+  e.currentTarget.style.height = '';
+  e.currentTarget.style.color = '';
+  e.currentTarget.style.fontSize = '';
+  e.currentTarget.style.lineHeight = '';
+  e.currentTarget.style.padding = '';
+  e.currentTarget.style.borderColor = '';
   updateMobileKeyboardInset();
 });
 
