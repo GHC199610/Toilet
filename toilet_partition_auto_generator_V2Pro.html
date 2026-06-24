@@ -74,6 +74,10 @@ body.theme-dark .theme-btn:hover{color:#79c0ff}
 .export-scope-row label{display:flex;align-items:center;justify-content:center;gap:0.375rem;height:2.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);font-size:0.875rem;font-weight:700;color:var(--color-text-secondary);cursor:pointer}
 .export-scope-row input{width:1rem;height:1rem;accent-color:#185FA5}
 .export-scope-row.show{display:grid}
+.export-format-row{display:none;grid-template-columns:1fr 1fr;gap:0.5rem}
+.export-format-row label{display:flex;align-items:center;justify-content:center;gap:0.375rem;height:2.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);font-size:0.875rem;font-weight:700;color:var(--color-text-secondary);cursor:pointer}
+.export-format-row input{width:1rem;height:1rem;accent-color:#185FA5}
+.export-format-row.show{display:grid}
 .project-actions{display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem}
 .project-actions button,.project-file-row button{height:2.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .project-actions .primary,.project-file-row .primary{background:#185FA5;border-color:#185FA5;color:#fff}
@@ -666,6 +670,10 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
         <div class="export-scope-row" id="export-pdf-scope">
           <label><input type="radio" name="export-pdf-scope" value="current" checked>当前视图</label>
           <label><input type="radio" name="export-pdf-scope" value="all">全部视图</label>
+        </div>
+        <div class="export-format-row" id="export-bom-format">
+          <label><input type="radio" name="export-bom-format" value="image" checked>PNG图片</label>
+          <label><input type="radio" name="export-bom-format" value="pdf">PDF</label>
         </div>
         <label class="check-field" id="export-include-bom-row"><span>包含材料清单</span><input type="checkbox" id="export-include-bom" checked></label>
         <div class="project-actions">
@@ -6071,8 +6079,82 @@ function bomPrintPageHtml(title = '材料清单') {
   return `<section class="bom-print-page"><h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${currentBomHtml()}</div></section>`;
 }
 
+function bomPrintDocumentHtml(title = '材料清单') {
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
+    @page{size:A4 portrait;margin:12mm}
+    body{margin:0;background:#fff;color:#111827;font-family:"Microsoft YaHei",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bom-print-page{page-break-after:always;break-after:page}
+    .bom-print-page:last-child{page-break-after:auto;break-after:auto}
+    h1{font-size:24px;margin:0 0 14px;border-bottom:1px solid #d0d7de;padding-bottom:10px}
+    .bom-print-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .bom-card{border:1px solid #d8dee4;border-radius:6px;padding:10px;background:#fff;break-inside:avoid}
+    .bom-card-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;font-weight:700}
+    .name{font-size:15px}.val{font-size:13px;color:#0C447C;text-align:right}.bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700}
+    .bom-lines{display:grid!important;grid-template-columns:1fr!important;gap:4px}.bom-line{font-size:12px;line-height:1.5;color:#24292f}.bom-gap{height:6px}
+  </style></head><body>${bomPrintPageHtml(title)}</body></html>`;
+}
+
+function bomImageDocumentHtml(title = '材料清单') {
+  return `<div xmlns="http://www.w3.org/1999/xhtml" style="width:760px;padding:24px;background:#fff;color:#111827;font-family:'Microsoft YaHei',Arial,sans-serif;box-sizing:border-box">
+    <style>
+      h1{font-size:26px;margin:0 0 16px;border-bottom:1px solid #d0d7de;padding-bottom:12px}
+      .bom-print-grid{display:grid;grid-template-columns:1fr;gap:10px}
+      .bom-card{border:1px solid #d8dee4;border-radius:6px;padding:10px;background:#fff;break-inside:avoid}
+      .bom-card-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;font-weight:700}
+      .name{font-size:15px;color:#111827}.val{font-size:13px;color:#0C447C;text-align:right}.bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700}
+      .bom-lines{display:grid!important;grid-template-columns:1fr!important;gap:4px}.bom-line{font-size:12px;line-height:1.5;color:#24292f}.bom-gap{height:6px}
+    </style>
+    <h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${currentBomHtml()}</div>
+  </div>`;
+}
+
+async function exportBomImage(name = '材料清单') {
+  const title = sanitizeExportName(name, '材料清单');
+  const measure = document.createElement('div');
+  measure.style.cssText = 'position:fixed;left:-9999px;top:0;width:760px;background:#fff;z-index:-1';
+  measure.innerHTML = bomImageDocumentHtml(title);
+  document.body.appendChild(measure);
+  const width = Math.ceil(measure.scrollWidth || 760);
+  const height = Math.ceil(measure.scrollHeight || 1000);
+  const html = measure.innerHTML;
+  measure.remove();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="100%" height="100%">${html}</foreignObject></svg>`;
+  const blob = new Blob([svg], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.decoding = 'async';
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+    img.src = url;
+  });
+  const scale = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  const out = document.createElement('canvas');
+  out.width = Math.ceil(width * scale);
+  out.height = Math.ceil(height * scale);
+  const outCtx = out.getContext('2d');
+  outCtx.fillStyle = '#fff';
+  outCtx.fillRect(0, 0, out.width, out.height);
+  outCtx.drawImage(img, 0, 0, out.width, out.height);
+  URL.revokeObjectURL(url);
+  downloadCanvasPng(out, title);
+}
+
 function exportBomPrint(name = '材料清单') {
   const title = sanitizeExportName(name, '材料清单');
+  const html = bomPrintDocumentHtml(title);
+  if (isMobileViewport()) {
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      window.setTimeout(() => { win.focus(); win.print(); }, 250);
+    } else {
+      alert('浏览器阻止了PDF打印窗口，请允许弹出窗口后重试。');
+    }
+    return;
+  }
   const oldFrame = document.getElementById('print-frame');
   if (oldFrame) oldFrame.remove();
   const frame = document.createElement('iframe');
@@ -6086,18 +6168,7 @@ function exportBomPrint(name = '材料清单') {
   document.body.appendChild(frame);
   const doc = frame.contentDocument || frame.contentWindow.document;
   doc.open();
-  doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
-    @page{size:A4 portrait;margin:12mm}
-    body{margin:0;background:#fff;color:#111827;font-family:"Microsoft YaHei",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .bom-print-page{page-break-after:always;break-after:page}
-    .bom-print-page:last-child{page-break-after:auto;break-after:auto}
-    h1{font-size:24px;margin:0 0 14px;border-bottom:1px solid #d0d7de;padding-bottom:10px}
-    .bom-print-grid{display:grid;grid-template-columns:1fr;gap:10px}
-    .bom-card{border:1px solid #d8dee4;border-radius:6px;padding:10px;background:#fff;break-inside:avoid}
-    .bom-card-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;font-weight:700}
-    .name{font-size:15px}.val{font-size:13px;color:#0C447C;text-align:right}.bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700}
-    .bom-lines{display:grid!important;grid-template-columns:1fr!important;gap:4px}.bom-line{font-size:12px;line-height:1.5;color:#24292f}.bom-gap{height:6px}
-  </style></head><body>${bomPrintPageHtml(title)}</body></html>`);
+  doc.write(html);
   doc.close();
   window.setTimeout(() => { frame.contentWindow.focus(); frame.contentWindow.print(); }, 150);
 }
@@ -6105,6 +6176,7 @@ function openExportDialog(mode) {
   pendingExportMode = mode;
   const input = document.getElementById('export-file-name');
   const scopeRow = document.getElementById('export-pdf-scope');
+  const formatRow = document.getElementById('export-bom-format');
   const bomRow = document.getElementById('export-include-bom-row');
   const bomInput = document.getElementById('export-include-bom');
   const title = document.getElementById('export-modal-title');
@@ -6112,6 +6184,9 @@ function openExportDialog(mode) {
   if (title) title.textContent = label;
   if (input) input.value = mode === 'bom' ? '材料清单' : mode === 'all-image' ? '隔断全部视图' : mode === 'pdf' ? '隔断图纸' : `隔断${currentViewLabel()}`;
   scopeRow?.classList.toggle('show', mode === 'pdf');
+  formatRow?.classList.toggle('show', mode === 'bom');
+  const imageFormat = document.querySelector('input[name="export-bom-format"][value="image"]');
+  if (imageFormat) imageFormat.checked = true;
   if (bomInput) bomInput.checked = true;
   if (bomRow) bomRow.style.display = (mode === 'current-image' || mode === 'all-image' || mode === 'pdf') ? 'flex' : 'none';
   openProjectModal('export-modal');
@@ -6124,7 +6199,9 @@ function confirmNamedExport() {
   const includeBom = document.getElementById('export-include-bom')?.checked !== false;
   closeProjectModal('export-modal');
   if (pendingExportMode === 'bom') {
-    exportBomPrint(name);
+    const format = document.querySelector('input[name="export-bom-format"]:checked')?.value || 'image';
+    if (format === 'pdf') exportBomPrint(name);
+    else exportBomImage(name).catch(err => alert(`导出图片失败：${err.message || err}`));
     return;
   }
   if (pendingExportMode === 'all-image') {
