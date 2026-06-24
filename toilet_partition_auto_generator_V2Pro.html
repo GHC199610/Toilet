@@ -515,6 +515,19 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .cv-btn{height:1.875rem;padding:0 0.5rem;font-size:0.75rem}
   .top-btn{display:none}
 }
+@media (pointer:coarse) and (min-width:701px){
+  .bom-area{right:0.5rem;width:min(22rem,calc(100vw - 1rem));max-width:calc(100vw - 1rem)}
+  .bom-head{align-items:flex-start;gap:0.5rem}
+  .bom-title{order:0}
+  .bom-actions{flex:0 0 auto;margin-left:auto}
+  .bom-board-estimator{order:2;flex:1 0 100%;flex-wrap:nowrap;overflow-x:auto}
+  .bom-toggle,.bom-export{height:2rem;padding:0 0.75rem;font-size:0.875rem}
+  .bom-area.collapsed{right:0;width:2.5rem;min-width:0;max-width:2.5rem;padding:0.5rem 0.25rem;border-radius:var(--border-radius-md) 0 0 var(--border-radius-md)}
+  .bom-area.collapsed .bom-head{display:grid;justify-items:center;gap:0.5rem;background:transparent}
+  .bom-area.collapsed .bom-title{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:0.08em;white-space:nowrap}
+  .bom-area.collapsed .bom-actions{display:grid;justify-items:center;margin-left:0}
+  .bom-area.collapsed .bom-toggle{width:1.875rem;height:auto;min-height:3.25rem;padding:0.375rem 0;writing-mode:vertical-rl;line-height:1.1}
+}
 @media print{
   @page{margin:0}
   body,body.theme-dark{background:#fff;color:#1f2328}
@@ -662,7 +675,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     <div class="export-row">
       <button class="ex-btn" id="btn-export-current" type="button"><i class="ti ti-download" aria-hidden="true" style="font-size:14px"></i> 导出当前视图</button>
       <button class="ex-btn" id="btn-export-all" type="button"><i class="ti ti-file-export" aria-hidden="true" style="font-size:14px"></i> 导出全部视图</button>
-      <button class="ex-btn" id="btn-print-pdf" type="button"><i class="ti ti-printer" aria-hidden="true" style="font-size:14px"></i> PDF打印</button>
+      <button class="ex-btn" id="btn-print-pdf" type="button"><i class="ti ti-file-type-pdf" aria-hidden="true" style="font-size:14px"></i> 导出PDF</button>
     </div>
       </div>
     <div class="urinal-panel" id="urinal-panel">
@@ -794,7 +807,7 @@ let drawingForExport = false;
 let lastGuardWarningSignature = '';
 let currentPlanPage = 0;
 const QUALITY_RENDER_SCALE = 6;
-const PDF_RENDER_SCALE = 8;
+const PDF_RENDER_SCALE = 5;
 const PRINT_RENDER_SCALE = 7;
 let pdfLibPromise = null;
 let svgPrintSeq = 0;
@@ -3919,12 +3932,24 @@ function loadPdfLib() {
   if (window.PDFLib?.PDFDocument) return Promise.resolve(window.PDFLib);
   if (!pdfLibPromise) {
     pdfLibPromise = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'file:///C:/Users/35045/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/pdf-lib/dist/pdf-lib.min.js';
-      script.async = true;
-      script.onload = () => resolve(window.PDFLib);
-      script.onerror = () => reject(new Error('PDF 库加载失败'));
-      document.head.appendChild(script);
+      const sources = [
+        './pdf-lib.min.js',
+        'file:///C:/Users/35045/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/pdf-lib/dist/pdf-lib.min.js'
+      ];
+      let index = 0;
+      const loadNext = () => {
+        if (index >= sources.length) {
+          reject(new Error('PDF 库加载失败'));
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = sources[index++];
+        script.async = true;
+        script.onload = () => resolve(window.PDFLib);
+        script.onerror = loadNext;
+        document.head.appendChild(script);
+      };
+      loadNext();
     });
   }
   return pdfLibPromise;
@@ -6542,9 +6567,10 @@ async function printPdf() {
     frame.style.position = 'fixed';
     frame.style.right = '0';
     frame.style.bottom = '0';
-    frame.style.width = '0';
-    frame.style.height = '0';
+    frame.style.width = '1px';
+    frame.style.height = '1px';
     frame.style.border = '0';
+    frame.style.opacity = '0';
     document.body.appendChild(frame);
     const doc = frame.contentDocument || frame.contentWindow.document;
     doc.open();
@@ -6703,17 +6729,17 @@ function exportNamedAllImages(baseName = '隔断全部视图') {
 
 function exportPdfCanvasesForScope(p, scope = 'current') {
   if (scope === 'all') {
-    const planPages = getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE}));
+    const planPages = getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PDF_RENDER_SCALE}));
     return [
       ...planPages,
-      renderSheetCanvas('front', p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE}),
-      renderSheetCanvas('side', p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE})
+      renderSheetCanvas('front', p, {canvasMode:'sheets', renderScale:PDF_RENDER_SCALE}),
+      renderSheetCanvas('side', p, {canvasMode:'sheets', renderScale:PDF_RENDER_SCALE})
     ];
   }
   if (currentTab === 'plan') {
-    return getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE}));
+    return getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PDF_RENDER_SCALE}));
   }
-  return [renderSheetCanvas(currentTab, p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE})];
+  return [renderSheetCanvas(currentTab, p, {canvasMode:'sheets', renderScale:PDF_RENDER_SCALE})];
 }
 
 function triggerFramePrint(frame, delay = 250) {
@@ -6757,31 +6783,8 @@ function triggerWindowPrint(win, delay = 300) {
   window.setTimeout(run, delay + 700);
 }
 
-async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeBom = false) {
-  try {
-    const p = lastParams || getParams();
-    const pages = exportPdfCanvasesForScope(p, scope);
-    const pageImages = await Promise.all(pages.map(canvas => new Promise(resolve => {
-      canvas.toBlob(blob => {
-        resolve({url: blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/png'), landscape: canvas.width > canvas.height});
-      }, 'image/png');
-    })));
-    const paper = paperSize === 'a3' ? {w:297, h:420, label:'A3'} : {w:210, h:297, label:'A4'};
-    const oldFrame = document.getElementById('print-frame');
-    if (oldFrame) oldFrame.remove();
-    const frame = document.createElement('iframe');
-    frame.id = 'print-frame';
-    frame.style.position = 'fixed';
-    frame.style.right = '0';
-    frame.style.bottom = '0';
-    frame.style.width = '0';
-    frame.style.height = '0';
-    frame.style.border = '0';
-    document.body.appendChild(frame);
-    const doc = frame.contentDocument || frame.contentWindow.document;
-    const title = sanitizeExportName(name, '隔断图纸');
-    doc.open();
-    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
+function pdfPrintHtml(title, pageImages, paper, includeBom = false) {
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
       @page{size:${paper.label} portrait;margin:0}
       html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       body{overflow:visible}
@@ -6791,16 +6794,81 @@ async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeB
       .page:last-of-type:not(:last-child){page-break-after:always;break-after:page}
       img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
       ${includeBom ? `${bomExportCss('embed')}.bom-print-page{width:190mm;min-height:0;padding:10mm;}` : ''}
-    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`);
-    doc.close();
-    triggerFramePrint(frame, 250);
-    window.setTimeout(() => {
-      window.setTimeout(() => pageImages.forEach(item => {
-        if (String(item.url).startsWith('blob:')) URL.revokeObjectURL(item.url);
-      }), 5000);
-    }, 250);
+    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`;
+}
+
+function openPrintWindow(title) {
+  const win = window.open('', '_blank');
+  if (!win) return null;
+  win.document.open();
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:"Microsoft YaHei",Arial,sans-serif;color:#1f2328;background:#fff}</style></head><body>正在生成打印文件...</body></html>`);
+  win.document.close();
+  return win;
+}
+
+function canvasToPngBytes(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (!blob) {
+        reject(new Error('图纸图片生成失败'));
+        return;
+      }
+      blob.arrayBuffer().then(buffer => resolve(new Uint8Array(buffer)), reject);
+    }, 'image/png');
+  });
+}
+
+function downloadPdfBytes(bytes, filename) {
+  const blob = new Blob([bytes], {type:'application/pdf'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = `${sanitizeExportName(filename, '隔断图纸')}.pdf`;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function addCanvasPageToPdf(pdfDoc, canvas, pageSize) {
+  const png = await pdfDoc.embedPng(await canvasToPngBytes(canvas));
+  const page = pdfDoc.addPage(pageSize);
+  const {width:pageW, height:pageH} = page.getSize();
+  const margin = Math.min(pageW, pageH) * 0.025;
+  const boxW = pageW - margin * 2;
+  const boxH = pageH - margin * 2;
+  const scale = Math.min(boxW / png.width, boxH / png.height);
+  const drawW = png.width * scale;
+  const drawH = png.height * scale;
+  page.drawImage(png, {
+    x:(pageW - drawW) / 2,
+    y:(pageH - drawH) / 2,
+    width:drawW,
+    height:drawH
+  });
+}
+
+async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeBom = false) {
+  const title = sanitizeExportName(name, '隔断图纸');
+  try {
+    const {PDFDocument} = await loadPdfLib();
+    const p = lastParams || getParams();
+    const pages = exportPdfCanvasesForScope(p, scope);
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.setTitle(title);
+    pdfDoc.setCreator(navigator.userAgent || 'Chrome/Edge');
+    pdfDoc.setProducer('pdf-lib');
+    const portrait = paperSize === 'a3' ? [841.89, 1190.55] : [595.28, 841.89];
+    const landscape = [portrait[1], portrait[0]];
+    for (const canvas of pages) {
+      await addCanvasPageToPdf(pdfDoc, canvas, canvas.width > canvas.height ? landscape : portrait);
+    }
+    if (includeBom) {
+      await addCanvasPageToPdf(pdfDoc, renderBomCanvas('开料清单'), portrait);
+    }
+    downloadPdfBytes(await pdfDoc.save(), title);
   } catch (err) {
-    alert(`PDF打印失败：${err.message || err}`);
+    alert(`PDF导出失败：${err.message || err}`);
   }
 }
 
