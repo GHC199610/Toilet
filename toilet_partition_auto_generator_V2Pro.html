@@ -325,7 +325,10 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .mobile-drawing-tools .export-row{max-height:12rem;opacity:1;overflow:hidden;transition:max-height .26s ease,opacity .2s ease,padding .26s ease,border-color .26s ease}
   .mobile-drawing-tools.collapsed-mobile .view-tabs,
   .mobile-drawing-tools.collapsed-mobile .sheet-actions,
-  .mobile-drawing-tools.collapsed-mobile .export-row{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-color:transparent;pointer-events:none}
+  .mobile-drawing-tools.collapsed-mobile .export-row{height:0;min-height:0;max-height:0;flex-basis:0;margin:0;opacity:0;padding-top:0;padding-bottom:0;border-color:transparent;gap:0;pointer-events:none}
+  .mobile-drawing-tools.collapsed-mobile .view-tabs > *,
+  .mobile-drawing-tools.collapsed-mobile .sheet-actions > *,
+  .mobile-drawing-tools.collapsed-mobile .export-row > *{height:0;min-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0;overflow:hidden}
   .view-tabs{position:relative;top:auto;z-index:auto;flex:0 0 auto;flex-wrap:wrap;align-content:flex-start;overflow:hidden;gap:0;border-top:0;border-bottom:0.5px solid var(--color-border-tertiary)}
   .vtab{flex:0 0 auto;text-align:center;padding:0.875rem 1rem;font-size:0.9375rem;white-space:nowrap}
   .save-drawing-btn{flex:0 0 auto;height:2.25rem;margin:0.375rem 0.5rem 0.375rem 0.25rem;font-size:0.875rem}
@@ -609,7 +612,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area mobile-collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">材料清单</div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button">导出清单</button><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div></div>
+        <div class="bom-head"><div class="bom-title">材料清单</div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出清单</button><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -2120,6 +2123,26 @@ document.addEventListener('pointerdown', e => {
   clearQuickSelectAllVisual();
 }, {capture:true});
 
+function blurMobileKeyboardOnBlankTap(e) {
+  if (!isMobileViewport()) return;
+  const active = document.activeElement;
+  if (!active || active === document.body) return;
+  const editableActive = active.matches?.('input,textarea,select,[contenteditable="true"]');
+  if (!editableActive) return;
+  if (e.target.closest('input,textarea,select,button,[contenteditable="true"],label,.quick-cell,.canvas-text-editor,.dimension-editor')) return;
+  active.blur();
+  updateMobileKeyboardInset();
+}
+
+document.addEventListener('pointerdown', blurMobileKeyboardOnBlankTap, {capture:true});
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('#btn-export-bom');
+  if (!btn) return;
+  e.preventDefault();
+  openExportDialog('bom');
+});
+
 function renderQuickTenToggle() {
   const btn = document.getElementById('quick-ten-toggle');
   if (!btn) return;
@@ -2186,10 +2209,9 @@ function toggleMobileDrawingTools() {
   if (!panel) return;
   const collapsed = panel.classList.toggle('collapsed-mobile');
   updateMobileStickyOffsets();
-  resizeCanvas();
-  window.setTimeout(() => { updateMobileStickyOffsets(); resizeCanvas(); }, 280);
+  refreshCanvasAfterLayoutChange();
+  window.setTimeout(() => { updateMobileStickyOffsets(); refreshCanvasAfterLayoutChange(); }, 300);
   if (!collapsed) revealExpandedMobileContent(panel);
-  if (lastParams) drawView(lastParams, currentTab);
 }
 
 function handleSectionToggleKey(e, id) {
@@ -3327,6 +3349,19 @@ function resizeCanvas() {
   cv.style.height = `${cssH}px`;
   cv.width = Math.floor(cssW * canvasPixelRatio);
   cv.height = Math.floor(cssH * canvasPixelRatio);
+}
+
+function refreshCanvasAfterLayoutChange() {
+  resizeCanvas();
+  if (lastParams) drawView(lastParams, currentTab);
+  requestAnimationFrame(() => {
+    resizeCanvas();
+    if (lastParams) drawView(lastParams, currentTab);
+    requestAnimationFrame(() => {
+      resizeCanvas();
+      if (lastParams) drawView(lastParams, currentTab);
+    });
+  });
 }
 
 function generate() {
@@ -6078,7 +6113,7 @@ function openExportDialog(mode) {
   if (input) input.value = mode === 'bom' ? '材料清单' : mode === 'all-image' ? '隔断全部视图' : mode === 'pdf' ? '隔断图纸' : `隔断${currentViewLabel()}`;
   scopeRow?.classList.toggle('show', mode === 'pdf');
   if (bomInput) bomInput.checked = true;
-  if (bomRow) bomRow.style.display = (mode === 'all-image' || mode === 'pdf') ? 'flex' : 'none';
+  if (bomRow) bomRow.style.display = (mode === 'current-image' || mode === 'all-image' || mode === 'pdf') ? 'flex' : 'none';
   openProjectModal('export-modal');
   window.setTimeout(() => input?.focus(), 0);
 }
@@ -6103,6 +6138,7 @@ function confirmNamedExport() {
     return;
   }
   exportNamedImage(name);
+  if (includeBom) window.setTimeout(() => exportBomPrint(`${name}-材料清单`), 600);
 }
 
 function bindNamedExportButtons() {
