@@ -86,6 +86,9 @@ body.theme-dark .theme-btn:hover{color:#79c0ff}
 .project-file-name{font-size:0.9375rem;font-weight:700;color:var(--color-text-primary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .project-file-time{display:block;margin-top:0.125rem;font-size:0.75rem;font-weight:500;color:var(--color-text-tertiary)}
 .project-empty{font-size:0.875rem;color:var(--color-text-tertiary);text-align:center;padding:1rem}
+.hint-toast{position:fixed;left:50%;bottom:1.25rem;z-index:100;max-width:min(28rem,calc(100vw - 2rem));padding:0.75rem 1rem;border:0.5px solid rgba(191,135,0,.35);border-radius:var(--border-radius-md);background:rgba(255,248,220,.98);color:#6B4E00;font-size:0.875rem;font-weight:700;line-height:1.45;box-shadow:0 14px 34px rgba(31,35,40,.18);transform:translate(-50%,1rem);opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.hint-toast.show{opacity:1;transform:translate(-50%,0)}
+body.theme-dark .hint-toast{background:rgba(51,39,10,.98);border-color:rgba(210,153,34,.45);color:#f0c36a}
 .quick-layout{display:grid;gap:var(--control-gap)}
 .quick-title-row{display:flex;align-items:center;justify-content:space-between;gap:var(--field-gap);margin-bottom:var(--field-gap)}
 .quick-title-row .sec-title{margin-bottom:0;white-space:nowrap;flex:0 0 auto}
@@ -213,11 +216,27 @@ canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-user-selec
 .dimension-editor.active{width:7.5rem;height:2.5rem;opacity:1;pointer-events:auto;z-index:70;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);caret-color:auto;padding:0 0.75rem;font-size:1rem;font-weight:700;text-align:center;box-shadow:0 10px 28px rgba(31,35,40,.18)}
 .bom-area{position:absolute;top:3rem;right:0.875rem;bottom:1.5rem;z-index:9;min-width:20rem;width:max-content;max-width:min(42rem,calc(100% - 1.75rem));border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.875rem;background:rgba(255,255,255,.92);box-shadow:0 14px 34px rgba(31,35,40,.14);overflow:auto}
 body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px rgba(0,0,0,.24)}
-.bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.375rem}
-.bom-title{font-size:0.9375rem;font-weight:700;color:#111827}
+.bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.875rem;margin-bottom:0.625rem}
+.bom-title{font-size:1.0625rem;font-weight:800;color:#111827;white-space:nowrap}
 .bom-toggle{display:none}
+.bom-board-estimator{display:flex;align-items:center;gap:0.5rem;flex:1 1 auto;min-width:0;font-size:0.875rem;font-weight:700;color:var(--color-text-secondary)}
+.bom-board-estimator input,.bom-board-estimator select{height:2.25rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.875rem;font-weight:800;text-align:center;padding:0 0.5rem}
+.bom-board-estimator input{width:4.75rem;-webkit-appearance:none;-moz-appearance:textfield}
+.bom-board-estimator #board-kerf{width:3rem}
+.bom-board-estimator input::-webkit-outer-spin-button,.bom-board-estimator input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.bom-board-estimator select{width:5.25rem;text-align:left}
+.bom-board-size{display:flex;align-items:center;gap:0.375rem;white-space:nowrap}
+.bom-board-kerf{gap:0.25rem}
+.bom-board-kerf-label{font-size:0.8125rem;font-weight:700;color:var(--color-text-tertiary)}
+.bom-board-sheet-toggle{display:none}
+.bom-board-sheet-toggle.show{display:inline-flex}
+.bom-board-estimator .switch-toggle{font-size:0.875rem;gap:0.375rem}
+.bom-board-estimator .switch-track{width:2.25rem;height:1.25rem}
+.bom-board-estimator .switch-track::after{width:0.875rem;height:0.875rem}
+.bom-board-estimator .switch-toggle.active .switch-track::after{left:1.125rem}
+.bom-board-result{font-size:0.9375rem;font-weight:900;color:#185FA5;white-space:nowrap}
 .bom-actions{display:flex;align-items:center;gap:0.5rem;flex:0 0 auto}
-.bom-export{height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.8125rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.bom-export{height:2.25rem;padding:0 0.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:700;cursor:pointer;white-space:nowrap}
 .bom-export:hover{border-color:#378ADD;color:#185FA5;background:#fff}
 body.theme-dark .bom-export:hover{border-color:#58a6ff;color:#b9dcff;background:#141a22}
 body.theme-dark .bom-title{color:#f6f8fa}
@@ -351,6 +370,13 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .canvas-text-editor.active,.dimension-editor.active{position:fixed;left:50%;top:auto;bottom:calc(var(--mobile-keyboard-inset,0px) + 1rem);transform:translateX(-50%)}
   .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:42dvh;padding:0.625rem;z-index:40;overflow:hidden;transition:max-height .26s ease,padding .26s ease}
   .bom-title{font-size:1rem;white-space:nowrap}
+  .bom-head{flex-wrap:wrap;gap:0.5rem}
+  .bom-board-estimator{order:3;flex:1 0 100%;overflow-x:auto;padding-bottom:0.125rem}
+  .bom-board-estimator input{width:4rem;height:1.875rem;font-size:0.8125rem}
+  .bom-board-estimator #board-kerf{width:2.75rem}
+  .bom-board-estimator select{width:4.75rem;height:1.875rem;font-size:0.8125rem}
+  .bom-board-estimator .switch-toggle{font-size:0.8125rem}
+  .bom-board-result{font-size:0.875rem}
   .bom-toggle{display:inline-flex;align-items:center;justify-content:center;height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap}
   .bom-head{position:sticky;top:0;z-index:2;background:var(--color-background-primary);padding-bottom:0.375rem}
   body.theme-dark .bom-head{background:#141a22}
@@ -358,6 +384,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .bom-area.mobile-collapsed{max-height:3.5rem;width:auto}
   .bom-area.mobile-collapsed .bom-grid{max-height:0;opacity:0;overflow:hidden;pointer-events:none}
   .bom-area.mobile-collapsed .bom-head{margin-bottom:0}
+  .bom-area.mobile-collapsed .bom-board-estimator{display:none}
   .bom-lines{grid-template-columns:1fr!important}
   .bom-line{white-space:normal;word-break:break-word}
   .export-row{order:3;position:relative;top:auto;z-index:auto;flex:0 0 auto;flex-wrap:wrap;overflow:visible;padding:0.5rem 0.625rem;white-space:normal}
@@ -401,7 +428,8 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .export-row{padding:0.5rem 0.625rem;gap:0.5rem}
   .cv-controls{top:0.5rem;right:0.5rem;gap:0.25rem}
   .cv-btn{padding:0.3125rem 0.5rem}
-  .top-btn{position:fixed;right:0.75rem;bottom:4.25rem;z-index:45;display:inline-flex;align-items:center;justify-content:center;height:2.5rem;min-width:3.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:999px;background:rgba(255,255,255,.96);color:#185FA5;font-size:0.875rem;font-weight:800;box-shadow:0 8px 24px rgba(31,35,40,.18);cursor:pointer;white-space:nowrap}
+  .top-btn{position:fixed;right:0.75rem;bottom:4.25rem;z-index:45;display:inline-flex;align-items:center;justify-content:center;height:2.5rem;min-width:3.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:999px;background:rgba(255,255,255,.96);color:#185FA5;font-size:0.875rem;font-weight:800;box-shadow:0 8px 24px rgba(31,35,40,.18);cursor:pointer;white-space:nowrap;touch-action:none;user-select:none;transition:right .18s ease,left .18s ease,box-shadow .18s ease}
+  .top-btn.dragging{transition:none;box-shadow:0 12px 30px rgba(31,35,40,.24)}
   body.theme-dark .top-btn{background:rgba(20,26,34,.96);color:#b9dcff}
   .project-modal{padding:0.75rem}
   .project-dialog{width:calc(100vw - 1.5rem);max-height:82dvh}
@@ -447,11 +475,18 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .bom-area.mobile-collapsed .bom-grid{max-height:0;opacity:0;overflow:hidden;pointer-events:none}
   .bom-area.mobile-collapsed .bom-head{height:auto;margin-bottom:0;padding-bottom:0;display:grid;justify-items:center;gap:0.5rem;background:transparent}
   .bom-area.mobile-collapsed .bom-title{writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:0.08em;white-space:nowrap}
+  .bom-area.mobile-collapsed .bom-board-estimator{display:none}
   .bom-area.mobile-collapsed .bom-actions{display:grid;gap:0.375rem;justify-items:center}
   .bom-area.mobile-collapsed .bom-export{display:none}
   .bom-area.mobile-collapsed .bom-toggle{width:1.875rem;height:auto;min-height:3.25rem;padding:0.375rem 0;writing-mode:vertical-rl;line-height:1.1}
   .bom-grid{max-height:calc(100dvh - 5rem)}
   .bom-title{font-size:0.9375rem}
+  .bom-head{flex-wrap:nowrap}
+  .bom-board-estimator{order:0;flex:1 1 auto;overflow-x:auto}
+  .bom-board-estimator input{width:3.75rem;height:1.75rem}
+  .bom-board-estimator #board-kerf{width:2.5rem}
+  .bom-board-estimator select{width:4.25rem;height:1.75rem}
+  .bom-board-result{font-size:0.8125rem}
   .bom-toggle,.bom-export{height:1.875rem;padding:0 0.625rem;font-size:0.8125rem}
   .cv-controls{top:0.5rem;right:0.5rem;gap:0.25rem}
   .cv-btn{height:1.875rem;padding:0 0.5rem;font-size:0.75rem}
@@ -479,7 +514,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
 }
 </style>
 
-<h2 class="sr-only">卫生间隔断自动生成器 — 输入参数后自动生成平面图和立面图，并输出材料清单</h2>
+<h2 class="sr-only">卫生间隔断自动生成器 — 输入参数后自动生成平面图和立面图，并输出开料清单</h2>
 <div class="wrap">
   <div class="sidebar">
     <div class="sb-head">
@@ -587,7 +622,8 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <div class="vtab active" id="tab-plan" onclick="switchTab('plan')">平面图</div>
       <div class="vtab" id="tab-front" onclick="switchTab('front')">正立面图</div>
       <div class="vtab" id="tab-side" onclick="switchTab('side')">侧立面图</div>
-      <button class="save-drawing-btn" type="button" onclick="openSaveDrawingDialog()">保存</button>
+      <button class="save-drawing-btn" type="button" onclick="saveProjectOrPrompt()">保存</button>
+      <button class="save-drawing-btn" type="button" onclick="openSaveDrawingDialog('saveAs')">另存为</button>
       <div class="top-widths"><label>单间净宽</label><div class="width-card-row" id="width-card-row"></div></div>
       <div class="paper-select"><label for="paper-size">纸张</label><select id="paper-size" onchange="setPaperSize(this.value)"><option value="a4">A4</option><option value="a3">A3</option></select></div>
     </div>
@@ -621,7 +657,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area mobile-collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">材料清单</div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出清单</button><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div></div>
+        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><span class="bom-board-size bom-board-kerf"><span class="bom-board-kerf-label">缝</span><input id="board-kerf" type="number" inputmode="numeric" min="0" step="0.5" value="2" aria-label="锯缝"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -632,6 +668,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     </div>
   <button class="top-btn" type="button" onclick="scrollMobileTop()">TOP</button>
 </div>
+<div class="hint-toast" id="hint-toast" role="status" aria-live="polite"></div>
 
 <div class="project-modal" id="save-drawing-modal" aria-hidden="true">
   <div class="project-dialog" role="dialog" aria-modal="true" aria-labelledby="save-drawing-title">
@@ -644,7 +681,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
         <input id="project-save-name" type="text" maxlength="40" placeholder="请输入文件名称">
         <div class="project-actions">
           <button type="button" onclick="closeProjectModal('save-drawing-modal')">取消</button>
-          <button class="primary" type="button" onclick="saveCurrentProjectFile()">确认保存</button>
+          <button class="primary" id="project-save-confirm" type="button" onclick="saveCurrentProjectFile()">确认保存</button>
         </div>
       </div>
     </div>
@@ -680,7 +717,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
           <label><input type="radio" name="export-bom-format" value="image" checked>PNG图片</label>
           <label><input type="radio" name="export-bom-format" value="pdf">PDF</label>
         </div>
-        <label class="check-field" id="export-include-bom-row"><span>包含材料清单</span><input type="checkbox" id="export-include-bom" checked></label>
+        <label class="check-field" id="export-include-bom-row"><span>包含开料清单</span><input type="checkbox" id="export-include-bom" checked></label>
         <div class="project-actions">
           <button type="button" onclick="closeProjectModal('export-modal')">取消</button>
           <button class="primary" type="button" onclick="confirmNamedExport()">确认导出</button>
@@ -756,6 +793,17 @@ let lastQuickCellRef = null;
 let autoOpenTotalOnQuickFocus = false;
 let quickSelectAllActive = false;
 let noteInputValue = '';
+let lastBomPieces = [];
+let lastBoardFitWarningSignature = '';
+let hintToastTimer = null;
+let activeBoardSheetIndex = Math.max(0, Math.min(2, Number(localStorage.getItem('partition-board-sheet-active') || 0)));
+let boardSheets = JSON.parse(localStorage.getItem('partition-board-sheets') || 'null') || [
+  {w:Number(localStorage.getItem('partition-board-sheet-w') || 1220), h:Number(localStorage.getItem('partition-board-sheet-h') || 2440), enabled:true},
+  {w:1220, h:2440, enabled:false},
+  {w:1220, h:2440, enabled:false}
+];
+let boardRotateEnabled = localStorage.getItem('partition-board-rotate') !== 'false';
+let boardKerf = Number(localStorage.getItem('partition-board-kerf') || 2);
 let sheetHeaderText = '';
 const GROUP_NAME_PLACEHOLDER = '备注标签';
 const swingDefs = {
@@ -1317,6 +1365,9 @@ function drawDimensionCaret(x, baselineY, baseline = 'bottom', color = '#111', s
 
 function dimensionEditActive(meta) {
   if (!activeDimensionEdit || !meta) return false;
+  const context = activeDimensionContext;
+  if (context?.groupId && activeDimensionEdit.groupId !== context.groupId) return false;
+  if (context?.rowId && activeDimensionEdit.rowId !== context.rowId) return false;
   return activeDimensionEdit.key === dimensionMetaKey(meta);
 }
 
@@ -1929,6 +1980,22 @@ function redoLayout() {
 }
 
 const PROJECT_STORAGE_KEY = 'partition-project-files-v1';
+let activeProjectFileId = null;
+let saveDrawingMode = 'save';
+
+function bomStandardPanelDepth() {
+  const activeSheet = boardSheets?.[activeBoardSheetIndex] || boardSheets?.[0];
+  return Math.max(1, Math.round(Number(activeSheet?.w) || 1220));
+}
+
+function showHintToast(message) {
+  const toast = document.getElementById('hint-toast');
+  if (!toast || !message) return;
+  toast.textContent = message;
+  toast.classList.add('show');
+  window.clearTimeout(hintToastTimer);
+  hintToastTimer = window.setTimeout(() => toast.classList.remove('show'), 5200);
+}
 
 function readProjectFiles() {
   try {
@@ -1957,21 +2024,51 @@ function closeProjectModal(id) {
   modal.setAttribute('aria-hidden', 'true');
 }
 
-function openSaveDrawingDialog() {
+function projectTimestampName() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `图纸-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+}
+
+function currentProjectFile() {
+  return activeProjectFileId ? readProjectFiles().find(item => item.id === activeProjectFileId) || null : null;
+}
+
+function openSaveDrawingDialog(mode = 'save') {
   saveActiveGroup(true);
+  saveDrawingMode = mode === 'saveAs' ? 'saveAs' : 'save';
   const input = document.getElementById('project-save-name');
+  const title = document.getElementById('save-drawing-title');
+  const confirm = document.getElementById('project-save-confirm');
+  const current = saveDrawingMode === 'save' ? currentProjectFile() : null;
+  if (title) title.textContent = saveDrawingMode === 'saveAs' ? '另存为图纸' : '保存图纸';
+  if (confirm) confirm.textContent = saveDrawingMode === 'saveAs' ? '确认另存为' : '确认保存';
   if (input) {
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    input.value = `图纸-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+    input.value = current?.name || projectTimestampName();
   }
   openProjectModal('save-drawing-modal');
   window.setTimeout(() => input?.focus(), 0);
 }
 
-function saveCurrentProjectFile() {
+function saveProjectOrPrompt() {
+  if (!activeProjectFileId) {
+    openSaveDrawingDialog('save');
+    return;
+  }
+  const file = currentProjectFile();
+  if (!file) {
+    activeProjectFileId = null;
+    openSaveDrawingDialog('save');
+    return;
+  }
+  saveCurrentProjectFile(file.name, 'save');
+}
+
+function saveCurrentProjectFile(nameOverride = null, modeOverride = null) {
   const input = document.getElementById('project-save-name');
-  const name = String(input?.value || '').trim();
+  const mode = modeOverride || saveDrawingMode || 'save';
+  const rawName = nameOverride !== null && nameOverride !== undefined ? nameOverride : (input?.value || '');
+  const name = String(rawName).trim();
   if (!name) {
     alert('请输入文件名称');
     input?.focus();
@@ -1980,18 +2077,26 @@ function saveCurrentProjectFile() {
   saveActiveGroup(true);
   const files = readProjectFiles();
   const now = Date.now();
+  const existingIndex = mode === 'save' && activeProjectFileId ? files.findIndex(item => item.id === activeProjectFileId) : -1;
+  const existing = existingIndex >= 0 ? files[existingIndex] : null;
   const file = {
-    id: `project-${now}-${Math.random().toString(16).slice(2)}`,
+    id: existing?.id || `project-${now}-${Math.random().toString(16).slice(2)}`,
     name,
+    createdAt: existing?.createdAt || now,
     savedAt: now,
     paperSize,
     currentTab,
     canvasMode,
     state: cloneState()
   };
-  const sameIndex = files.findIndex(item => item.name === name);
-  if (sameIndex >= 0) files.splice(sameIndex, 1, file);
+  if (existingIndex >= 0) files.splice(existingIndex, 1, file);
+  else if (mode !== 'saveAs') {
+    const sameIndex = files.findIndex(item => item.name === name);
+    if (sameIndex >= 0) files.splice(sameIndex, 1, file);
+    else files.unshift(file);
+  }
   else files.unshift(file);
+  activeProjectFileId = file.id;
   writeProjectFiles(files.slice(0, 60));
   closeProjectModal('save-drawing-modal');
   renderProjectFileList();
@@ -2030,6 +2135,7 @@ function loadProjectFile(id) {
   if (paperSelect) paperSelect.value = paperSize;
   currentTab = file.currentTab || currentTab;
   canvasMode = file.canvasMode || canvasMode;
+  activeProjectFileId = file.id;
   restoreState(file.state);
   applyViewMode();
   closeProjectModal('project-folder-modal');
@@ -2465,6 +2571,7 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
         boothNotes: normalizeBoothNotes(base.boothNotes, count),
         depthPanelSpecials: existing ? normalizeDepthPanelSpecials(base.depthPanelSpecials, count + 1) : normalizeDepthPanelSpecials([], count + 1)
       };
+      if (!existing) resetDoorCustomSizing(next, count);
       next.boothSwings = normalizeBoothSwings(base.boothSwings, count, next.swing || swingMode);
       generated.push(next);
       if (isActiveCell) activeTarget = next;
@@ -2817,6 +2924,21 @@ function nextLayoutId(rows) {
   return Math.max(...rows.map(r => Number(r.id) || 0)) + 1;
 }
 
+function resetDoorCustomSizing(row, count = row?.count || defaultRow.count) {
+  if (!row) return row;
+  const safeCount = Math.max(1, Number(count) || 1);
+  row.doorW = defaultRow.doorW;
+  row.doorInstallWidths = undefined;
+  row.doorWidths = undefined;
+  row.boothDoorWidths = Array.from({length:safeCount}, () => 0);
+  if (row.dimensionLocks) {
+    const locks = normalizeDimensionLocks(row.dimensionLocks, safeCount);
+    locks.doorWidths = Array.from({length:safeCount}, () => null);
+    row.dimensionLocks = hasDimensionLocks(locks) ? locks : null;
+  }
+  return row;
+}
+
 function normalizeLayoutGrid(group) {
   ensureRows(group).forEach((r, i) => {
     if (!r.layoutRow) r.layoutRow = i + 1;
@@ -2874,6 +2996,7 @@ function addColumn(groupId = activeGroupId) {
     enabled: source.enabled === true,
     boothSwings: normalizeBoothSwings(source.boothSwings, inheritedCount, source.swing || swingMode)
   };
+  resetDoorCustomSizing(row, inheritedCount);
   resetLocalWallSpecials(row, inheritedCount);
   rows.push(row);
   group.rows = rows.sort((a, b) => (a.layoutRow - b.layoutRow) || (a.layoutCol - b.layoutCol) || (a.id - b.id));
@@ -5669,6 +5792,7 @@ function buildMaterialListItems(rows) {
   const front = createBomBucket();
   const doors = createBomBucket();
   const midDepths = createBomBucket();
+  const jointDepths = createBomBucket();
   const visibleDepths = createBomBucket();
   let noDoorCount = 0;
   sourceRows.forEach(row => {
@@ -5693,22 +5817,30 @@ function buildMaterialListItems(rows) {
     }
 
     const specialDepths = specialDepthPanelItems(row);
-    const depthTextFor = index => {
+    const splitDepthTextFor = index => {
       const special = specialDepths.find(item => item.index === index);
       const depth = special ? special.depth : c.boothD;
-      return fmtMm(depth);
+      const standardDepth = bomStandardPanelDepth();
+      const mainDepth = Math.min(depth, standardDepth);
+      const jointDepth = Math.max(0, depth - standardDepth);
+      return {main:fmtMm(mainDepth), joint:jointDepth ? fmtMm(jointDepth) : ''};
     };
-    Array.from({length: Math.max(0, count - 1)}, (_, i) => i + 1).forEach(index => addBomPiece(midDepths, row.hMid, depthTextFor(index), ''));
+    Array.from({length: Math.max(0, count - 1)}, (_, i) => i + 1).forEach(index => {
+      const split = splitDepthTextFor(index);
+      addBomPiece(midDepths, row.hMid, split.main, '');
+      if (split.joint) addBomPiece(jointDepths, row.hMid, split.joint, '');
+    });
 
     const visibleIndexes = [];
     if (!c.hasLeft) visibleIndexes.push(0);
     if (!c.hasRight) visibleIndexes.push(count);
-    visibleIndexes.forEach(index => addBomPiece(visibleDepths, row.hVis, depthTextFor(index), ''));
+    visibleIndexes.forEach(index => addBomPiece(visibleDepths, row.hVis, splitDepthTextFor(index).main, ''));
   });
   return [
     {name:'前沿板', val:`${front.count} 块`, sub:formatBomBucket(front) || '无前沿板数据'},
     {name:'门板', val:`${doors.count} 块`, sub:doors.count ? `${formatBomBucket(doors)}${noDoorCount ? ` · ${noDoorCount}间无需门板` : ''}` : `${noDoorCount || 0} 间均无需门板`},
     {name:'中隔板', val:`${midDepths.count} 块`, sub:midDepths.count ? formatBomBucket(midDepths) : '单间无中隔板'},
+    {name:'拼接板', val:`${jointDepths.count} 块`, sub:jointDepths.count ? formatBomBucket(jointDepths) : '无拼接板'},
     {name:'见光板', val:`${visibleDepths.count} 块`, sub:visibleDepths.count ? formatBomBucket(visibleDepths) : '左右两侧均靠墙'},
   ];
 }
@@ -5784,15 +5916,268 @@ function urinalBomItem() {
   return {name:'小便板', val:`${count} 张`, sub:`${urinalSpec.width}×${urinalSpec.height}×${urinalSpec.thick}mm，${process}${note}`};
 }
 
+function parseBomPieceLine(line, fallbackHeight = 0) {
+  const text = String(line || '').replace(/×/g, 'x');
+  const qtyMatch = text.match(/=\s*(\d+)/);
+  const qty = qtyMatch ? Number(qtyMatch[1]) : 0;
+  const markedHeadMatch = text.match(/\[size-head:(\d+)\]\s*(\d+)/);
+  if (qty && markedHeadMatch) {
+    const h = Number(markedHeadMatch[1]);
+    const w = Number(markedHeadMatch[2]);
+    if (h > 0 && w > 0) return {w, h, qty, lastHeight:h};
+  }
+  const markedContMatch = text.match(/\[size-cont\]\s*(\d+)/);
+  if (qty && markedContMatch && fallbackHeight > 0) {
+    const w = Number(markedContMatch[1]);
+    if (w > 0) return {w, h:fallbackHeight, qty, lastHeight:fallbackHeight};
+  }
+  const sizeMatch = text.match(/(\d+)\s*x\s*(\d+)/i);
+  if (!qty || !sizeMatch) return null;
+  const h = Number(sizeMatch[1]);
+  const w = Number(sizeMatch[2]);
+  if (!(h > 0) || !(w > 0)) return null;
+  return {w, h, qty, lastHeight:h};
+}
+
+function collectBomPiecesFromItems(items) {
+  const pieces = [];
+  items.forEach(item => {
+    let lastHeight = 0;
+    String(item.sub || '').split(/\s+\/\s+|\s+·\s+/).forEach(part => {
+      const parsed = parseBomPieceLine(part, lastHeight);
+      if (!parsed) return;
+      lastHeight = parsed.lastHeight || lastHeight;
+      for (let i = 0; i < parsed.qty; i++) pieces.push({w:parsed.w, h:parsed.h, label:item.name || ''});
+    });
+  });
+  return pieces;
+}
+
+function pruneFreeRects(rects) {
+  return rects.filter((rect, i) => !rects.some((other, j) => i !== j
+    && rect.x >= other.x && rect.y >= other.y
+    && rect.x + rect.w <= other.x + other.w
+    && rect.y + rect.h <= other.y + other.h));
+}
+
+function placePieceOnBoard(board, piece, allowRotate, kerf = 0) {
+  let best = null;
+  board.free.forEach((rect, rectIndex) => {
+    const variants = allowRotate && piece.w !== piece.h ? [{w:piece.w,h:piece.h},{w:piece.h,h:piece.w}] : [{w:piece.w,h:piece.h}];
+    variants.forEach(size => {
+      if (size.w > rect.w || size.h > rect.h) return;
+      const occupyW = Math.min(rect.w, size.w + Math.max(0, kerf));
+      const occupyH = Math.min(rect.h, size.h + Math.max(0, kerf));
+      const waste = rect.w * rect.h - occupyW * occupyH;
+      const shortSide = Math.min(rect.w - occupyW, rect.h - occupyH);
+      const score = waste * 100000 + shortSide;
+      if (!best || score < best.score) best = {rect, rectIndex, size, occupyW, occupyH, score};
+    });
+  });
+  if (!best) return false;
+  const {rect, rectIndex, size, occupyW, occupyH} = best;
+  board.free.splice(rectIndex, 1);
+  const right = {x:rect.x + occupyW, y:rect.y, w:rect.w - occupyW, h:occupyH};
+  const bottom = {x:rect.x, y:rect.y + occupyH, w:rect.w, h:rect.h - occupyH};
+  if (right.w > 0 && right.h > 0) board.free.push(right);
+  if (bottom.w > 0 && bottom.h > 0) board.free.push(bottom);
+  board.free = pruneFreeRects(board.free);
+  board.usedArea += size.w * size.h;
+  return true;
+}
+
+function boardPieceTrackWidth(piece, sheet, allowRotate) {
+  const variants = [{track:piece.w, cross:piece.h}];
+  if (allowRotate && piece.w !== piece.h) variants.push({track:piece.h, cross:piece.w});
+  const valid = variants.filter(item => item.track <= sheet.w && item.cross <= sheet.h);
+  if (!valid.length) return null;
+  return valid.sort((a, b) => b.track - a.track)[0].track;
+}
+
+function canPackBoardWidths(widths, sheetWidth, kerf, targetCount) {
+  const bins = Array.from({length:targetCount}, () => ({used:0, count:0}));
+  const memo = new Set();
+  const normalizedKey = index => `${index}|${bins.map(bin => `${bin.used},${bin.count}`).sort().join(';')}`;
+  const place = index => {
+    if (index >= widths.length) return true;
+    const key = normalizedKey(index);
+    if (memo.has(key)) return false;
+    const width = widths[index];
+    const seenBins = new Set();
+    for (let i = 0; i < bins.length; i++) {
+      const bin = bins[i];
+      const signature = `${bin.used},${bin.count}`;
+      if (seenBins.has(signature)) continue;
+      seenBins.add(signature);
+      const nextUsed = bin.used + width + (bin.count ? kerf : 0);
+      if (nextUsed > sheetWidth) continue;
+      bin.used = nextUsed;
+      bin.count++;
+      if (place(index + 1)) return true;
+      bin.count--;
+      bin.used -= width + (bin.count ? kerf : 0);
+      if (!bin.count) break;
+    }
+    memo.add(key);
+    return false;
+  };
+  return place(0);
+}
+
+function estimateSingleBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
+  const widths = [];
+  const unplaced = [];
+  pieces.forEach(piece => {
+    const width = boardPieceTrackWidth(piece, sheet, allowRotate);
+    if (width === null) unplaced.push(piece);
+    else widths.push(Math.round(width));
+  });
+  widths.sort((a, b) => b - a);
+  const minimumByWidth = Math.max(0, Math.ceil((widths.reduce((sum, width) => sum + width, 0) + Math.max(0, widths.length - 1) * kerf) / sheet.w));
+  for (let count = minimumByWidth; count <= widths.length; count++) {
+    if (canPackBoardWidths(widths, sheet.w, Math.max(0, kerf), count)) return {count, unplacedCount:unplaced.length};
+  }
+  return {count:widths.length, unplacedCount:unplaced.length};
+}
+
+function estimateBoardSheets(pieces, sheets, allowRotate, kerf = 0) {
+  const enabledSheets = sheets.filter(sheet => sheet.enabled && sheet.w > 0 && sheet.h > 0);
+  const sorted = pieces
+    .filter(piece => piece.w > 0 && piece.h > 0)
+    .sort((a, b) => (b.w * b.h - a.w * a.h) || Math.max(b.w, b.h) - Math.max(a.w, a.h));
+  if (enabledSheets.length === 1) {
+    const single = estimateSingleBoardSheetCount(sorted, enabledSheets[0], allowRotate, kerf);
+    const usedArea = sorted.reduce((sum, piece) => sum + piece.w * piece.h, 0);
+    const sheetArea = (single.count || 0) * enabledSheets[0].w * enabledSheets[0].h;
+    return {...single, utilization:sheetArea ? usedArea / sheetArea : 0};
+  }
+  const boards = [];
+  const unplaced = [];
+  sorted.forEach(piece => {
+    if (!enabledSheets.length) return;
+    let placed = boards.some(board => placePieceOnBoard(board, piece, allowRotate, kerf));
+    if (!placed) {
+      const sheet = enabledSheets
+        .filter(candidate => (piece.w <= candidate.w && piece.h <= candidate.h) || (allowRotate && piece.h <= candidate.w && piece.w <= candidate.h))
+        .sort((a, b) => (a.w * a.h - b.w * b.h))[0];
+      if (!sheet) {
+        unplaced.push(piece);
+        return;
+      }
+      const board = {free:[{x:0,y:0,w:sheet.w,h:sheet.h}], usedArea:0, area:sheet.w * sheet.h};
+      placePieceOnBoard(board, piece, allowRotate, kerf);
+      boards.push(board);
+    }
+  });
+  const usedArea = sorted.reduce((sum, piece) => sum + piece.w * piece.h, 0);
+  const sheetArea = boards.reduce((sum, board) => sum + board.area, 0);
+  return {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0};
+}
+
+function checkBoardFitWarnings(pieces = lastBomPieces) {
+  const activeSheet = boardSheets?.[activeBoardSheetIndex] || boardSheets?.[0];
+  const sheetW = Math.round(Number(activeSheet?.w) || 0);
+  const sheetH = Math.round(Number(activeSheet?.h) || 0);
+  if (!sheetW || !sheetH || !Array.isArray(pieces) || !pieces.length) return;
+  const tooTall = pieces.filter(piece => piece.h > sheetH && piece.h <= sheetW && piece.w <= sheetH);
+  const tooLarge = pieces.filter(piece => (piece.h > sheetH || piece.w > sheetW) && !(piece.h <= sheetW && piece.w <= sheetH));
+  const messages = [];
+  if (tooTall.length) {
+    const maxHeight = Math.max(...tooTall.map(piece => piece.h));
+    messages.push(`板高 ${maxHeight}mm 超过整板高度 ${sheetH}mm，可能是整板宽高填反。`);
+  }
+  if (tooLarge.length) {
+    const sample = tooLarge[0];
+    messages.push(`有板件 ${sample.h}×${sample.w}mm 超过当前整板 ${sheetW}×${sheetH}mm，请确认整板规格或板高。`);
+  }
+  const signature = messages.join('|');
+  if (!signature || signature === lastBoardFitWarningSignature) return;
+  lastBoardFitWarningSignature = signature;
+  showHintToast(messages.join(' '));
+}
+
+function updateBoardSheetEstimate() {
+  const select = document.getElementById('board-sheet-select');
+  const wInput = document.getElementById('board-sheet-w');
+  const hInput = document.getElementById('board-sheet-h');
+  const kerfInput = document.getElementById('board-kerf');
+  const result = document.getElementById('board-sheet-result');
+  const toggle = document.getElementById('board-rotate-toggle');
+  const sheetToggle = document.getElementById('board-sheet-enabled-toggle');
+  const activeSheet = boardSheets[activeBoardSheetIndex] || boardSheets[0];
+  if (select) select.value = String(activeBoardSheetIndex);
+  if (wInput && document.activeElement !== wInput) wInput.value = String(activeSheet?.w || '');
+  if (hInput && document.activeElement !== hInput) hInput.value = String(activeSheet?.h || '');
+  if (kerfInput && document.activeElement !== kerfInput) kerfInput.value = String(boardKerf || 0);
+  toggle?.classList.toggle('active', boardRotateEnabled);
+  sheetToggle?.classList.toggle('show', activeBoardSheetIndex > 0);
+  sheetToggle?.classList.toggle('active', activeSheet?.enabled !== false);
+  if (!result) return;
+  if (!boardSheets.some(sheet => sheet.enabled && sheet.w > 0 && sheet.h > 0) || !lastBomPieces.length) {
+    result.textContent = '≈ -- 张';
+    return;
+  }
+  const estimate = estimateBoardSheets(lastBomPieces, boardSheets, boardRotateEnabled, boardKerf);
+  const displayCount = estimate.count + (estimate.unplacedCount || 0);
+  result.textContent = displayCount ? `≈ ${displayCount} 张` : '≈ -- 张';
+  checkBoardFitWarnings(lastBomPieces);
+}
+
+function saveBoardSheetSettings() {
+  localStorage.setItem('partition-board-sheets', JSON.stringify(boardSheets));
+  localStorage.setItem('partition-board-sheet-active', String(activeBoardSheetIndex));
+}
+
+function setBoardSheetEstimateInput() {
+  const w = Number(document.getElementById('board-sheet-w')?.value || 0);
+  const h = Number(document.getElementById('board-sheet-h')?.value || 0);
+  const sheet = boardSheets[activeBoardSheetIndex] || boardSheets[0];
+  sheet.w = Math.max(0, Math.round(w));
+  sheet.h = Math.max(0, Math.round(h));
+  saveBoardSheetSettings();
+  if (lastParams) renderBOM(lastParams);
+  else updateBoardSheetEstimate();
+}
+
+function setBoardKerfInput() {
+  boardKerf = Math.max(0, Number(document.getElementById('board-kerf')?.value || 0));
+  localStorage.setItem('partition-board-kerf', String(boardKerf));
+  updateBoardSheetEstimate();
+}
+
+function setActiveBoardSheet(index) {
+  activeBoardSheetIndex = Math.max(0, Math.min(2, Number(index) || 0));
+  saveBoardSheetSettings();
+  if (lastParams) renderBOM(lastParams);
+  else updateBoardSheetEstimate();
+}
+
+function toggleBoardSheetEnabled() {
+  if (activeBoardSheetIndex <= 0) return;
+  const sheet = boardSheets[activeBoardSheetIndex];
+  sheet.enabled = !sheet.enabled;
+  saveBoardSheetSettings();
+  if (lastParams) renderBOM(lastParams);
+  else updateBoardSheetEstimate();
+}
+
+function toggleBoardRotate() {
+  boardRotateEnabled = !boardRotateEnabled;
+  localStorage.setItem('partition-board-rotate', String(boardRotateEnabled));
+  updateBoardSheetEstimate();
+}
+
 function renderBomItems(items) {
   const allItems = [...items];
   const urinal = urinalBomItem();
   if (urinal) allItems.push(urinal);
+  lastBomPieces = collectBomPiecesFromItems(allItems);
   document.getElementById('bom').innerHTML = allItems.map(i=>`
     <div class="bom-card">
       <div class="bom-card-head"><div class="name">${escapeHtml(i.name)}</div><div class="val">${formatBomChips(i.val)}</div></div>
       ${formatBomLines(i.sub)}
     </div>`).join('');
+  updateBoardSheetEstimate();
 }
 
 function escapeHtml(value) {
@@ -6073,7 +6458,7 @@ async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeB
       .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
       .page:last-child{page-break-after:auto;break-after:auto}
       img{width:100%;height:100%;object-fit:contain;display:block}
-    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('材料清单') : ''}</body></html>`);
+    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`);
     doc.close();
     window.setTimeout(() => {
       try {
@@ -6101,11 +6486,11 @@ function currentBomHtml() {
   return bom?.innerHTML || '';
 }
 
-function bomPrintPageHtml(title = '材料清单') {
+function bomPrintPageHtml(title = '开料清单') {
   return `<section class="bom-print-page"><h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${currentBomHtml()}</div></section>`;
 }
 
-function bomPrintDocumentHtml(title = '材料清单') {
+function bomPrintDocumentHtml(title = '开料清单') {
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
     @page{size:A4 portrait;margin:12mm}
     body{margin:0;background:#fff;color:#111827;font-family:"Microsoft YaHei",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -6159,8 +6544,8 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function exportBomImage(name = '材料清单') {
-  const title = sanitizeExportName(name, '材料清单');
+function exportBomImage(name = '开料清单') {
+  const title = sanitizeExportName(name, '开料清单');
   const items = collectBomImageItems();
   const width = 900;
   const pad = 32;
@@ -6240,8 +6625,8 @@ function exportBomImage(name = '材料清单') {
   downloadCanvasPng(out, title);
 }
 
-function exportBomPrint(name = '材料清单') {
-  const title = sanitizeExportName(name, '材料清单');
+function exportBomPrint(name = '开料清单') {
+  const title = sanitizeExportName(name, '开料清单');
   const html = bomPrintDocumentHtml(title);
   if (isMobileViewport()) {
     const win = window.open('', '_blank');
@@ -6280,9 +6665,9 @@ function openExportDialog(mode) {
   const bomRow = document.getElementById('export-include-bom-row');
   const bomInput = document.getElementById('export-include-bom');
   const title = document.getElementById('export-modal-title');
-  const label = mode === 'bom' ? '导出材料清单' : mode === 'all-image' ? '导出全部视图' : mode === 'pdf' ? '导出PDF' : '导出当前视图';
+  const label = mode === 'bom' ? '导出开料清单' : mode === 'all-image' ? '导出全部视图' : mode === 'pdf' ? '导出PDF' : '导出当前视图';
   if (title) title.textContent = label;
-  if (input) input.value = mode === 'bom' ? '材料清单' : mode === 'all-image' ? '隔断全部视图' : mode === 'pdf' ? '隔断图纸' : `隔断${currentViewLabel()}`;
+  if (input) input.value = mode === 'bom' ? '开料清单' : mode === 'all-image' ? '隔断全部视图' : mode === 'pdf' ? '隔断图纸' : `隔断${currentViewLabel()}`;
   scopeRow?.classList.toggle('show', mode === 'pdf');
   formatRow?.classList.toggle('show', mode === 'bom');
   const imageFormat = document.querySelector('input[name="export-bom-format"][value="image"]');
@@ -6309,7 +6694,7 @@ function confirmNamedExport() {
   }
   if (pendingExportMode === 'all-image') {
     exportNamedAllImages(name);
-    if (includeBom) window.setTimeout(() => exportBomPrint(`${name}-材料清单`), 1200);
+    if (includeBom) window.setTimeout(() => exportBomPrint(`${name}-开料清单`), 1200);
     return;
   }
   if (pendingExportMode === 'pdf') {
@@ -6318,7 +6703,7 @@ function confirmNamedExport() {
     return;
   }
   exportNamedImage(name);
-  if (includeBom) window.setTimeout(() => exportBomPrint(`${name}-材料清单`), 600);
+  if (includeBom) window.setTimeout(() => exportBomPrint(`${name}-开料清单`), 600);
 }
 
 function bindNamedExportButtons() {
@@ -6459,8 +6844,77 @@ function initMobileSidebarResize() {
 }
 
 function scrollMobileTop() {
+  if (topButtonDragState?.suppressClick) {
+    topButtonDragState.suppressClick = false;
+    return;
+  }
   window.scrollTo({top:0, behavior:'smooth'});
   document.querySelector('.sidebar')?.scrollTo?.({top:0, behavior:'smooth'});
+}
+
+const topButtonPositionKey = 'partition-top-button-y';
+let topButtonDragState = null;
+
+function clampTopButtonY(y, btn) {
+  const margin = 10;
+  const height = btn?.offsetHeight || 40;
+  return Math.max(margin, Math.min(window.innerHeight - height - margin, y));
+}
+
+function applyTopButtonPosition(y) {
+  const btn = document.querySelector('.top-btn');
+  if (!btn || !isMobileViewport()) return;
+  const top = clampTopButtonY(Number(y) || window.innerHeight - 110, btn);
+  btn.style.top = `${top}px`;
+  btn.style.bottom = 'auto';
+  btn.style.left = 'auto';
+  btn.style.right = window.innerWidth <= 430 ? '0.625rem' : '0.75rem';
+}
+
+function bindTopButtonDrag() {
+  const btn = document.querySelector('.top-btn');
+  if (!btn) return;
+  const savedY = Number(localStorage.getItem(topButtonPositionKey) || 0);
+  if (savedY) applyTopButtonPosition(savedY);
+  btn.addEventListener('pointerdown', e => {
+    if (!isMobileViewport()) return;
+    const rect = btn.getBoundingClientRect();
+    topButtonDragState = {pointerId:e.pointerId, offsetX:e.clientX - rect.left, offsetY:e.clientY - rect.top, startX:e.clientX, startY:e.clientY, moved:false, suppressClick:false};
+    btn.setPointerCapture?.(e.pointerId);
+  });
+  btn.addEventListener('pointermove', e => {
+    if (!topButtonDragState || topButtonDragState.pointerId !== e.pointerId) return;
+    const dx = e.clientX - topButtonDragState.startX;
+    const dy = e.clientY - topButtonDragState.startY;
+    if (Math.hypot(dx, dy) > 5) topButtonDragState.moved = true;
+    if (!topButtonDragState.moved) return;
+    e.preventDefault();
+    btn.classList.add('dragging');
+    const x = Math.max(10, Math.min(window.innerWidth - btn.offsetWidth - 10, e.clientX - topButtonDragState.offsetX));
+    const y = clampTopButtonY(e.clientY - topButtonDragState.offsetY, btn);
+    btn.style.left = `${x}px`;
+    btn.style.right = 'auto';
+    btn.style.top = `${y}px`;
+    btn.style.bottom = 'auto';
+  });
+  const finish = e => {
+    if (!topButtonDragState || topButtonDragState.pointerId !== e.pointerId) return;
+    const moved = topButtonDragState.moved;
+    topButtonDragState.suppressClick = moved;
+    btn.classList.remove('dragging');
+    btn.releasePointerCapture?.(e.pointerId);
+    if (moved) {
+      const y = clampTopButtonY(btn.getBoundingClientRect().top, btn);
+      applyTopButtonPosition(y);
+      localStorage.setItem(topButtonPositionKey, String(Math.round(y)));
+    }
+  };
+  btn.addEventListener('pointerup', finish);
+  btn.addEventListener('pointercancel', finish);
+  window.addEventListener('resize', () => {
+    const saved = Number(localStorage.getItem(topButtonPositionKey) || 0);
+    if (saved) applyTopButtonPosition(saved);
+  });
 }
 
 function canvasPlanPoint(e) {
@@ -7425,6 +7879,15 @@ document.getElementById('dimension-editor')?.addEventListener('keydown', e => {
 
 document.getElementById('dimension-editor')?.addEventListener('blur', () => finishDimensionEdit(true));
 
+['board-sheet-w','board-sheet-h'].forEach(id => {
+  const input = document.getElementById(id);
+  input?.addEventListener('input', setBoardSheetEstimateInput);
+  input?.addEventListener('change', setBoardSheetEstimateInput);
+});
+document.getElementById('board-kerf')?.addEventListener('input', setBoardKerfInput);
+document.getElementById('board-kerf')?.addEventListener('change', setBoardKerfInput);
+document.getElementById('board-sheet-select')?.addEventListener('change', e => setActiveBoardSheet(e.currentTarget.value));
+
 document.getElementById('project-file-list')?.addEventListener('click', e => {
   const btn = e.target.closest('[data-project-action]');
   if (!btn) return;
@@ -7460,5 +7923,5 @@ window.setInterval(() => {
   }
 }, 530);
 
-setTimeout(()=>{ initMobileSidebarResize(); applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); setTimeout(updateMobileStickyOffsets, 80); }, 100);
+setTimeout(()=>{ initMobileSidebarResize(); bindTopButtonDrag(); applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); setTimeout(updateMobileStickyOffsets, 80); }, 100);
 </script>
