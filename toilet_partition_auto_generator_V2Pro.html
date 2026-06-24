@@ -205,6 +205,7 @@ body.theme-dark .canvas-area{background:#202734}
 canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-user-select:none;user-select:none}
 .canvas-text-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;resize:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;overflow:hidden}
 .dimension-editor{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0;background:transparent;color:transparent;caret-color:transparent;outline:none}
+.dimension-editor.active{width:7.5rem;height:2.5rem;opacity:1;pointer-events:auto;z-index:70;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);caret-color:auto;padding:0 0.75rem;font-size:1rem;font-weight:700;text-align:center;box-shadow:0 10px 28px rgba(31,35,40,.18)}
 .bom-area{position:absolute;top:3rem;right:0.875rem;bottom:1.5rem;z-index:9;min-width:20rem;width:max-content;max-width:min(42rem,calc(100% - 1.75rem));border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.875rem;background:rgba(255,255,255,.92);box-shadow:0 14px 34px rgba(31,35,40,.14);overflow:auto}
 body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px rgba(0,0,0,.24)}
 .bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.375rem}
@@ -333,6 +334,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .sheet-page-info{font-size:0.875rem;white-space:nowrap;margin-left:0}
   .global-history-actions{margin-right:0;padding-right:0.5rem}
   .canvas-area{order:4;height:72dvh;min-height:24rem;flex:0 0 auto;overflow:hidden}
+  .dimension-editor.active{position:fixed;left:50%;top:auto;bottom:1rem;transform:translateX(-50%)}
   .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:42dvh;padding:0.625rem;z-index:40}
   .bom-title{font-size:1rem;white-space:nowrap}
   .bom-toggle{display:inline-flex;align-items:center;justify-content:center;height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap}
@@ -6309,8 +6311,11 @@ function startDimensionEdit(hit) {
   if (!editor || !hit || !row) return false;
   activeDimensionEdit = {groupId:hit.groupId, rowId:hit.rowId, meta:hit.meta || {}, key:hit.key || dimensionMetaKey(hit.meta || {})};
   editor.hidden = false;
+  editor.classList.add('active');
   editor.value = String(dimensionCurrentValue(row, hit.meta || {}) || '');
-  window.setTimeout(() => { editor.focus({preventScroll:true}); editor.select(); }, 0);
+  const focusEditor = () => { editor.focus({preventScroll:true}); editor.select(); };
+  focusEditor();
+  window.setTimeout(focusEditor, 40);
   if (lastParams) drawView(lastParams, currentTab);
   return true;
 }
@@ -6320,6 +6325,7 @@ function finishDimensionEdit(commit = true) {
   if (!editor || editor.hidden) return;
   const hit = activeDimensionEdit;
   const value = editor.value;
+  editor.classList.remove('active');
   editor.hidden = true;
   activeDimensionEdit = null;
   if (commit && hit) commitDimensionValue(hit, value);
@@ -6543,7 +6549,7 @@ function finishTouchSheetDrag() {
 cv.addEventListener('touchstart', e => {
   if (!e.touches.length) return;
   if (e.touches.length === 1 && isMobileCanvasScrollZone(e.touches[0].clientX)) {
-    touchState = {mode:'page-scroll'};
+    touchState = {mode:'page-scroll', lastY:e.touches[0].clientY};
     clearTouchLongPressTimer();
     return;
   }
@@ -6585,7 +6591,14 @@ cv.addEventListener('touchstart', e => {
 }, {passive:false});
 cv.addEventListener('touchmove', e => {
   if (!e.touches.length || !touchState) return;
-  if (touchState.mode === 'page-scroll') return;
+  if (touchState.mode === 'page-scroll') {
+    e.preventDefault();
+    const y = e.touches[0].clientY;
+    const dy = touchState.lastY - y;
+    touchState.lastY = y;
+    window.scrollBy(0, dy);
+    return;
+  }
   e.preventDefault();
   if (e.touches.length >= 2) {
     if (touchState.longPressTimer) window.clearTimeout(touchState.longPressTimer);
