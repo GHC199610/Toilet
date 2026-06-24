@@ -247,7 +247,8 @@ body.theme-dark .bom-title{color:#f6f8fa}
 body.theme-dark .bom-card .name{color:#f6f8fa}
 .bom-card .val{font-size:0.8125rem;font-weight:700;color:#0C447C;line-height:1.35;text-align:right;word-break:keep-all}
 body.theme-dark .bom-card .val{color:#58a6ff}
-.bom-lines{display:grid;grid-template-columns:repeat(var(--bom-columns,1),max-content);column-gap:2.25rem;align-items:start}
+.bom-lines{display:grid;grid-template-columns:1fr;row-gap:0.75rem;overflow-x:auto;scrollbar-width:thin}
+.bom-line-row{display:grid;grid-template-columns:repeat(var(--bom-row-columns,1),max-content);column-gap:2.25rem;align-items:start}
 .bom-column{display:grid;grid-template-columns:1fr;row-gap:0.375rem;align-items:start}
 .bom-line{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8125rem;line-height:1.55;color:#24292f;word-break:normal;white-space:nowrap;font-variant-numeric:tabular-nums}
 body.theme-dark .bom-line{color:#e6edf3}
@@ -257,13 +258,22 @@ body.theme-dark .bom-line::before{background:#d0d7de;opacity:.92}
 .bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-line{grid-template-columns:auto auto}
 .bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-left{display:none}
 .bom-size-process{white-space:nowrap;text-align:left}
+.bom-size-process{color:#185FA5;font-weight:800}
+.bom-size-process.align-three{letter-spacing:0.5em}
 .bom-process-placeholder{visibility:hidden}
 .bom-size-left{white-space:nowrap;text-align:left}
 .bom-size-right{white-space:nowrap;text-align:left}
 .bom-gap{height:0.625rem}
 .bom-gap::before{display:none}
 .bom-chip{display:inline-block;margin:0 0.1875rem 0.1875rem 0;padding:0.125rem 0.4375rem;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:0.75rem;font-weight:700;line-height:1.45;white-space:nowrap}
+.bom-mobile-groups{display:grid;gap:1.25rem}
+.bom-mobile-group{display:grid;gap:0.875rem;min-width:0}
+.bom-mobile-group-title{font-size:0.875rem;font-weight:800;color:#185FA5;white-space:nowrap}
+.bom-mobile-tags{display:grid;grid-template-columns:repeat(auto-fill,minmax(3.875rem,4.25rem));gap:0.75rem 0.5rem;align-items:start}
+.bom-mobile-tag{display:flex;align-items:center;justify-content:center;min-width:0;height:1.625rem;padding:0 0.25rem;border-radius:0.375rem;background:#F6F8FA;color:#24292f;font-size:0.8125rem;font-weight:800;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
 body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
+body.theme-dark .bom-mobile-tag{background:#202734;color:#e6edf3}
+body.theme-dark .bom-mobile-group-title{color:#b9dcff}
 @media (max-width:1200px){
   html{font-size:15px}
   .wrap{height:calc(100dvh - 0.75rem);margin:0.375rem}
@@ -368,7 +378,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .global-history-actions{margin-right:0;padding-right:0.5rem}
   .canvas-area{order:4;height:72dvh;min-height:24rem;flex:0 0 auto;overflow:hidden}
   .canvas-text-editor.active,.dimension-editor.active{position:fixed;left:50%;top:auto;bottom:calc(var(--mobile-keyboard-inset,0px) + 1rem);transform:translateX(-50%)}
-  .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:42dvh;padding:0.625rem;z-index:40;overflow:hidden;transition:max-height .26s ease,padding .26s ease}
+  .bom-area{position:fixed;top:auto;right:0.5rem;left:0.5rem;bottom:0.5rem;min-width:0;width:auto;max-width:none;max-height:68dvh;padding:0.625rem;z-index:40;overflow:hidden;transition:max-height .26s ease,padding .26s ease}
   .bom-title{font-size:1rem;white-space:nowrap}
   .bom-head{flex-wrap:wrap;gap:0.5rem}
   .bom-board-estimator{order:3;flex:1 0 100%;overflow-x:auto;padding-bottom:0.125rem}
@@ -380,13 +390,19 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .bom-toggle{display:inline-flex;align-items:center;justify-content:center;height:2rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap}
   .bom-head{position:sticky;top:0;z-index:2;background:var(--color-background-primary);padding-bottom:0.375rem}
   body.theme-dark .bom-head{background:#141a22}
-  .bom-grid{max-height:calc(42dvh - 3.25rem);opacity:1;overflow:auto;-webkit-overflow-scrolling:touch;transition:max-height .26s ease,opacity .2s ease,margin .26s ease}
+  .bom-grid{max-height:calc(68dvh - 7.75rem);opacity:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;transition:max-height .26s ease,opacity .2s ease,margin .26s ease}
   .bom-area.mobile-collapsed{max-height:3.5rem;width:auto}
   .bom-area.mobile-collapsed .bom-grid{max-height:0;opacity:0;overflow:hidden;pointer-events:none}
   .bom-area.mobile-collapsed .bom-head{margin-bottom:0}
   .bom-area.mobile-collapsed .bom-board-estimator{display:none}
-  .bom-lines{grid-template-columns:1fr!important}
-  .bom-line{white-space:normal;word-break:break-word}
+  .bom-card{padding:0.875rem}
+  .bom-card .name{font-size:1.0625rem}
+  .bom-card .val{font-size:0.9375rem}
+  .bom-lines{row-gap:0.875rem}
+  .bom-line-row{column-gap:1.75rem}
+  .bom-column{row-gap:0.4375rem}
+  .bom-line{font-size:0.9375rem;line-height:1.65;white-space:nowrap;word-break:normal}
+  .bom-line::before{width:0.375rem;height:0.375rem;margin-top:0.6rem}
   .export-row{order:3;position:relative;top:auto;z-index:auto;flex:0 0 auto;flex-wrap:wrap;overflow:visible;padding:0.5rem 0.625rem;white-space:normal}
   .ex-btn{height:2.25rem;flex:0 0 auto;font-size:0.875rem;font-weight:700}
   .urinal-panel{position:fixed;top:auto;left:0.625rem;right:0.625rem;bottom:0.625rem;width:auto;grid-template-columns:1fr 1fr;max-height:70dvh;overflow:auto;z-index:50}
@@ -406,7 +422,7 @@ body.theme-dark .bom-chip{background:#102a43;color:#b9dcff}
   .canvas-area{height:68dvh;min-height:20rem}
   .cv-controls{gap:0.25rem}
   .cv-btn{padding:0.3125rem 0.5rem}
-  .bom-area{max-height:40dvh}
+  .bom-area{max-height:68dvh}
 }
 .export-row{display:flex;gap:0.5rem;padding:0.625rem 0.875rem;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
 .ex-btn{padding:0.3125rem 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.75rem;cursor:pointer;display:flex;align-items:center;gap:0.25rem}
@@ -657,7 +673,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area mobile-collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><span class="bom-board-size bom-board-kerf"><span class="bom-board-kerf-label">缝</span><input id="board-kerf" type="number" inputmode="numeric" min="0" step="0.5" value="2" aria-label="锯缝"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div></div>
+        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><span class="bom-board-size bom-board-kerf"><span class="bom-board-kerf-label">锯缝</span><input id="board-kerf" type="number" inputmode="numeric" min="0" step="0.5" value="2" aria-label="锯缝"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-toggle" type="button" onclick="toggleMobileBom()">展开</button></div></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -796,6 +812,8 @@ let noteInputValue = '';
 let lastBomPieces = [];
 let lastBoardFitWarningSignature = '';
 let hintToastTimer = null;
+let boardEstimateRenderTimer = null;
+let lastBomRenderMobileMode = null;
 let activeBoardSheetIndex = Math.max(0, Math.min(2, Number(localStorage.getItem('partition-board-sheet-active') || 0)));
 let boardSheets = JSON.parse(localStorage.getItem('partition-board-sheets') || 'null') || [
   {w:Number(localStorage.getItem('partition-board-sheet-w') || 1220), h:Number(localStorage.getItem('partition-board-sheet-h') || 2440), enabled:true},
@@ -5813,7 +5831,7 @@ function buildMaterialListItems(rows) {
         continue;
       }
       const width = Math.round(Number(c.doorWidths?.[i]) || Number(row.doorW) || 0);
-      if (width) addBomPiece(doors, Number(row.hDoor) || 1750, row.rebate ? rebateBomSizeText(width, row) : fmtMm(width), row.rebate ? '双启口' : '');
+      if (width) addBomPiece(doors, Number(row.hDoor) || 1750, row.rebate ? rebateBomSizeText(width, row) : fmtMm(width), row.rebate ? '双启口' : (sourceRows.some(item => item?.rebate) ? '平口' : ''));
     }
 
     const specialDepths = specialDepthPanelItems(row);
@@ -5994,11 +6012,19 @@ function boardPieceTrackWidth(piece, sheet, allowRotate) {
   return valid.sort((a, b) => b.track - a.track)[0].track;
 }
 
-function canPackBoardWidths(widths, sheetWidth, kerf, targetCount) {
+function canPackBoardWidths(widths, sheetWidth, kerf, targetCount, options = {}) {
   const bins = Array.from({length:targetCount}, () => ({used:0, count:0}));
   const memo = new Set();
+  const maxNodes = Math.max(1000, Number(options.maxNodes) || 50000);
+  const deadline = Number(options.deadline) || (performance.now() + 24);
+  let nodes = 0;
+  let aborted = false;
   const normalizedKey = index => `${index}|${bins.map(bin => `${bin.used},${bin.count}`).sort().join(';')}`;
   const place = index => {
+    if (++nodes > maxNodes || performance.now() > deadline) {
+      aborted = true;
+      return false;
+    }
     if (index >= widths.length) return true;
     const key = normalizedKey(index);
     if (memo.has(key)) return false;
@@ -6021,7 +6047,32 @@ function canPackBoardWidths(widths, sheetWidth, kerf, targetCount) {
     memo.add(key);
     return false;
   };
-  return place(0);
+  const ok = place(0);
+  return {ok, aborted};
+}
+
+function greedyPackBoardWidths(widths, sheetWidth, kerf) {
+  const bins = [];
+  widths.forEach(width => {
+    let best = -1;
+    let bestRemaining = Infinity;
+    bins.forEach((bin, index) => {
+      const nextUsed = bin.used + width + (bin.count ? kerf : 0);
+      if (nextUsed > sheetWidth) return;
+      const remaining = sheetWidth - nextUsed;
+      if (remaining < bestRemaining) {
+        best = index;
+        bestRemaining = remaining;
+      }
+    });
+    if (best >= 0) {
+      bins[best].used += width + (bins[best].count ? kerf : 0);
+      bins[best].count++;
+    } else {
+      bins.push({used:width, count:1});
+    }
+  });
+  return bins.length;
 }
 
 function estimateSingleBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
@@ -6033,9 +6084,12 @@ function estimateSingleBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
     else widths.push(Math.round(width));
   });
   widths.sort((a, b) => b - a);
+  if (widths.length > 34) return {count:greedyPackBoardWidths(widths, sheet.w, Math.max(0, kerf)), unplacedCount:unplaced.length};
   const minimumByWidth = Math.max(0, Math.ceil((widths.reduce((sum, width) => sum + width, 0) + Math.max(0, widths.length - 1) * kerf) / sheet.w));
   for (let count = minimumByWidth; count <= widths.length; count++) {
-    if (canPackBoardWidths(widths, sheet.w, Math.max(0, kerf), count)) return {count, unplacedCount:unplaced.length};
+    const result = canPackBoardWidths(widths, sheet.w, Math.max(0, kerf), count, {deadline:performance.now() + 24, maxNodes:60000});
+    if (result.ok) return {count, unplacedCount:unplaced.length};
+    if (result.aborted) return {count:greedyPackBoardWidths(widths, sheet.w, Math.max(0, kerf)), unplacedCount:unplaced.length};
   }
   return {count:widths.length, unplacedCount:unplaced.length};
 }
@@ -6135,8 +6189,11 @@ function setBoardSheetEstimateInput() {
   sheet.w = Math.max(0, Math.round(w));
   sheet.h = Math.max(0, Math.round(h));
   saveBoardSheetSettings();
-  if (lastParams) renderBOM(lastParams);
-  else updateBoardSheetEstimate();
+  window.clearTimeout(boardEstimateRenderTimer);
+  boardEstimateRenderTimer = window.setTimeout(() => {
+    if (lastParams) renderBOM(lastParams);
+    else updateBoardSheetEstimate();
+  }, 120);
 }
 
 function setBoardKerfInput() {
@@ -6171,11 +6228,12 @@ function renderBomItems(items) {
   const allItems = [...items];
   const urinal = urinalBomItem();
   if (urinal) allItems.push(urinal);
+  lastBomRenderMobileMode = isMobileViewport();
   lastBomPieces = collectBomPiecesFromItems(allItems);
   document.getElementById('bom').innerHTML = allItems.map(i=>`
     <div class="bom-card">
       <div class="bom-card-head"><div class="name">${escapeHtml(i.name)}</div><div class="val">${formatBomChips(i.val)}</div></div>
-      ${formatBomLines(i.sub)}
+      ${formatBomLines(i.sub, i.name)}
     </div>`).join('');
   updateBoardSheetEstimate();
 }
@@ -6188,18 +6246,83 @@ function formatBomChips(value) {
   return String(value ?? '').split('/').map(part => part.trim()).filter(Boolean).map(part => `<span class="bom-chip">${escapeHtml(part)}</span>`).join('');
 }
 
-function formatBomLines(value) {
+function bomProcessClass(process) {
+  return String(process || '') === '平口' ? ' bom-size-process align-three' : ' bom-size-process';
+}
+
+function parseBomDisplayPart(line, state) {
+  if (line === '[bom-gap]') return {gap:true};
+  let match = line.match(/^\[process-cont:(.+?)\]\s+\[size-head:(\d+)\](.*)$/);
+  if (match) {
+    state.process = match[1];
+    state.height = match[2];
+    return {process:state.process, height:state.height, size:match[3]};
+  }
+  match = line.match(/^\[process-cont:(.+?)\]\s+\[size-cont\](.*)$/);
+  if (match) {
+    state.process = match[1];
+    return {process:state.process, height:state.height, size:match[2]};
+  }
+  match = line.match(/^(.+?)\s+\[size-head:(\d+)\](.*)$/);
+  if (match) {
+    state.process = match[1];
+    state.height = match[2];
+    return {process:state.process, height:state.height, size:match[3]};
+  }
+  match = line.match(/^(.+?)\s+\[size-cont\](.*)$/);
+  if (match) {
+    state.process = match[1];
+    return {process:state.process, height:state.height, size:match[2]};
+  }
+  match = line.match(/^\[size-head:(\d+)\](.*)$/);
+  if (match) {
+    state.height = match[1];
+    return {process:state.process, height:state.height, size:match[2]};
+  }
+  if (line.startsWith('[size-cont]')) return {process:state.process, height:state.height, size:line.slice(11)};
+  return {plain:line};
+}
+
+function formatBomMobileLines(value) {
+  const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
+  const state = {process:'', height:''};
+  const groups = [];
+  let current = null;
+  (lines.length ? lines : ['无']).forEach(line => {
+    const parsed = parseBomDisplayPart(line, state);
+    if (parsed.gap) {
+      current = null;
+      return;
+    }
+    if (parsed.plain) {
+      groups.push({title:'', tags:[parsed.plain]});
+      current = null;
+      return;
+    }
+    const processLabel = parsed.process || '平口';
+    const title = `${processLabel ? `${processLabel} ` : ''}${parsed.height ? `${parsed.height} x` : ''}`.trim();
+    if (!current || current.title !== title) {
+      current = {title, tags:[]};
+      groups.push(current);
+    }
+    current.tags.push(parsed.size);
+  });
+  return `<div class="bom-mobile-groups">${groups.map(group => `<div class="bom-mobile-group">${group.title ? `<div class="bom-mobile-group-title">${escapeHtml(group.title)}</div>` : ''}<div class="bom-mobile-tags">${group.tags.map(tag => `<span class="bom-mobile-tag">${escapeHtml(tag)}</span>`).join('')}</div></div>`).join('')}</div>`;
+}
+
+function formatBomLines(value, itemName = '') {
+  if (isMobileViewport() && itemName === '前沿板') return formatBomMobileLines(value);
   const lines = String(value ?? '').split(/\s+\/\s+|\s+·\s+/).map(part => part.trim()).filter(Boolean);
   const htmlLines = (lines.length ? lines : ['无']).map(line => {
     if (line === '[bom-gap]') return '<div class="bom-gap" aria-hidden="true"></div>';
     const processPlaceholderHeadMatch = line.match(/^\[process-cont:(.+?)\]\s+\[size-head:(\d+)\](.*)$/);
-    if (processPlaceholderHeadMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process bom-process-placeholder">${escapeHtml(processPlaceholderHeadMatch[1])}</span><span class="bom-size-left">${escapeHtml(processPlaceholderHeadMatch[2])} x </span><span class="bom-size-right">${escapeHtml(processPlaceholderHeadMatch[3])}</span></span></div>`;
+    if (processPlaceholderHeadMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="${bomProcessClass(processPlaceholderHeadMatch[1])} bom-process-placeholder">${escapeHtml(processPlaceholderHeadMatch[1])}</span><span class="bom-size-left">${escapeHtml(processPlaceholderHeadMatch[2])} x </span><span class="bom-size-right">${escapeHtml(processPlaceholderHeadMatch[3])}</span></span></div>`;
     const processPlaceholderContMatch = line.match(/^\[process-cont:(.+?)\]\s+\[size-cont\](.*)$/);
-    if (processPlaceholderContMatch) return `<div class="bom-line" data-bom-cont="1"><span class="bom-size-line"><span class="bom-size-process bom-process-placeholder">${escapeHtml(processPlaceholderContMatch[1])}</span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(processPlaceholderContMatch[2])}</span></span></div>`;
+    if (processPlaceholderContMatch) return `<div class="bom-line" data-bom-cont="1"><span class="bom-size-line"><span class="${bomProcessClass(processPlaceholderContMatch[1])} bom-process-placeholder">${escapeHtml(processPlaceholderContMatch[1])}</span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(processPlaceholderContMatch[2])}</span></span></div>`;
     const processHeadMatch = line.match(/^(.+?)\s+\[size-head:(\d+)\](.*)$/);
-    if (processHeadMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process">${escapeHtml(processHeadMatch[1])}</span><span class="bom-size-left">${escapeHtml(processHeadMatch[2])} x </span><span class="bom-size-right">${escapeHtml(processHeadMatch[3])}</span></span></div>`;
+    if (processHeadMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="${bomProcessClass(processHeadMatch[1])}">${escapeHtml(processHeadMatch[1])}</span><span class="bom-size-left">${escapeHtml(processHeadMatch[2])} x </span><span class="bom-size-right">${escapeHtml(processHeadMatch[3])}</span></span></div>`;
     const processContMatch = line.match(/^(.+?)\s+\[size-cont\](.*)$/);
-    if (processContMatch) return `<div class="bom-line" data-bom-cont="1"><span class="bom-size-line"><span class="bom-size-process">${escapeHtml(processContMatch[1])}</span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(processContMatch[2])}</span></span></div>`;
+    if (processContMatch) return `<div class="bom-line" data-bom-cont="1"><span class="bom-size-line"><span class="${bomProcessClass(processContMatch[1])}">${escapeHtml(processContMatch[1])}</span><span class="bom-size-left"></span><span class="bom-size-right">${escapeHtml(processContMatch[2])}</span></span></div>`;
     const headMatch = line.match(/^\[size-head:(\d+)\](.*)$/);
     if (headMatch) return `<div class="bom-line"><span class="bom-size-line"><span class="bom-size-process"></span><span class="bom-size-left">${escapeHtml(headMatch[1])} x </span><span class="bom-size-right">${escapeHtml(headMatch[2])}</span></span></div>`;
     const isContinued = line.startsWith('[size-cont]');
@@ -6207,9 +6330,14 @@ function formatBomLines(value) {
     return `<div class="bom-line">${escapeHtml(line)}</div>`;
   });
   const columns = [];
-  for (let i = 0; i < htmlLines.length; i += 20) columns.push(htmlLines.slice(i, i + 20));
-  const columnHtml = columns.map((column, index) => `<div class="bom-column${index > 0 ? ' is-overflow' : ''}">${column.join('')}</div>`).join('');
-  return `<div class="bom-lines" style="--bom-columns:${Math.max(1, columns.length)}">${columnHtml}</div>`;
+  for (let i = 0; i < htmlLines.length; i += 5) columns.push(htmlLines.slice(i, i + 5));
+  const rows = [];
+  for (let i = 0; i < columns.length; i += 5) rows.push(columns.slice(i, i + 5));
+  const rowHtml = rows.map(row => {
+    const columnHtml = row.map((column, index) => `<div class="bom-column${index > 0 ? ' is-overflow' : ''}">${column.join('')}</div>`).join('');
+    return `<div class="bom-line-row" style="--bom-row-columns:${Math.max(1, row.length)}">${columnHtml}</div>`;
+  }).join('');
+  return `<div class="bom-lines">${rowHtml}</div>`;
 }
 
 function exportImg(name) {
@@ -7659,7 +7787,12 @@ cv.addEventListener('mouseleave', () => {
 
 cv.addEventListener('contextmenu', e => e.preventDefault());
 
-const ro = new ResizeObserver(()=>{ resizeCanvas(); if(lastParams) drawView(lastParams, currentTab); });
+const ro = new ResizeObserver(()=>{
+  resizeCanvas();
+  if(lastParams) drawView(lastParams, currentTab);
+  const mobileMode = isMobileViewport();
+  if (lastParams && lastBomRenderMobileMode !== null && lastBomRenderMobileMode !== mobileMode) renderBOM(lastParams);
+});
 ro.observe(document.getElementById('carea'));
 
 document.getElementById('h-upright').addEventListener('change', function() {
