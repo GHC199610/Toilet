@@ -787,9 +787,9 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 let drawingForExport = false;
 let lastGuardWarningSignature = '';
 let currentPlanPage = 0;
-const QUALITY_RENDER_SCALE = 4;
+const QUALITY_RENDER_SCALE = 5;
 const PDF_RENDER_SCALE = 8;
-const PRINT_RENDER_SCALE = 4;
+const PRINT_RENDER_SCALE = 6;
 let pdfLibPromise = null;
 let svgPrintSeq = 0;
 let activeDimensionContext = null;
@@ -6566,12 +6566,40 @@ function downloadCanvasPng(canvas, filename) {
   }
 }
 
-function exportNamedImage(name = currentViewLabel()) {
-  const filename = sanitizeExportName(name, `隔断${currentViewLabel()}`);
+function combineCanvasesVertical(canvases, gap = 28, background = '#fff') {
+  const list = canvases.filter(Boolean);
+  const width = Math.max(...list.map(canvas => canvas.width));
+  const height = list.reduce((sum, canvas) => sum + canvas.height, 0) + Math.max(0, list.length - 1) * gap;
+  const out = document.createElement('canvas');
+  out.width = width;
+  out.height = height;
+  const outCtx = out.getContext('2d');
+  outCtx.fillStyle = background;
+  outCtx.fillRect(0, 0, width, height);
+  let y = 0;
+  list.forEach(canvas => {
+    const x = Math.round((width - canvas.width) / 2);
+    outCtx.drawImage(canvas, x, y);
+    y += canvas.height + gap;
+  });
+  return out;
+}
+
+function currentViewExportCanvas() {
   const p = lastParams || getParams();
-  const sheetCanvas = (currentTab === 'plan' && canvasMode === 'sheets')
+  return currentTab === 'plan'
     ? renderPlanSheetsStripCanvas(p, QUALITY_RENDER_SCALE)
     : renderSheetCanvas(currentTab, p, {canvasMode, renderScale:QUALITY_RENDER_SCALE, planPage: currentTab === 'plan' ? currentPlanPage : undefined});
+}
+
+function exportNamedImage(name = currentViewLabel(), includeBom = false) {
+  const filename = sanitizeExportName(name, `隔断${currentViewLabel()}`);
+  const sheetCanvas = currentViewExportCanvas();
+  if (includeBom) {
+    const bomCanvas = renderBomCanvas(`${filename}-开料清单`);
+    downloadCanvasPng(combineCanvasesVertical([sheetCanvas, bomCanvas], 32), filename);
+    return;
+  }
   downloadCanvasPng(sheetCanvas, filename);
 }
 
@@ -6676,13 +6704,13 @@ async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeB
     doc.open();
     doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
       @page{size:${paper.label} portrait;margin:0}
-      html,body{margin:0;width:100%;height:100%;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      body{overflow:hidden}
-      .page{width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page;overflow:hidden}
+      html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body{overflow:visible}
+      .page{box-sizing:border-box;width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page;overflow:hidden;padding:4mm}
       .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
       .page:last-child{page-break-after:auto;break-after:auto}
-      img{width:100%;height:100%;object-fit:contain;display:block}
-      ${includeBom ? `${bomExportCss('embed')}.bom-print-page{width:190mm;min-height:277mm;padding:10mm;}` : ''}
+      img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
+      ${includeBom ? `${bomExportCss('embed')}.bom-print-page{width:190mm;min-height:0;padding:10mm;}` : ''}
     </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`);
     doc.close();
     triggerFramePrint(frame, 250);
@@ -6888,8 +6916,8 @@ function drawBomCanvasStructuredLine(ctx, line, x, y, maxWidth) {
   const process = line.process || '';
   const heightText = line.height ? `${line.height} x ` : '';
   const sizeText = line.size || '';
-  const processW = 64;
-  const heightW = 74;
+  const processW = process ? Math.max(44, Math.ceil(ctx.measureText(process).width) + 8) : 0;
+  const heightW = heightText ? Math.max(58, Math.ceil(ctx.measureText(heightText).width) + 8) : 0;
   ctx.fillStyle = '#57606a';
   ctx.beginPath();
   ctx.arc(x + 6, y - 5, 3, 0, Math.PI * 2);
@@ -6907,12 +6935,12 @@ function drawBomCanvasStructuredLine(ctx, line, x, y, maxWidth) {
   return y + 22;
 }
 
-function exportBomCanvasImage(name = '开料清单') {
+function renderBomCanvas(name = '开料清单') {
   const title = sanitizeExportName(name, '开料清单');
   const items = collectBomImageItems();
   const width = 900;
-  const pad = 32;
-  const cardGap = 14;
+  const pad = 30;
+  const cardGap = 12;
   const lineH = 22;
   const frontTitleW = 100;
   const frontCellW = 54;
@@ -6926,11 +6954,11 @@ function exportBomCanvasImage(name = '开料清单') {
   const cardInnerW = width - pad * 2 - 24;
   let height = pad + 50;
   items.forEach(item => {
-    let cardH = 48;
+    let cardH = 42;
     if (item.mobileGroups?.length) {
       item.mobileGroups.forEach(group => {
         const rows = Math.max(1, Math.ceil((group.tags.length || 1) / frontCols));
-        cardH += Math.max(frontCellH, rows * frontCellH + (rows - 1) * frontGapY) + 14;
+        cardH += Math.max(frontCellH, rows * frontCellH + (rows - 1) * frontGapY) + 10;
       });
     } else {
       const lines = item.lines.length ? item.lines : [{plain:'无'}];
@@ -6939,7 +6967,7 @@ function exportBomCanvasImage(name = '开料清单') {
         else cardH += line.plain ? wrapCanvasText(measure, line.plain, cardInnerW - 18).length * lineH : lineH;
       });
     }
-    item._cardH = cardH + 12;
+    item._cardH = cardH + 10;
     height += item._cardH + cardGap;
   });
   height += pad;
@@ -6959,7 +6987,7 @@ function exportBomCanvasImage(name = '开料清单') {
   outCtx.moveTo(pad, pad + 46);
   outCtx.lineTo(width - pad, pad + 46);
   outCtx.stroke();
-  let y = pad + 64;
+  let y = pad + 60;
   items.forEach(item => {
     roundRectPath(outCtx, pad, y, width - pad * 2, item._cardH, 8);
     outCtx.fillStyle = '#fff';
@@ -6968,13 +6996,13 @@ function exportBomCanvasImage(name = '开料清单') {
     outCtx.stroke();
     outCtx.fillStyle = '#000';
     outCtx.font = '700 17px Microsoft YaHei, Arial, sans-serif';
-    outCtx.fillText(item.name || '材料', pad + 14, y + 28);
+    outCtx.fillText(item.name || '材料', pad + 14, y + 26);
     outCtx.fillStyle = '#0C447C';
     outCtx.font = '700 15px Microsoft YaHei, Arial, sans-serif';
     outCtx.textAlign = 'right';
-    outCtx.fillText(item.val || '', width - pad - 14, y + 28);
+    outCtx.fillText(item.val || '', width - pad - 14, y + 26);
     outCtx.textAlign = 'left';
-    let lineY = y + 56;
+    let lineY = y + 50;
     if (item.mobileGroups?.length) {
       item.mobileGroups.forEach(group => {
         outCtx.fillStyle = '#185FA5';
@@ -6996,7 +7024,7 @@ function exportBomCanvasImage(name = '开料清单') {
           outCtx.textAlign = 'left';
         });
         const rows = Math.max(1, Math.ceil(tags.length / frontCols));
-        lineY += Math.max(frontCellH, rows * frontCellH + (rows - 1) * frontGapY) + 14;
+        lineY += Math.max(frontCellH, rows * frontCellH + (rows - 1) * frontGapY) + 10;
       });
     } else {
       outCtx.font = '14px Microsoft YaHei, Arial, sans-serif';
@@ -7012,7 +7040,11 @@ function exportBomCanvasImage(name = '开料清单') {
     }
     y += item._cardH + cardGap;
   });
-  downloadCanvasPng(out, title);
+  return out;
+}
+
+function exportBomCanvasImage(name = '开料清单') {
+  downloadCanvasPng(renderBomCanvas(name), sanitizeExportName(name, '开料清单'));
 }
 
 function exportBomImage(name = '开料清单') {
@@ -7096,8 +7128,7 @@ function confirmNamedExport() {
     exportNamedPdf(name, scope, includeBom);
     return;
   }
-  exportNamedImage(name);
-  if (includeBom) window.setTimeout(() => exportBomImage(`${name}-开料清单`), 600);
+  exportNamedImage(name, includeBom);
 }
 
 function bindNamedExportButtons() {
