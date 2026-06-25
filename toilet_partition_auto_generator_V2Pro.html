@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -695,7 +695,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <label>形状<select id="u-shape"><option value="矩形">矩形</option><option value="异形">异形</option></select></label>
       <label>开孔<select id="u-hole"><option value="无开孔">无</option><option value="有开孔">有</option></select></label>
       <label class="wide">备注<input type="text" id="u-note" placeholder="选填"></label>
-      <div class="urinal-panel-actions"><button type="button" onclick="toggleUrinalPanel(false)">取消</button><button class="primary" type="button" onclick="saveUrinalSpec()">保存</button></div>
+      <div class="urinal-panel-actions"><button type="button" onclick="deleteUrinalSpec()">删除</button><button type="button" onclick="toggleUrinalPanel(false)">取消</button><button class="primary" type="button" onclick="saveUrinalSpec()">保存</button></div>
     </div>
     <div class="canvas-area" id="carea">
       <canvas id="cv"></canvas>
@@ -972,6 +972,15 @@ function depthPanelActualDepth(row, index) {
   return baseDepth;
 }
 
+function depthPanelDeletedSpecial(row) {
+  const baseDepth = Math.max(0, Math.round(Number(row?.depth) || 0));
+  return {protrusion:baseDepth, depth:0};
+}
+
+function isDepthPanelDeleted(row, index) {
+  return depthPanelActualDepth(row, index) <= 0;
+}
+
 function depthPanelProtrusion(row, index) {
   const actual = depthPanelActualDepth(row, index);
   return Math.max(0, Math.round((Number(row?.depth) || 0) - actual));
@@ -981,6 +990,7 @@ function specialDepthPanelItems(row) {
   const count = depthPanelCount(row);
   const specials = normalizeDepthPanelSpecials(row?.depthPanelSpecials, count);
   return specials.map((item, index) => {
+    if (isDepthPanelDeleted(row, index)) return null;
     const protrusion = depthPanelProtrusion(row, index);
     if (protrusion <= 0 && !(item.depth > 0 && item.depth !== Number(row?.depth))) return null;
     if (!depthPanelSelectable(row, index)) return null;
@@ -1273,6 +1283,115 @@ function isMultiSelected(type, groupId, rowId, index = '') {
   return multiSelections.has(selectionKey(type, groupId, rowId, index));
 }
 
+function parseSelectionKey(key = '') {
+  const [type, groupId, rowId, index = ''] = String(key).split(':');
+  return {type, groupId:Number(groupId), rowId:Number(rowId), index:index === '' ? '' : Number(index)};
+}
+
+function selectionDeleteTargets() {
+  const targets = [...multiSelections].map(parseSelectionKey);
+  if (!targets.length) {
+    if (selectionScope === 'sheet-note') targets.push({type:'sheet-note', groupId:'sheet', rowId:'header', index:''});
+    else if (selectionScope === 'group' && activeGroupId) targets.push({type:'group', groupId:activeGroupId, rowId:'', index:''});
+    else if (selectionScope === 'tag' && activeGroupId && activeRowId) targets.push({type:'tag', groupId:activeGroupId, rowId:activeRowId, index:''});
+    else if (selectionScope === 'row' && activeGroupId && activeRowId) targets.push({type:'block', groupId:activeGroupId, rowId:activeRowId, index:''});
+    else if (selectionScope === 'booth' && selectedBoothRef) targets.push({type:'booth', ...selectedBoothRef});
+    else if (selectionScope === 'depth-panel' && selectedDepthPanelRef) targets.push({type:'depth-panel', ...selectedDepthPanelRef});
+  }
+  const unique = new Map();
+  targets.forEach(target => unique.set(selectionKey(target.type, target.groupId, target.rowId, target.index), target));
+  return [...unique.values()];
+}
+
+function deleteSelectedItems() {
+  const targets = selectionDeleteTargets();
+  if (!targets.length) return false;
+  if (document.activeElement && ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return false;
+  pushHistory();
+  let changed = false;
+  const rowsToDelete = new Map();
+  const groupsToDelete = new Set();
+  targets.forEach(target => {
+    if (target.type === 'sheet-note') {
+      if (sheetHeaderText) { sheetHeaderText = ''; changed = true; }
+      return;
+    }
+    if (target.type === 'group') {
+      groupsToDelete.add(Number(target.groupId));
+      return;
+    }
+    const group = groups.find(item => item.id === Number(target.groupId));
+    const row = group ? ensureRows(group).find(item => item.id === Number(target.rowId)) : null;
+    if (!group || !row) return;
+    if (target.type === 'block') {
+      if (!rowsToDelete.has(group.id)) rowsToDelete.set(group.id, new Set());
+      rowsToDelete.get(group.id).add(row.id);
+    } else if (target.type === 'tag') {
+      if (row.note) { row.note = ''; changed = true; }
+    } else if (target.type === 'booth') {
+      const count = Math.max(1, Number(row.count) || 1);
+      const index = Math.max(0, Math.min(count - 1, Number(target.index) || 0));
+      row.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, count);
+      row.boothDoorWidths = rowDoorWidthOverrides(row, count);
+      row.boothNotes = normalizeBoothNotes(row.boothNotes, count);
+      if (!row.noDoorBooths[index] || row.boothDoorWidths[index] || row.boothNotes[index]) changed = true;
+      row.noDoorBooths[index] = true;
+      row.boothDoorWidths[index] = 0;
+      row.boothNotes[index] = '';
+    } else if (target.type === 'depth-panel') {
+      const count = depthPanelCount(row);
+      const index = Math.max(0, Math.min(count - 1, Number(target.index) || 0));
+      if (!depthPanelSelectable(row, index)) return;
+      row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, count);
+      if (!isDepthPanelDeleted(row, index)) changed = true;
+      row.depthPanelSpecials[index] = depthPanelDeletedSpecial(row);
+    }
+  });
+  if (groupsToDelete.size && groups.length > 1) {
+    const beforeCount = groups.length;
+    groups = groups.filter(group => !groupsToDelete.has(group.id) || groups.length - groupsToDelete.size < 1);
+    if (groups.length !== beforeCount) {
+      changed = true;
+      groupsToDelete.forEach(groupId => openGroupIds.delete(groupId));
+      if (!groups.some(group => group.id === activeGroupId)) activeGroupId = groups[0].id;
+      const group = activeGroup();
+      activeRowId = ensureRows(group)[0].id;
+      openGroupIds.add(activeGroupId);
+      syncQuickLayoutFromGroup(group);
+    }
+  }
+  rowsToDelete.forEach((rowIds, groupId) => {
+    const group = groups.find(item => item.id === groupId);
+    if (!group) return;
+    const rows = ensureRows(group);
+    const nextRows = rows.filter(row => !rowIds.has(row.id));
+    if (!nextRows.length || nextRows.length === rows.length) return;
+    group.rows = nextRows;
+    changed = true;
+    if (activeGroupId === group.id && rowIds.has(activeRowId)) activeRowId = group.rows[0].id;
+    syncQuickLayoutFromGroup(group);
+  });
+  if (!changed) return false;
+  clearSelectedBooth();
+  selectionScope = 'row';
+  multiSelections.clear();
+  const group = activeGroup();
+  const row = activeRow() || ensureRows(group)[0];
+  if (row) {
+    activeRowId = row.id;
+    loadGroupToForm(group, row);
+  }
+  renderGroups(false);
+  renderSwingButtons();
+  renderBoothSwingPanel();
+  renderDepthPanelSpecialPanel();
+  syncPlanNoteInputFromSelection();
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
+  return true;
+}
+
 function hitSelectionIndex(hit) {
   return hit.type === 'booth' || hit.type === 'depth-panel' ? hit.index : '';
 }
@@ -1429,7 +1548,7 @@ function canvasTextCaretVisible(scope) {
   return !drawingForExport && editor && document.activeElement === editor && selectionScope === scope && Math.floor(Date.now() / 530) % 2 === 0;
 }
 
-function drawCanvasTextCaret(x, y, h, color = '#111') {
+function drawCanvasTextCaret(x, y, h, color = '#000000') {
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = Math.max(1, anno(4));
@@ -1440,7 +1559,7 @@ function drawCanvasTextCaret(x, y, h, color = '#111') {
   ctx.restore();
 }
 
-function drawDimensionCaret(x, baselineY, baseline = 'bottom', color = '#111', sample = '390') {
+function drawDimensionCaret(x, baselineY, baseline = 'bottom', color = '#000000', sample = '390') {
   const metrics = ctx.measureText(String(sample || '390'));
   const ascent = metrics.actualBoundingBoxAscent || annoFont(95) * 0.72;
   const descent = metrics.actualBoundingBoxDescent || annoFont(95) * 0.12;
@@ -1564,13 +1683,15 @@ function renderDepthPanelSpecialPanel() {
   const protrusion = depthPanelProtrusion(row, index);
   const baseDepth = Number(row.depth) || 0;
   const disabled = depthPanelSelectable(row, index) ? '' : 'disabled';
+  const deleted = isDepthPanelDeleted(row, index);
   panel.innerHTML = `
-    <div class="booth-swing-hint">${escapeAttr(depthPanelName(row, index))}</div>
+    <div class="booth-swing-hint">${escapeAttr(depthPanelName(row, index))}${deleted ? '：已删除' : ''}</div>
     <div class="special-card-row">
       <div class="special-card-field"><label>墙凸</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" value="${item.protrusion || ''}" oninput="limitDepthPanelCardInput(this)" onchange="applySelectedDepthPanelProtrusion(this.value)" onkeydown="handleDepthPanelCardKey(event,'protrusion')" ${disabled}></div>
       <div class="special-card-field"><label>指定板深度</label><input class="width-card" inputmode="numeric" maxlength="4" placeholder="自定义" value="${item.depth || ''}" oninput="limitDepthPanelCardInput(this)" onchange="applySelectedDepthPanelDepth(this.value)" onkeydown="handleDepthPanelCardKey(event,'depth')" ${disabled}></div>
     </div>
     <div class="booth-pick-line">
+      <button class="booth-pick-clear" type="button" onclick="deleteSelectedDepthPanel()" ${disabled || deleted ? 'disabled' : ''}>删除板</button>
       <button class="booth-pick-clear" type="button" onclick="resetSelectedDepthPanelSpecial()" ${disabled}>恢复默认深度</button>
     </div>`;
 }
@@ -1630,6 +1751,22 @@ function resetSelectedDepthPanelSpecial() {
   const {row} = target;
   row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, depthPanelCount(row));
   row.depthPanelSpecials[selectedDepthPanelRef.index] = {protrusion:0, depth:0};
+  renderDepthPanelSpecialPanel();
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
+}
+
+function deleteSelectedDepthPanel() {
+  const target = selectedDepthPanelRow();
+  if (!target || selectionScope !== 'depth-panel' || !selectedDepthPanelRef) return;
+  const {row} = target;
+  const count = depthPanelCount(row);
+  const index = Math.max(0, Math.min(count - 1, selectedDepthPanelRef.index));
+  if (!depthPanelSelectable(row, index) || isDepthPanelDeleted(row, index)) return;
+  pushHistory();
+  row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, count);
+  row.depthPanelSpecials[index] = depthPanelDeletedSpecial(row);
   renderDepthPanelSpecialPanel();
   lastParams = getParams();
   drawView(lastParams, currentTab);
@@ -1705,6 +1842,10 @@ function activeGroupRows() {
 
 function drawableGroupRows() {
   return allRows().filter(item => item.row.enabled === true);
+}
+
+function hasDrawableRows() {
+  return drawableGroupRows().length > 0;
 }
 
 function rowBoothStartIndex(group = activeGroup(), row = activeRow()) {
@@ -1840,41 +1981,6 @@ function syncQuickLayoutFromGroup(group = activeGroup()) {
   activeQuickPage = Math.max(0, Math.min(activeQuickPage, quickLayoutPages.length - 1));
   quickLayoutRows = quickLayoutPages[activeQuickPage];
   normalizeQuickRows();
-}
-
-function syncQuickLayoutFromDrawingOrder(group = activeGroup()) {
-  const rows = ensureRows(group)
-    .filter(row => row.enabled === true)
-    .slice()
-    .sort((a, b) => {
-      const pageA = Number.isFinite(Number(a.drawSheetPage)) ? Number(a.drawSheetPage) : Number(a.sheetPage) || 0;
-      const pageB = Number.isFinite(Number(b.drawSheetPage)) ? Number(b.drawSheetPage) : Number(b.sheetPage) || 0;
-      const orderA = Number.isFinite(Number(a.sheetOrder)) ? Number(a.sheetOrder) : Number.MAX_SAFE_INTEGER;
-      const orderB = Number.isFinite(Number(b.sheetOrder)) ? Number(b.sheetOrder) : Number.MAX_SAFE_INTEGER;
-      return (pageA - pageB) || (orderA - orderB) || ((a.layoutRow || 1) - (b.layoutRow || 1)) || ((a.layoutCol || 1) - (b.layoutCol || 1)) || (a.id - b.id);
-    });
-  if (!rows.length) {
-    quickLayoutRows = [['', '', '']];
-    quickLayoutPages = [[['', '', '']]];
-    activeQuickPage = 0;
-    return;
-  }
-  const compactCols = QUICK_COMPACT_COLS;
-  const pageRows = [];
-  rows.forEach((row, index) => {
-    const rowIndex = Math.floor(index / compactCols);
-    const colIndex = index % compactCols;
-    if (!pageRows[rowIndex]) pageRows[rowIndex] = Array.from({length: compactCols}, () => '');
-    pageRows[rowIndex][colIndex] = String(Math.max(1, Number(row.count) || 1));
-    row.sheetPage = 0;
-    row.layoutRow = rowIndex + 1;
-    row.layoutCol = colIndex + 1;
-  });
-  quickLayoutPages = [pageRows.length ? pageRows : [['', '', '']]];
-  activeQuickPage = 0;
-  quickLayoutRows = quickLayoutPages[0];
-  quickNavKeep = null;
-  quickCompactDisplayMode = true;
 }
 
 function syncWidthCardsFromText(text = '') {
@@ -2622,13 +2728,10 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
   const orderedExisting = existingRows
     .filter(row => row.enabled !== false)
     .slice()
-    .sort((a, b) => ((Number.isFinite(Number(a.drawSheetPage)) ? Number(a.drawSheetPage) : 0) - (Number.isFinite(Number(b.drawSheetPage)) ? Number(b.drawSheetPage) : 0))
-      || ((Number.isFinite(Number(a.sheetOrder)) ? Number(a.sheetOrder) : Number.MAX_SAFE_INTEGER) - (Number.isFinite(Number(b.sheetOrder)) ? Number(b.sheetOrder) : Number.MAX_SAFE_INTEGER))
+    .sort((a, b) => ((Number(a.sheetPage) || 0) - (Number(b.sheetPage) || 0))
       || ((a.layoutRow || 1) - (b.layoutRow || 1))
       || ((a.layoutCol || 1) - (b.layoutCol || 1))
       || (a.id - b.id));
-  const lastVisualRow = orderedExisting[orderedExisting.length - 1] || null;
-  const lastVisualPage = Number.isFinite(Number(lastVisualRow?.drawSheetPage)) ? Number(lastVisualRow.drawSheetPage) : 0;
   const maxSheetOrder = Math.max(-1, ...existingRows.map(row => Number.isFinite(Number(row.sheetOrder)) ? Number(row.sheetOrder) : -1));
   let nextNewSheetOrder = maxSheetOrder + 1;
   const generated = [];
@@ -2653,8 +2756,8 @@ function buildRowsFromQuickLayout(group = activeGroup(), activeCell = null) {
         layoutType: 'cell',
         layoutRow,
         layoutCol,
-        sheetPage: 0,
-        drawSheetPage: existing ? base.drawSheetPage : lastVisualPage,
+        sheetPage: pageIndex,
+        drawSheetPage: undefined,
         sheetOrder: newSheetOrder,
         enabled: true,
         count,
@@ -2845,6 +2948,17 @@ function saveUrinalSpec() {
   renderBOM(lastParams || getParams());
 }
 
+function deleteUrinalSpec() {
+  if (!(Number(urinalSpec.count) > 0)) {
+    toggleUrinalPanel(false);
+    return;
+  }
+  pushHistory();
+  urinalSpec = {...urinalSpec, count:0};
+  toggleUrinalPanel(false);
+  renderBOM(lastParams || getParams());
+}
+
 function clearAutoCompactSheetLayout() {
   let changed = false;
   groups.forEach(group => ensureRows(group).forEach(row => {
@@ -2868,11 +2982,17 @@ function autoCompactSheetLayout() {
     row: {...block.row, sheetPage: undefined, drawSheetPage: undefined, sheetOrder: index},
     metrics: planBlockMetrics(block.row)
   });
-  const baseBlocks = sourceBlocks.map(makeBlock);
   const p = getParams();
   const layout = getSheetLayout(p);
   const area = block => block.metrics.w * block.metrics.h;
   const countOf = block => Math.max(1, Number(block.originalRow?.count || block.row?.count) || 1);
+  const scorePages = pages => {
+    const rowCount = pages.reduce((sum, page) => sum + (page.rowCount || 0), 0);
+    const last = pages[pages.length - 1] || {usedW:0, usedH:0};
+    const firstFill = pages.slice(0, -1).reduce((sum, page) => sum + page.usedW * page.usedH, 0);
+    return pages.length * 1e9 + rowCount * 1e6 + last.usedH * 1e3 + last.usedW - firstFill / 1e6;
+  };
+  const baseBlocks = sourceBlocks.map(makeBlock);
   const candidates = [
     baseBlocks,
     [...baseBlocks].sort((a, b) => area(b) - area(a)),
@@ -2881,12 +3001,6 @@ function autoCompactSheetLayout() {
     [...baseBlocks].sort((a, b) => countOf(b) - countOf(a) || area(b) - area(a)),
     [...baseBlocks].sort((a, b) => countOf(a) - countOf(b) || area(b) - area(a))
   ];
-  const scorePages = pages => {
-    const rowCount = pages.reduce((sum, page) => sum + (page.rowCount || 0), 0);
-    const last = pages[pages.length - 1] || {usedW:0, usedH:0};
-    const firstFill = pages.slice(0, -1).reduce((sum, page) => sum + page.usedW * page.usedH, 0);
-    return pages.length * 1e9 + rowCount * 1e6 + last.usedH * 1e3 + last.usedW - firstFill / 1e6;
-  };
   let best = null;
   candidates.forEach(candidate => {
     const P = layout.plot;
@@ -2905,12 +3019,15 @@ function autoCompactSheetLayout() {
     visualBlocks.forEach((block, blockIndex) => {
       const row = block.originalRow;
       if (!row) return;
-      row.drawSheetPage = pageIndex;
+      row.sheetPage = pageIndex;
+      row.drawSheetPage = undefined;
       row.sheetOrder = pageIndex * 1000 + blockIndex;
+      row.layoutRow = Math.floor(blockIndex / QUICK_COMPACT_COLS) + 1;
+      row.layoutCol = (blockIndex % QUICK_COMPACT_COLS) + 1;
       row.autoCompactSheetLayout = true;
     });
   });
-  syncQuickLayoutFromDrawingOrder(activeGroup());
+  syncQuickLayoutFromGroup(activeGroup());
   lastQuickCellRef = null;
   if (document.activeElement?.classList?.contains('quick-cell')) document.activeElement.blur();
   renderQuickLayout();
@@ -3038,9 +3155,25 @@ function resetDoorCustomSizing(row, count = row?.count || defaultRow.count) {
 }
 
 function normalizeLayoutGrid(group) {
+  const used = new Set();
   ensureRows(group).forEach((r, i) => {
-    if (!r.layoutRow) r.layoutRow = i + 1;
-    if (!r.layoutCol) r.layoutCol = 1;
+    let page = Math.max(0, Number(r.sheetPage) || 0);
+    let row = Math.max(1, Number(r.layoutRow) || i + 1);
+    let col = Math.max(1, Number(r.layoutCol) || 1);
+    let key = `${page}:${row}:${col}`;
+    if (used.has(key)) {
+      let index = 0;
+      do {
+        row = Math.floor(index / QUICK_COMPACT_COLS) + 1;
+        col = (index % QUICK_COMPACT_COLS) + 1;
+        key = `${page}:${row}:${col}`;
+        index += 1;
+      } while (used.has(key));
+    }
+    used.add(key);
+    r.sheetPage = page;
+    r.layoutRow = row;
+    r.layoutCol = col;
     r.layoutType = 'cell';
   });
 }
@@ -3135,6 +3268,7 @@ function finishDeleteRow(groupId, rowId) {
   clearSelectedBooth();
   rowAnimation = null;
   loadGroupToForm(group, group.rows[0]);
+  syncQuickLayoutFromGroup(group);
   renderGroups(false);
   refreshDrawing(true, false, false);
 }
@@ -3149,6 +3283,7 @@ function deleteGroup(groupId = activeGroupId) {
   clearSelectedBooth();
   openGroupIds.add(activeGroupId);
   loadGroupToForm(groups[0], ensureRows(groups[0])[0]);
+  syncQuickLayoutFromGroup(groups[0]);
   rowAnimation = null;
   renderGroups(false);
   revealActiveGroupInList();
@@ -3306,6 +3441,7 @@ function getParams() {
   const rowDefaultDoorW = Math.max(300, Math.min(rawDefaultDoorW, defaultDoorLimit));
   if (selectionScope !== 'booth' && document.activeElement?.id === 'p-door' && rowDefaultDoorW !== formDoorW) document.getElementById('p-door').value = rowDefaultDoorW;
   return {
+    enabled: currentRow?.enabled === true,
     count,
     widthsText: committedWidthsText,
     total: parseInt(document.getElementById('p-total').value)||3000,
@@ -3911,9 +4047,9 @@ function renderPlanSheetsStripCanvas(p = lastParams || getParams(), renderScale 
   const oldCanvasMode = canvasMode;
   canvasMode = 'sheets';
   const layout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
+  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
   const pages = paginatePlanBlocks(blocks, layout);
-  const gap = Math.max(80, layout.sheetW * 0.12);
+  const gap = sheetPreviewPageGap(layout);
   const w = Math.max(1, pages.length * layout.sheetW + Math.max(0, pages.length - 1) * gap);
   const h = Math.max(1, layout.sheetH);
   const out = document.createElement('canvas');
@@ -3994,11 +4130,12 @@ function collectPlanBlocks(p = lastParams || getParams()) {
       const i = previewSheetOrder.indexOf(key);
       if (i >= 0) return i;
     }
-    return Number.isFinite(Number(item.row.sheetOrder)) ? Number(item.row.sheetOrder) : Number.MAX_SAFE_INTEGER;
+    return Number.MAX_SAFE_INTEGER;
   };
+  const sheetPageIndex = row => Number.isFinite(Number(row?.sheetPage)) ? Math.max(0, Number(row.sheetPage)) : 0;
   return source
     .slice()
-    .sort((a, b) => ((Number.isFinite(Number(a.row.drawSheetPage)) ? Number(a.row.drawSheetPage) : 0) - (Number.isFinite(Number(b.row.drawSheetPage)) ? Number(b.row.drawSheetPage) : 0)) || (orderIndex(a) - orderIndex(b)) || (a.group.id - b.group.id) || ((a.row.layoutRow || 1) - (b.row.layoutRow || 1)) || ((a.row.layoutCol || 1) - (b.row.layoutCol || 1)) || (a.row.id - b.row.id))
+    .sort((a, b) => (orderIndex(a) - orderIndex(b)) || (sheetPageIndex(a.row) - sheetPageIndex(b.row)) || (a.group.id - b.group.id) || ((a.row.layoutRow || 1) - (b.row.layoutRow || 1)) || ((a.row.layoutCol || 1) - (b.row.layoutCol || 1)) || (a.row.id - b.row.id))
     .map(item => {
       const metrics = planBlockMetrics(item.row);
       const block = {...item, metrics, labelStart};
@@ -4008,6 +4145,10 @@ function collectPlanBlocks(p = lastParams || getParams()) {
 }
 
 function paginatePlanBlocks(blocks, layout = getSheetLayout()) {
+  return paginatePlanBlockGroup(blocks, layout);
+}
+
+function paginatePlanBlockGroup(blocks, layout = getSheetLayout()) {
   const P = layout.plot;
   const maxBlockW = Math.max(1, ...blocks.map(block => block.metrics.w));
   const maxBlockH = Math.max(1, ...blocks.map(block => block.metrics.h));
@@ -4018,12 +4159,11 @@ function paginatePlanBlocks(blocks, layout = getSheetLayout()) {
 
 function chooseSheetPackScale(blocks, layout, maxScale) {
   const minReadableScale = SHEET_LAYOUT_RULES.minReadableScale;
-  const landscape = planBlocksNeedLandscape(blocks);
-  if (landscape) return landscapeStandardScale(blocks);
+  const landscape = false;
   const fixedSteps = [maxScale, 0.48, 0.42, 0.36, 0.30, 0.26, 0.22, 0.19, 0.16, minReadableScale];
   const fitSteps = [];
   const pageFitW = landscape
-    ? sheetRowAvailableWidth(sheetLayoutForPage({blocks, landscape: true}, lastParams || getParams()), 0, true)
+    ? sheetRowAvailableWidth(sheetLayoutForPage({blocks, landscape: true}, lastParams || getParams(), 0), 0, true)
     : sheetRowAvailableWidth(layout, 0);
   const rowFitWidth = rowBlocks => {
     const landscapeRow = pageNeedsLandscape({blocks: rowBlocks});
@@ -4076,15 +4216,22 @@ function sheetAvailableHeight(layout, pageIndex = 0, landscape = false) {
   return Math.max(1, layout.plot.h - gaps.top - gaps.bottom);
 }
 
-function nineBoothBaselineWidth(blocks) {
-  const candidates = blocks.map(block => {
-    const row = block.row || {};
-    const base = {...row, count:9, total:9000, widthsText:''};
-    base.boothSwings = normalizeBoothSwings(row.boothSwings, 9, row.swing || swingMode);
-    base.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, 9);
-    return planBlockMetrics(base).w;
-  });
-  return Math.max(1, ...candidates);
+function planPrintableRawWidth(landscape = false, pageIndex = 0, p = lastParams || getParams()) {
+  const layout = landscape ? sheetLayoutForPage({blocks: [], landscape: true}, p, pageIndex) : getSheetLayout(p, pageIndex);
+  return sheetRowAvailableWidth(layout, pageIndex, landscape);
+}
+
+function portraitNineGroupLimitWidth(block) {
+  const row = block?.row || defaultRow;
+  const base = {...row, count:9, total:9000, widthsText:''};
+  base.boothSwings = normalizeBoothSwings(row.boothSwings, 9, row.swing || swingMode);
+  base.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, 9);
+  return planBlockMetrics(base).w;
+}
+
+function portraitPageRowLimitWidth(blocks = []) {
+  const source = blocks.length ? blocks : [{row: activeRow() || defaultRow}];
+  return Math.max(1, ...source.map(block => portraitNineGroupLimitWidth(block)));
 }
 
 function landscapeBlockRun(block) {
@@ -4095,24 +4242,9 @@ function landscapeBoothCount(block) {
   return Math.max(1, Number(block?.row?.count) || 1);
 }
 
-function landscapeBoundaryFromBlock(block) {
-  const source = block?.row || defaultRow;
-  const row = {...source, count: LANDSCAPE_CAPACITY_RULE.boundaryBooths, total: LANDSCAPE_CAPACITY_RULE.boundaryBooths * 1000, widthsText: ''};
-  row.boothSwings = normalizeBoothSwings(source.boothSwings, LANDSCAPE_CAPACITY_RULE.boundaryBooths, source.swing || swingMode);
-  row.noDoorBooths = normalizeNoDoorBooths(source.noDoorBooths, LANDSCAPE_CAPACITY_RULE.boundaryBooths);
-  return planBlockMetrics(row).w;
-}
-
-function landscapeStandardScale(blocks, pageIndex = 0) {
-  const sampleBlock = blocks.find(block => landscapeIsMainGroup(block)) || blocks[0];
-  const boundaryW = landscapeBoundaryFromBlock(sampleBlock);
-  const rowH = Math.max(1, ...blocks.map(block => block.metrics.h));
-  const rows = landscapeRowsPerPage(pageIndex);
-  const rawH = rowH * rows + LANDSCAPE_GROUP_GAP.y * Math.max(0, rows - 1);
-  const pageLayout = sheetLayoutForPage({blocks, landscape: true}, lastParams || getParams());
-  const availableW = sheetRowAvailableWidth(pageLayout, pageIndex, true);
-  const availableH = sheetAvailableHeight(pageLayout, pageIndex, true);
-  return Math.min(1, availableW / Math.max(1, boundaryW), availableH / Math.max(1, rawH));
+function landscapeStandardScale(blocks, pageIndex = 0, rowCount = landscapeRowsPerPage(pageIndex)) {
+  const rows = (blocks || []).slice(0, Math.max(1, Number(rowCount) || 1)).map(block => [block]);
+  return landscapeScaleForRows(rows.length ? rows : [(blocks || []).map(block => block).filter(Boolean)], pageIndex);
 }
 
 function measureLandscapeRow(rowBlocks, scale = 1) {
@@ -4133,45 +4265,49 @@ function measureLandscapeRow(rowBlocks, scale = 1) {
   return {placements, w:Math.max(1, rowRight), h:Math.max(1, rowH)};
 }
 
-function landscapeBlockCanExceedBoundary(block) {
-  const count = landscapeBoothCount(block);
-  return count > LANDSCAPE_CAPACITY_RULE.boundaryBooths && count <= LANDSCAPE_CAPACITY_RULE.maxBooths;
-}
-
-function landscapeIsMainGroup(block) {
-  return landscapeBoothCount(block) >= 10;
-}
-
-function landscapeIsFillerGroup(block) {
-  const count = landscapeBoothCount(block);
-  return count >= 1 && count <= 3;
-}
-
-function landscapePageAllowsScale(page) {
-  return landscapeBlocksAllowScale(page?.blocks || []);
-}
-
-function landscapeBlocksAllowScale(blocks) {
-  return (blocks || []).some(block => landscapeBlockCanExceedBoundary(block));
-}
-
-function landscapeRowCanAccept(rowBlocks, block, scale = 1) {
+function landscapeRowCanAccept(rowBlocks, block, scale = 1, availableW = Infinity, pageBlocks = []) {
   const next = [...rowBlocks, block];
-  if (next.length === 1 && landscapeBlockCanExceedBoundary(block)) return true;
-  if (rowBlocks.length > 0 && landscapeIsMainGroup(rowBlocks[0]) && !landscapeIsFillerGroup(block)) return false;
-  const boundaryW = landscapeBoundaryFromBlock(next[0]);
-  return measureLandscapeRow(next, scale).w <= boundaryW + 0.5;
+  if (next.length === 1) return true;
+  const rowLimit = Math.min(availableW, landscapePageRowLimitWidth([...pageBlocks, block]) * Math.max(0.0001, scale || 1));
+  return measureLandscapeRow(next, scale).w * Math.max(0.0001, scale || 1) <= rowLimit + 0.5;
+}
+
+function landscapePageRowLimitWidth(blocks = []) {
+  return Math.max(1, ...blocks.map(block => Number(block?.metrics?.w) || planBlockMetrics(block?.row || defaultRow).w));
+}
+
+function landscapeScaleForRows(rows = [], pageIndex = 0) {
+  const cleanRows = rows.map(row => row.filter(Boolean)).filter(row => row.length);
+  const blocks = cleanRows.flat();
+  if (!blocks.length) return 1;
+  const pageLayout = sheetLayoutForPage({blocks, landscape: true}, lastParams || getParams(), pageIndex);
+  const availableW = sheetRowAvailableWidth(pageLayout, pageIndex, true);
+  const availableH = sheetAvailableHeight(pageLayout, pageIndex, true);
+  const rowHeights = cleanRows.map(row => Math.max(1, ...row.map(block => block.metrics.h)));
+  const rawRowsH = rowHeights.reduce((sum, h) => sum + h, 0);
+  const visualGapH = LANDSCAPE_GROUP_GAP.y * Math.max(0, cleanRows.length - 1);
+  let scale = 1;
+  for (let i = 0; i < 6; i++) {
+    const maxRawW = Math.max(1, ...cleanRows.map(row => measureLandscapeRow(row, scale).w));
+    const next = Math.min(1, availableW / maxRawW, Math.max(1, availableH - visualGapH) / Math.max(1, rawRowsH));
+    if (Math.abs(next - scale) < 0.0005) return Math.max(0.0001, next);
+    scale = Math.max(0.0001, next);
+  }
+  return scale;
 }
 
 function paginateLandscapePlanBlocksAtScale(blocks, layout, sheetScale) {
   const pages = [];
   let rows = [];
 
+  const pageAvailableW = pageIndex => sheetRowAvailableWidth(sheetLayoutForPage({blocks, landscape: true}, lastParams || getParams(), pageIndex), pageIndex, true);
+
   const pushPage = () => {
     if (!rows.length) return;
     const pageIndex = pages.length;
-    const pageScale = landscapeBlocksAllowScale(rows.flat()) ? sheetScale : landscapeStandardScale(blocks, pageIndex);
-    const gapY = LANDSCAPE_GROUP_GAP.y / Math.max(0.0001, pageScale || 1);
+    const pageRows = rows.flat();
+    const pageScale = landscapeScaleForRows(rows, pageIndex);
+    const rawGapY = LANDSCAPE_GROUP_GAP.y / Math.max(0.0001, pageScale || 1);
     let y = 0;
     const pageBlocks = [];
     let usedW = 0;
@@ -4181,16 +4317,18 @@ function paginateLandscapePlanBlocksAtScale(blocks, layout, sheetScale) {
       measured.placements.forEach(block => pageBlocks.push({...block, pageY:y, sheetScale:pageScale}));
       usedW = Math.max(usedW, measured.w);
       usedH = Math.max(usedH, y + measured.h);
-      y += measured.h + gapY;
+      y += measured.h + rawGapY;
     });
-    pages.push({blocks: pageBlocks, usedW, usedH, rowCount: rows.length, landscape: true});
+    pages.push({blocks: pageBlocks, usedW, usedH, rowCount: rows.length, landscape: pageNeedsLandscape({blocks: pageBlocks})});
     rows = [];
   };
 
   blocks.forEach(block => {
     let row = rows[rows.length - 1];
-    const pageScale = landscapeBlocksAllowScale([...rows.flat(), block]) ? sheetScale : landscapeStandardScale(blocks, pages.length);
-    if (!row || !landscapeRowCanAccept(row, block, pageScale)) {
+    const candidateSameRows = row ? [...rows.slice(0, -1), [...row, block]] : [[block]];
+    const sameRowScale = landscapeScaleForRows(candidateSameRows, pages.length);
+    const canUseSameRow = row && landscapeRowCanAccept(row, block, sameRowScale, pageAvailableW(pages.length), rows.flat());
+    if (!row || !canUseSameRow) {
       if (rows.length >= landscapeRowsPerPage(pages.length)) pushPage();
       row = [];
       rows.push(row);
@@ -4199,12 +4337,141 @@ function paginateLandscapePlanBlocksAtScale(blocks, layout, sheetScale) {
   });
 
   pushPage();
-  return pages.length ? pages : [{blocks: [], usedW: 0, usedH: 0, rowCount: 0, landscape: true}];
+  return pages.length ? pages : [{blocks: [], usedW: 0, usedH: 0, rowCount: 0, landscape: false}];
 }
 function paginatePlanBlocksAtScale(blocks, layout, sheetScale) {
-  return planBlocksNeedLandscape(blocks)
-    ? paginateLandscapePlanBlocksAtScale(blocks, layout, sheetScale)
-    : paginatePortraitPlanBlocksAtScale(blocks, layout, sheetScale);
+  return paginateAdaptivePlanBlocksAtScale(blocks, layout, sheetScale);
+}
+
+function paginateAdaptivePlanBlocksAtScale(blocks, layout, sheetScale) {
+  const minScale = SHEET_LAYOUT_RULES.minReadableScale;
+  const packingScale = 1;
+  const rawPortraitGapX = SHEET_LAYOUT_RULES.colGap / packingScale;
+  const rawPortraitGapY = SHEET_LAYOUT_RULES.rowGap / packingScale;
+  const pages = [];
+  let rows = [];
+  let landscape = false;
+
+  const currentBlocks = () => rows.flat();
+  const pageIndex = () => pages.length;
+  const portraitLayoutForPage = index => getSheetLayout(lastParams || getParams(), index);
+  const portraitRowLimit = rowBlocks => portraitPageRowLimitWidth(rowBlocks);
+  const portraitMaxRawH = index => sheetAvailableHeight(portraitLayoutForPage(index), index) / Math.max(0.0001, minScale);
+  const portraitRowsFit = candidateRows => {
+    let y = 0;
+    for (let i = 0; i < candidateRows.length; i++) {
+      const h = Math.max(1, ...candidateRows[i].map(block => block.metrics.h));
+      if (i > 0) y += rawPortraitGapY;
+      if (y + h > portraitMaxRawH(pageIndex()) + 0.5) return false;
+      y += h;
+    }
+    return candidateRows.length <= maxRowsForSheetPage(pageIndex());
+  };
+  const landscapeRowsFit = candidateRows => candidateRows.length <= landscapeRowsPerPage(pageIndex());
+  const pushPortraitPage = () => {
+    const page = {blocks: [], usedW: 0, usedH: 0, rowCount: rows.length, landscape: false};
+    let y = 0;
+    rows.forEach((rowBlocks, rowIndex) => {
+      let x = 0;
+      let rowH = 0;
+      rowBlocks.forEach((block, blockIndex) => {
+        const placed = {...block, pageX:x, pageY:y, sheetScale};
+        page.blocks.push(placed);
+        page.usedW = Math.max(page.usedW, x + block.metrics.w);
+        rowH = Math.max(rowH, block.metrics.h);
+        x += block.metrics.w + rawPortraitGapX;
+      });
+      page.usedH = Math.max(page.usedH, y + rowH);
+      y += rowH + rawPortraitGapY;
+    });
+    if (page.blocks.length) pages.push(page);
+  };
+  const pushLandscapePage = () => {
+    const index = pageIndex();
+    const pageBlocks = currentBlocks();
+    const pageScale = landscapeScaleForRows(rows, index);
+    const rawGapY = LANDSCAPE_GROUP_GAP.y / Math.max(0.0001, pageScale || 1);
+    const page = {blocks: [], usedW: 0, usedH: 0, rowCount: rows.length, landscape: true};
+    let y = 0;
+    rows.forEach(rowBlocks => {
+      const measured = measureLandscapeRow(rowBlocks, pageScale);
+      measured.placements.forEach(block => page.blocks.push({...block, pageY:y, sheetScale:pageScale}));
+      page.usedW = Math.max(page.usedW, measured.w);
+      page.usedH = Math.max(page.usedH, y + measured.h);
+      y += measured.h + rawGapY;
+    });
+    if (page.blocks.length) pages.push(page);
+  };
+  const pushPage = () => {
+    if (!rows.length) return;
+    if (landscape) pushLandscapePage();
+    else pushPortraitPage();
+    rows = [];
+    landscape = false;
+  };
+  const startNewRow = block => {
+    rows.push([block]);
+  };
+
+  blocks.forEach(block => {
+    const needsLandscape = blockNeedsLandscape(block, pageIndex());
+    let row = rows[rows.length - 1];
+
+    if (!rows.length) {
+      landscape = needsLandscape;
+      startNewRow(block);
+      return;
+    }
+
+    if (needsLandscape && !landscape) {
+      const candidateRows = [...rows, [block]];
+      if (candidateRows.length <= 4 && landscapeRowsFit(candidateRows)) {
+        landscape = true;
+        rows = candidateRows;
+        return;
+      }
+      pushPage();
+      landscape = true;
+      startNewRow(block);
+      return;
+    }
+
+    if (landscape) {
+      const availableW = sheetRowAvailableWidth(sheetLayoutForPage({blocks:[...currentBlocks(), block], landscape:true}, lastParams || getParams(), pageIndex()), pageIndex(), true);
+      const sameRows = row ? [...rows.slice(0, -1), [...row, block]] : [[block]];
+      const sameScale = landscapeScaleForRows(sameRows, pageIndex());
+      if (row && landscapeRowCanAccept(row, block, sameScale, availableW, currentBlocks())) {
+        row.push(block);
+        return;
+      }
+      const nextRows = [...rows, [block]];
+      if (landscapeRowsFit(nextRows)) {
+        rows = nextRows;
+        return;
+      }
+      pushPage();
+      landscape = needsLandscape;
+      startNewRow(block);
+      return;
+    }
+
+    const sameRawW = row.reduce((sum, item) => sum + item.metrics.w, 0) + rawPortraitGapX * row.length + block.metrics.w;
+    if (row && sameRawW <= portraitRowLimit([...row, block]) + 0.5) {
+      row.push(block);
+      return;
+    }
+    const nextRows = [...rows, [block]];
+    if (portraitRowsFit(nextRows)) {
+      rows = nextRows;
+      return;
+    }
+    pushPage();
+    landscape = needsLandscape;
+    startNewRow(block);
+  });
+
+  pushPage();
+  return pages.length ? pages : [{blocks: [], usedW: 0, usedH: 0, rowCount: 0, landscape: false}];
 }
 
 function paginatePortraitPlanBlocksAtScale(blocks, layout, sheetScale) {
@@ -4218,9 +4485,8 @@ function paginatePortraitPlanBlocksAtScale(blocks, layout, sheetScale) {
   let cursorY = 0;
   let lineH = 0;
   let lineCount = 1;
-  const baselineRawW = nineBoothBaselineWidth(blocks);
-  const maxRawW = pageIndex => Math.max(sheetRowAvailableWidth(layout, pageIndex) / Math.max(0.0001, minScale), baselineRawW);
-  const maxRawH = pageIndex => sheetAvailableHeight(layout, pageIndex) / Math.max(0.0001, minScale);
+  const maxRawW = pageIndex => portraitPageRowLimitWidth(blocks);
+  const maxRawH = pageIndex => sheetAvailableHeight(getSheetLayout(lastParams || getParams(), pageIndex), pageIndex) / Math.max(0.0001, minScale);
   const pushPage = () => {
     if (page.blocks.length) page.rowCount = Math.max(page.rowCount, lineCount);
     if (page.blocks.length) pages.push(page);
@@ -4240,10 +4506,6 @@ function paginatePortraitPlanBlocksAtScale(blocks, layout, sheetScale) {
   blocks.forEach(block => {
     const rawW = block.metrics.w;
     const rawH = block.metrics.h;
-    const pageValue = Number.isFinite(Number(block.row?.drawSheetPage)) ? Number(block.row.drawSheetPage) : Number(block.row?.sheetPage);
-    const targetSheetPage = Number.isFinite(pageValue) ? Math.max(0, pageValue) : null;
-    const firstPageValue = Number.isFinite(Number(page.blocks[0]?.row?.drawSheetPage)) ? Number(page.blocks[0].row.drawSheetPage) : Number(page.blocks[0]?.row?.sheetPage);
-    if (targetSheetPage !== null && page.blocks.length && targetSheetPage !== firstPageValue) pushPage();
     let pageIndex = pages.length;
     const rowCapacity = maxRawW(pageIndex);
     if (cursorX > 0 && cursorX + rawW > rowCapacity + 0.5) {
@@ -4273,9 +4535,9 @@ function autoPackPlanBlocksAtScale(blocks, layout, sheetScale) {
   const packingScale = Math.max(0.0001, sheetScale || minScale);
   const rawGapX = SHEET_LAYOUT_RULES.colGap / packingScale;
   const rawGapY = SHEET_LAYOUT_RULES.rowGap / packingScale;
-  const pageLayoutForBlocks = blocks => sheetLayoutForPage({blocks}, lastParams || getParams());
-  const maxRawW = (pageIndex, pageBlocks = []) => sheetRowAvailableWidth(pageLayoutForBlocks(pageBlocks), pageIndex) / Math.max(0.0001, minScale);
-  const maxRawH = (pageIndex, pageBlocks = []) => sheetAvailableHeight(pageLayoutForBlocks(pageBlocks), pageIndex) / Math.max(0.0001, minScale);
+  const pageLayoutForBlocks = (blocks, pageIndex = 0) => sheetLayoutForPage({blocks}, lastParams || getParams(), pageIndex);
+  const maxRawW = (pageIndex, pageBlocks = []) => sheetRowAvailableWidth(pageLayoutForBlocks(pageBlocks, pageIndex), pageIndex) / Math.max(0.0001, minScale);
+  const maxRawH = (pageIndex, pageBlocks = []) => sheetAvailableHeight(pageLayoutForBlocks(pageBlocks, pageIndex), pageIndex) / Math.max(0.0001, minScale);
   const pages = [];
   const createPage = () => ({blocks: [], rows: [], usedW: 0, usedH: 0, rowCount: 0});
   const packWidth = block => {
@@ -4354,7 +4616,11 @@ function autoPackPlanBlocksAtScale(blocks, layout, sheetScale) {
   return pages.map(page => ({blocks: page.blocks, usedW: page.usedW, usedH: page.usedH, rowCount: page.rowCount}));
 }
 function getPlanPages(p = lastParams || getParams()) {
-  return paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), getSheetLayout(p));
+  return paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), getSheetLayout(p));
+}
+
+function planPageOrientationIndex(pages, pageIndex) {
+  return pageOrientationIndices(pages)[Math.max(0, Math.min(pageIndex, pages.length - 1))] || 0;
 }
 
 function getSheetPlanPages(p = lastParams || getParams()) {
@@ -4378,13 +4644,13 @@ function updateSheetPageInfo(p = lastParams || getParams()) {
 }
 
 
-function drawHatch(x, y, w, h, gap = 42) {
+function drawHatch(x, y, w, h, gap = 42, color = 'rgba(120,126,135,.16)', lineWidth = 0.7) {
   ctx.save();
   ctx.beginPath();
   ctx.rect(x, y, w, h);
   ctx.clip();
-  ctx.strokeStyle = 'rgba(120,126,135,.16)';
-  ctx.lineWidth = 0.7;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
   for (let i = -h; i < w + h; i += gap) {
     ctx.beginPath();
     ctx.moveTo(x + i, y + h);
@@ -4419,10 +4685,13 @@ function minZoomScale(p = lastParams || getParams()) {
 function wheelMaxZoomScale(p = lastParams || getParams()) {
   if (!(currentTab === 'plan' && canvasMode === 'sheets')) return 5;
   const layout = getSheetLayout(p);
-  const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), layout);
+  const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), layout);
+  const orientationIndices = pageOrientationIndices(pages);
   const fits = pages.map((page, index) => {
-    const P = layout.plot;
-    const gaps = sheetContentGaps(index);
+    const pageLayout = sheetLayoutForPage(page, p, index);
+    const landscape = pageNeedsLandscape(page);
+    const gaps = sheetContentGaps(orientationIndices[index] || 0, landscape);
+    const P = pageLayout.plot;
     const availableW = Math.max(1, P.w - gaps.left - gaps.right);
     const availableH = Math.max(1, P.h - gaps.top - gaps.bottom);
     const rawContentW = Math.max(1, page.usedW);
@@ -4437,36 +4706,55 @@ function wheelMaxZoomScale(p = lastParams || getParams()) {
 
 function planPageForIndex(p = lastParams || getParams(), pageIndex = currentPlanPage) {
   const baseLayout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
+  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
   const pages = paginatePlanBlocks(blocks, baseLayout);
   return pages[Math.max(0, Math.min(pageIndex, pages.length - 1))] || null;
 }
 
 function sheetLayoutForRender(tab = currentTab, p = lastParams || getParams(), pageIndex = currentPlanPage) {
   if (tab !== 'plan') return getSheetLayout(p);
-  return sheetLayoutForPage(planPageForIndex(p, pageIndex), p);
+  return sheetLayoutForPage(planPageForIndex(p, pageIndex), p, pageIndex);
 }
+function blockNeedsLandscape(block, pageIndex = 0) {
+  if (paperSize !== 'a4') return false;
+  const count = Math.max(1, Number(block?.row?.count) || Number(block?.originalRow?.count) || 1);
+  return count > 9;
+}
+
 function pageNeedsLandscape(page) {
-  if (page?.landscape === true) return true;
-  return paperSize === 'a4' && (page?.blocks || []).some(block => Math.max(1, Number(block?.row?.count) || 1) > 9);
+  if (page && Object.prototype.hasOwnProperty.call(page, 'landscape')) return page.landscape === true;
+  return (page?.blocks || []).some(block => blockNeedsLandscape(block));
 }
 
 function planBlocksNeedLandscape(blocks) {
   return pageNeedsLandscape({blocks});
 }
 
-function sheetLayoutForPage(page = null, p = lastParams || getParams()) {
-  const layout = getSheetLayout(p);
+function pageOrientationIndices(pages = []) {
+  const counts = {portrait:0, landscape:0};
+  return pages.map(page => {
+    const key = pageNeedsLandscape(page) ? 'landscape' : 'portrait';
+    const index = counts[key];
+    counts[key] += 1;
+    return index;
+  });
+}
+
+function sheetLayoutForPage(page = null, p = lastParams || getParams(), pageIndex = 0) {
+  const layout = getSheetLayout(p, pageIndex);
   if (!pageNeedsLandscape(page)) return layout;
+  const paperPx = PAPER_SIZES[paperSize] || PAPER_SIZES.a4;
+  const paperMm = PAPER_MM[paperSize] || PAPER_MM.a4;
   const sheetW = layout.sheetH;
   const sheetH = layout.sheetW;
-  const frameInset = 24.5;
-  const safeGap = 16;
-  const titleH = 50;
-  const plotX = frameInset + safeGap;
-  const plotY = frameInset + 52;
-  const plotW = sheetW - plotX - frameInset - safeGap;
-  const plotH = sheetH - plotY - titleH - frameInset;
+  const frameInset = Math.round((paperPx.h / paperMm.h) * 10);
+  const safeGap = 0;
+  const titleH = sheetTitleReservedHeight(pageIndex);
+  const footerH = SHEET_PAGE_NUMBER_RESERVED_H;
+  const plotX = frameInset;
+  const plotY = frameInset + titleH;
+  const plotW = sheetW - plotX - frameInset;
+  const plotH = sheetH - plotY - frameInset - footerH;
   return {
     sheetW,
     sheetH,
@@ -4477,22 +4765,53 @@ function sheetLayoutForPage(page = null, p = lastParams || getParams()) {
   };
 }
 function sheetPreviewContentSize(p = lastParams || getParams(), layout = getSheetLayout(p)) {
-  const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), layout);
-  const pageLayouts = pages.map(page => sheetLayoutForPage(page, p));
-  const gap = Math.max(80, Math.max(...pageLayouts.map(item => item.sheetW), layout.sheetW) * 0.12);
+  const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), layout);
+  const pageLayouts = pages.map((page, index) => sheetLayoutForPage(page, p, index));
+  const gap = sheetPreviewPageGap(layout, pageLayouts);
   return {
     w: pageLayouts.reduce((sum, item) => sum + item.sheetW, 0) + Math.max(0, pageLayouts.length - 1) * gap,
     h: Math.max(...pageLayouts.map(item => item.sheetH), layout.sheetH)
   };
 }
 
+function sheetPreviewPageGap(layout = getSheetLayout(), pageLayouts = []) {
+  const maxSheetW = Math.max(layout.sheetW, ...pageLayouts.map(item => item.sheetW || 0));
+  return Math.max(80, maxSheetW * 0.12);
+}
+
 const PAPER_SIZES = {
   a4: {w:834, h:1180, label:'A4'},
   a3: {w:1680, h:1188, label:'A3'}
 };
+const PAPER_MM = {
+  a4: {w:210, h:297},
+  a3: {w:420, h:297}
+};
+const SHEET_TITLE_H = 74;
+const SHEET_TITLE_TO_CONTENT_GAP = 20;
+const SHEET_TITLE_RESERVED_H = SHEET_TITLE_H + SHEET_TITLE_TO_CONTENT_GAP;
+const SHEET_PAGE_NUMBER_RESERVED_H = 18;
 const SHEET_W = PAPER_SIZES.a4.w;
 const SHEET_H = PAPER_SIZES.a4.h;
 const PLOT = {x:70, y:112, w:1040, h:545};
+
+function paperMarginPx(size = paperSize, mm = 10) {
+  const paperPx = PAPER_SIZES[size] || PAPER_SIZES.a4;
+  const paperMm = PAPER_MM[size] || PAPER_MM.a4;
+  return Math.round((paperPx.w / paperMm.w) * mm);
+}
+
+function paperVerticalMmPx(size = paperSize, landscape = false, mm = 10) {
+  const paperPx = PAPER_SIZES[size] || PAPER_SIZES.a4;
+  const paperMm = PAPER_MM[size] || PAPER_MM.a4;
+  const pxH = landscape ? paperPx.w : paperPx.h;
+  const mmH = landscape ? paperMm.w : paperMm.h;
+  return Math.round((pxH / mmH) * mm);
+}
+
+function sheetPageNumberBaselineY(layout) {
+  return layout.sheetH - paperVerticalMmPx(paperSize, layout.sheetW > layout.sheetH, 2);
+}
 
 function setPaperSize(size) {
   paperSize = PAPER_SIZES[size] ? size : 'a4';
@@ -4509,7 +4828,11 @@ function applyPaperSize() {
   if (el) el.value = paperSize;
 }
 
-function getSheetLayout(p = lastParams || getParams()) {
+function sheetTitleReservedHeight(pageIndex = 0) {
+  return pageIndex === 0 ? SHEET_TITLE_RESERVED_H : 0;
+}
+
+function getSheetLayout(p = lastParams || getParams(), pageIndex = 0) {
   const rows = drawableGroupRows();
   const sourceRows = rows.length > 1 ? rows.map(item => item.row) : [p];
   const maxRun = sourceRows.reduce((max, r) => Math.max(max, compute(r).totalRun || r.total || 0), 0);
@@ -4517,13 +4840,14 @@ function getSheetLayout(p = lastParams || getParams()) {
   const base = PAPER_SIZES[paperSize] || PAPER_SIZES.a4;
   const sheetW = base.w;
   const sheetH = base.h;
-  const frameInset = 24.5;
-  const safeGap = 16;
-  const titleH = 50;
-  const plotX = frameInset + safeGap;
-  const plotY = frameInset + 52;
-  const plotW = sheetW - plotX - frameInset - safeGap;
-  const plotH = sheetH - plotY - titleH - frameInset;
+  const frameInset = paperMarginPx(paperSize, 10);
+  const safeGap = 0;
+  const titleH = sheetTitleReservedHeight(pageIndex);
+  const footerH = SHEET_PAGE_NUMBER_RESERVED_H;
+  const plotX = frameInset;
+  const plotY = frameInset + titleH;
+  const plotW = sheetW - plotX - frameInset;
+  const plotH = sheetH - plotY - frameInset - footerH;
   return {
     sheetW,
     sheetH,
@@ -4583,49 +4907,34 @@ const SHEET_LAYOUT_RULES = {
   rowGap: 30,
   colGap: 24,
   firstPageMaxRows: 5,
-  laterPageMaxRows: 6,
-  firstPageTopGap: 72,
-  laterPageTopGap: 28,
-  sideGap: 4,
-  footerGap: 42,
-  landscapePageGap: 72
+  laterPageMaxRows: 5,
+  firstPageTopGap: 0,
+  laterPageTopGap: 0,
+  sideGap: 0,
+  footerGap: 0,
+  landscapePageGap: 0
 };
 
 const LANDSCAPE_GROUP_GAP = {
   x: 60,
-  y: 20
+  get y() { return paperVerticalMmPx(paperSize, true, 10); }
 };
 
-const LANDSCAPE_CAPACITY_RULE = {
-  boundaryBooths: 15,
-  maxBooths: 20,
-  firstPageRows: 4,
-  laterPageRows: 5
+const LANDSCAPE_PAGE_RULES = {
+  firstPageRows: 3,
+  laterPageRows: 4
 };
 
 function landscapeRowsPerPage(pageIndex = 0) {
-  return pageIndex === 0 ? LANDSCAPE_CAPACITY_RULE.firstPageRows : LANDSCAPE_CAPACITY_RULE.laterPageRows;
+  return pageIndex === 0 ? LANDSCAPE_PAGE_RULES.firstPageRows : LANDSCAPE_PAGE_RULES.laterPageRows;
 }
 
 function maxRowsForSheetPage(pageIndex = 0) {
-  return pageIndex === 0 ? SHEET_LAYOUT_RULES.firstPageMaxRows : SHEET_LAYOUT_RULES.laterPageMaxRows;
+  return SHEET_LAYOUT_RULES.firstPageMaxRows;
 }
 
 function sheetContentGaps(pageIndex = 0, landscape = false) {
-  if (landscape) {
-    return {
-      top: pageIndex === 0 ? SHEET_LAYOUT_RULES.landscapePageGap : SHEET_LAYOUT_RULES.laterPageTopGap,
-      right: SHEET_LAYOUT_RULES.sideGap,
-      bottom: pageIndex === 0 ? SHEET_LAYOUT_RULES.landscapePageGap : SHEET_LAYOUT_RULES.laterPageTopGap,
-      left: SHEET_LAYOUT_RULES.sideGap
-    };
-  }
-  return {
-    top: pageIndex === 0 ? SHEET_LAYOUT_RULES.firstPageTopGap : SHEET_LAYOUT_RULES.laterPageTopGap,
-    right: SHEET_LAYOUT_RULES.sideGap,
-    bottom: SHEET_LAYOUT_RULES.footerGap,
-    left: SHEET_LAYOUT_RULES.sideGap
-  };
+  return {top:0, right:0, bottom:0, left:0};
 }
 
 function drawSheet(title, p, offsetX = 0, offsetY = 0, pageIndex = 0, layoutOverride = null) {
@@ -4643,20 +4952,16 @@ function drawSheet(title, p, offsetX = 0, offsetY = 0, pageIndex = 0, layoutOver
   ctx.strokeStyle = '#c7cbd1';
   ctx.lineWidth = 1;
   ctx.strokeRect(0.5, 0.5, sheetW - 1, sheetH - 1);
-  ctx.strokeStyle = '#30343a';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(24.5, 24.5, sheetW - 49, sheetH - 49);
-
   if (pageIndex === 0) drawSheetNoteCard(layout, offsetX, offsetY);
 
   ctx.restore();
 }
 
 function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
-  const x = layout.frame.x + 38;
-  const y = layout.frame.y + 18;
-  const w = layout.frame.w - 76;
-  const h = 74;
+  const x = layout.frame.x;
+  const y = layout.frame.y;
+  const w = layout.frame.w;
+  const h = SHEET_TITLE_H;
   if (!drawingForExport) {
     planHitAreas.push({
       type:'sheet-note',
@@ -4673,7 +4978,7 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
   ctx.strokeRect(x, y, w, h);
   if (selectionScope === 'sheet-note' || isMultiSelected('sheet-note', 'sheet', 'header')) drawPlanSelectionBox(x, y, w, h, 6, true);
   if (sheetHeaderText || canvasTextCaretVisible('sheet-note')) {
-    ctx.fillStyle = '#1f2328';
+    ctx.fillStyle = '#000000';
     const fit = fitCanvasTextLines(sheetHeaderText, w - 36, 2, {maxFont:22, minFont:10});
     ctx.font = `${fit.fontSize}px 'Microsoft YaHei', Arial, sans-serif`;
     ctx.textAlign = 'left';
@@ -4687,7 +4992,7 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
       const safeLastLine = ellipsizeCanvasText(lastLine, w - 36);
       const caretX = Math.min(x + w - 18, x + 18 + ctx.measureText(safeLastLine).width + 2);
       const caretY = startY + (lines.length - 1) * lineH - fit.fontSize / 2;
-      drawCanvasTextCaret(caretX, caretY, Math.max(12, fit.fontSize), '#1f2328');
+      drawCanvasTextCaret(caretX, caretY, Math.max(12, fit.fontSize), '#000000');
     }
   }
   ctx.restore();
@@ -4714,7 +5019,7 @@ function groupColor(index) {
 
 function drawDim(x1,y1,x2,y2,label,side, meta = null) {
   ctx.save();
-  ctx.strokeStyle='#111'; ctx.fillStyle='#111';
+  ctx.strokeStyle='#000000'; ctx.fillStyle='#000000';
   ctx.lineWidth=Math.max(0.35, anno(4)); ctx.font=planFont(95);
   const displayLabel = dimensionDisplayLabel(label, meta);
   const isH = Math.abs(x2-x1) > Math.abs(y2-y1);
@@ -4735,7 +5040,7 @@ function drawDim(x1,y1,x2,y2,label,side, meta = null) {
     ctx.fillText(displayLabel,tx,ty);
     const textW = ctx.measureText(String(displayLabel)).width;
     registerDimensionHit(meta, tx, ty - anno(74), Math.max(anno(210), textW + anno(95)), anno(96));
-    if (dimensionEditActive(meta) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(tx + textW / 2 + anno(8), ty, 'bottom', '#111', displayLabel);
+    if (dimensionEditActive(meta) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(tx + textW / 2 + anno(8), ty, 'bottom', '#000000', displayLabel);
   } else {
     const dx = (x1+x2)/2 + off;
     const tick = anno(28);
@@ -4751,7 +5056,7 @@ function drawDim(x1,y1,x2,y2,label,side, meta = null) {
     ctx.save(); ctx.translate(tx, ty); ctx.rotate(Math.PI/2);
     ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(displayLabel,0,0);
     const textW = ctx.measureText(String(displayLabel)).width;
-    if (dimensionEditActive(meta) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(textW / 2 + anno(8), 0, 'middle', '#111', displayLabel);
+    if (dimensionEditActive(meta) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(textW / 2 + anno(8), 0, 'middle', '#000000', displayLabel);
     ctx.restore();
     registerDimensionHit(meta, tx, ty - Math.max(anno(155), textW / 2 + anno(35)), anno(130), Math.max(anno(310), textW + anno(110)));
   }
@@ -4760,7 +5065,7 @@ function drawDim(x1,y1,x2,y2,label,side, meta = null) {
 
 function drawLeftOuterDepthDim(x, y1, y2, label) {
   ctx.save();
-  ctx.strokeStyle='#111'; ctx.fillStyle='#111';
+  ctx.strokeStyle='#000000'; ctx.fillStyle='#000000';
   ctx.lineWidth=Math.max(0.35, anno(4)); ctx.font=planFont(95);
   const dimX = x;
   const textX = x - anno(72);
@@ -4778,7 +5083,7 @@ function drawLeftOuterDepthDim(x, y1, y2, label) {
   ctx.restore();
 }
 
-function drawChainDim(y, segments, color = '#111') {
+function drawChainDim(y, segments, color = '#000000') {
   ctx.save();
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
@@ -4853,11 +5158,11 @@ function drawProjectOverview(p, c) {
   const ox = PLOT.x + 70;
   const oy = PLOT.y + 122;
 
-  ctx.fillStyle = '#1f2328';
+  ctx.fillStyle = '#000000';
   ctx.font = `bold 18px 'Microsoft YaHei', Arial, sans-serif`;
   ctx.textAlign = 'left'; ctx.textBaseline = 'top';
   ctx.fillText(`项目总览：共 ${p.count} 间标准隔间`, ox, oy - 54);
-  ctx.fillStyle = '#656d76';
+  ctx.fillStyle = '#000000';
   ctx.font = `13px 'Microsoft YaHei', Arial, sans-serif`;
   ctx.fillText(`单间参考：宽 ${fmtMm(c.boothW)}mm × 深 ${p.depth}mm，门宽 ${p.doorW}mm，板厚 ${p.tPanel}mm`, ox, oy - 28);
 
@@ -4868,7 +5173,7 @@ function drawProjectOverview(p, c) {
     const y = oy + row * (cellH + gap);
     ctx.fillStyle = '#fff';
     ctx.fillRect(x, y, cellW, cellH);
-    ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+    ctx.strokeStyle = '#000000'; ctx.lineWidth = 1;
     ctx.strokeRect(x, y, cellW, cellH);
     ctx.strokeStyle = '#185FA5';
     ctx.beginPath(); ctx.moveTo(x + cellW * .28, y + cellH - 4); ctx.lineTo(x + cellW * .72, y + cellH - 4); ctx.stroke();
@@ -4888,8 +5193,8 @@ function drawProjectOverview(p, c) {
 }
 
 function drawStandardPlanModule(x, y, w, h, p, c) {
-  ctx.strokeStyle = '#222'; ctx.lineWidth = 1.2; ctx.strokeRect(x, y, w, h);
-  drawHatch(x, y - 18, w, 18, 14); ctx.strokeStyle = '#666'; ctx.strokeRect(x, y - 18, w, 18);
+  ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.2; ctx.strokeRect(x, y, w, h);
+  drawHatch(x, y - 18, w, 18, 14); ctx.strokeStyle = '#000000'; ctx.strokeRect(x, y - 18, w, 18);
   const doorW = w * Math.min(.72, p.doorW / c.boothW);
   const dx = x + (w - doorW) / 2;
   ctx.strokeStyle = '#185FA5'; ctx.strokeRect(dx, y + h - 6, doorW, 6);
@@ -4920,25 +5225,18 @@ function drawPlanWalls(ox, oy, sW, sD, swt, c, extras = {}) {
   const middleH = middleExtras.reduce((max, item) => Math.max(max, back + item.h), 0);
   const outerW = Math.max(backRight, right ? rightX + right : ox + sW, ox + sW) - outerX;
   const outerH = Math.max(back, leftH, rightH, middleH);
-  const wallPath = new Path2D();
-  if (back) wallPath.rect(backX, oy - back, backRight - backX, back);
-  if (left) wallPath.rect(leftX, oy - back, left, leftH);
-  if (right) wallPath.rect(rightX, oy - back, right, rightH);
-  middleExtras.forEach(item => wallPath.rect(item.x1, oy - back, item.x2 - item.x1, back + item.h));
+  const wallRects = [];
+  if (back) wallRects.push({x:backX, y:oy - back, w:backRight - backX, h:back});
+  if (left) wallRects.push({x:leftX, y:oy - back, w:left, h:leftH});
+  if (right) wallRects.push({x:rightX, y:oy - back, w:right, h:rightH});
+  middleExtras.forEach(item => wallRects.push({x:item.x1, y:oy - back, w:item.x2 - item.x1, h:back + item.h}));
 
   ctx.save();
   ctx.fillStyle = '#fbfbfb';
-  ctx.fill(wallPath);
-  ctx.clip(wallPath);
+  wallRects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.w, rect.h));
 
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 0.8;
-  for (let i = -outerH; i < outerW + outerH; i += 22) {
-    ctx.beginPath();
-    ctx.moveTo(outerX + i, outerY + outerH);
-    ctx.lineTo(outerX + i + outerH, outerY);
-    ctx.stroke();
-  }
+  wallRects.forEach(rect => drawHatch(rect.x, rect.y, rect.w, rect.h, 46, 'rgba(0,0,0,.36)', 1.05));
   ctx.restore();
 
   ctx.save();
@@ -5071,7 +5369,7 @@ function drawDoorSwing(door, baseY, st, p) {
   ctx.restore();
 }
 
-function drawPlanRebateEdge(x, y1, y2, color = '#222') {
+function drawPlanRebateEdge(x, y1, y2, color = '#000000') {
   ctx.save();
   ctx.strokeStyle = color;
   ctx.lineWidth = 0.55;
@@ -5155,7 +5453,7 @@ function drawPlanRebateDetails(p, ox, oy, sW, sD, st, scale, boardModel) {
   const yTop = oy + sD;
   const yBot = oy + sD + profileH;
   const yMid = yTop + profileH * 0.5;
-  ctx.strokeStyle = '#222';
+  ctx.strokeStyle = '#000000';
   ctx.lineWidth = 0.75;
   ctx.lineJoin = 'miter';
   ctx.lineCap = 'butt';
@@ -5196,14 +5494,14 @@ function drawProjectStats(x, y, p, c, cols, rows) {
     ['门板数量', `${doorCount} 块`],
     ['中隔板数量', `${p.count} 块`],
   ];
-  ctx.strokeStyle = '#30343a'; ctx.lineWidth = 1; ctx.strokeRect(x, y, 280, 150);
+  ctx.strokeStyle = '#000000'; ctx.lineWidth = 1; ctx.strokeRect(x, y, 280, 150);
   ctx.fillStyle = '#f6f8fa'; ctx.fillRect(x, y, 280, 28);
-  ctx.fillStyle = '#1f2328'; ctx.font = `bold 13px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('项目统计', x + 12, y + 14);
+  ctx.fillStyle = '#000000'; ctx.font = `bold 13px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('项目统计', x + 12, y + 14);
   ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
   lines.forEach((line, i) => {
     const yy = y + 46 + i * 20;
-    ctx.fillStyle = '#656d76'; ctx.fillText(line[0], x + 12, yy);
-    ctx.fillStyle = '#1f2328'; ctx.textAlign = 'right'; ctx.fillText(line[1], x + 266, yy); ctx.textAlign = 'left';
+    ctx.fillStyle = '#000000'; ctx.fillText(line[0], x + 12, yy);
+    ctx.fillStyle = '#000000'; ctx.textAlign = 'right'; ctx.fillText(line[1], x + 266, yy); ctx.textAlign = 'left';
   });
 }
 
@@ -5211,11 +5509,11 @@ function drawMultiGroupOverview() {
   const rows = activeGroupRows();
   const totalCount = rows.reduce((sum, item) => sum + item.row.count, 0);
   const totalRun = rows.reduce((sum, item) => sum + compute(item.row).totalRun, 0);
-  ctx.fillStyle = '#1f2328';
+  ctx.fillStyle = '#000000';
   ctx.font = `bold 18px 'Microsoft YaHei', Arial, sans-serif`;
   ctx.textAlign = 'left'; ctx.textBaseline = 'top';
   ctx.fillText(`项目分组总览：${groups.length} 组 / ${totalCount} 间`, PLOT.x + 18, PLOT.y + 20);
-  ctx.fillStyle = '#656d76';
+  ctx.fillStyle = '#000000';
   ctx.font = `13px 'Microsoft YaHei', Arial, sans-serif`;
   ctx.fillText(`估算总长度：${Math.round(totalRun / 1000 * 10) / 10} m。切换左侧组可编辑单组参数。`, PLOT.x + 18, PLOT.y + 48);
 
@@ -5234,22 +5532,22 @@ function drawMultiGroupOverview() {
     const y = startY + row * (cardH + gap);
     ctx.fillStyle = item.group.id === activeGroupId && g.id === activeRowId ? '#f0f7ff' : '#fff';
     ctx.fillRect(x, y, cardW, cardH);
-    ctx.strokeStyle = item.group.id === activeGroupId && g.id === activeRowId ? '#185FA5' : '#c7cbd1';
+    ctx.strokeStyle = item.group.id === activeGroupId && g.id === activeRowId ? '#185FA5' : '#000000';
     ctx.lineWidth = item.group.id === activeGroupId && g.id === activeRowId ? 1.6 : 1;
     ctx.strokeRect(x, y, cardW, cardH);
-    ctx.fillStyle = '#1f2328';
+    ctx.fillStyle = '#000000';
     ctx.font = `bold 15px 'Microsoft YaHei', Arial, sans-serif`;
     ctx.fillText(layoutUnitName(item.group, g), x + 14, y + 12);
-    ctx.fillStyle = '#656d76';
+    ctx.fillStyle = '#000000';
     ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
     ctx.fillText(`${g.count} 间 · ${wallLabel(g.wall)}`, x + 14, y + 36);
     ctx.fillText(`单间 ${fmtMm(c.boothW)}×${g.depth}mm · 门 ${g.doorW}mm`, x + 14, y + 56);
 
     const mx = x + 14, my = y + 84, mw = Math.min(120, cardW - 28), mh = 42;
     ctx.fillStyle = '#fff'; ctx.fillRect(mx, my, mw, mh);
-    ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.strokeRect(mx, my, mw, mh);
+    ctx.strokeStyle = '#000000'; ctx.lineWidth = 1; ctx.strokeRect(mx, my, mw, mh);
     ctx.strokeStyle = '#185FA5'; ctx.beginPath(); ctx.moveTo(mx + mw*.3, my + mh - 5); ctx.lineTo(mx + mw*.7, my + mh - 5); ctx.stroke();
-    ctx.fillStyle = '#1f2328'; ctx.textAlign = 'right'; ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.fillStyle = '#000000'; ctx.textAlign = 'right'; ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
     ctx.fillText(`${Math.round(c.totalRun/1000*10)/10} m`, x + cardW - 14, y + 112);
     ctx.textAlign = 'left';
   });
@@ -5276,7 +5574,7 @@ function drawSegmentedPlan(p, c) {
   const gapY = 64;
   const rowH = Math.min(128, (PLOT.h - 150 - gapY * (segments - 1)) / segments);
   const startY = PLOT.y + 92;
-  ctx.fillStyle = '#656d76';
+  ctx.fillStyle = '#000000';
   ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
   ctx.textAlign = 'left'; ctx.textBaseline = 'top';
   ctx.fillText(`共 ${p.count} 间，按每段最多 ${segmentSize} 间分段显示。`, PLOT.x + 18, PLOT.y + 58);
@@ -5297,7 +5595,7 @@ function drawSegmentedPlan(p, c) {
     const firstNo = s * segmentSize + 1;
 
     drawPlanWalls(ox, oy, sW, sD, swt, segC);
-    ctx.strokeStyle = '#222'; ctx.lineWidth = 1.1; ctx.strokeRect(ox, oy, sW, sD);
+    ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.1; ctx.strokeRect(ox, oy, sW, sD);
     let x = ox;
     if (!segC.hasLeft) { ctx.strokeRect(x, oy, st, sD); x += st; }
     for (let i = 0; i < count; i++) {
@@ -5308,7 +5606,7 @@ function drawSegmentedPlan(p, c) {
       ctx.fillStyle = '#185FA5'; ctx.font = `bold 14px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(`B${firstNo + i}`, x + bw / 2, oy + sD / 2);
       x += bw;
-      if (i < count - 1) { ctx.strokeStyle = '#222'; ctx.strokeRect(x, oy, st, sD); x += st; }
+      if (i < count - 1) { ctx.strokeStyle = '#000000'; ctx.strokeRect(x, oy, st, sD); x += st; }
     }
     if (!segC.hasRight) ctx.strokeRect(x, oy, st, sD);
     drawDim(ox, oy - swt - 38, ox + sW, oy - swt - 38, `第 ${s + 1} 段：B${firstNo}-B${firstNo + count - 1} / ${W}mm`, 12);
@@ -5415,7 +5713,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     const drawX = geom.panelX;
     const drawY = geom.panelY;
     const drawW = geom.panelW;
-    ctx.strokeStyle = selected ? '#d64242' : '#222';
+    ctx.strokeStyle = selected ? '#d64242' : '#000000';
     ctx.lineWidth = selected ? Math.max(1.2, anno(3)) : 0.8;
     ctx.strokeRect(drawX, drawY, drawW, actualH);
     if (protrusion > 0 && actualDepth > 0) {
@@ -5499,7 +5797,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     }
     boothX += bw;
   }
-  ctx.strokeStyle='#222'; ctx.lineWidth=0.8;
+  ctx.strokeStyle='#000000'; ctx.lineWidth=0.8;
   if (doors.length && !p.rebate) {
     if (doors[0].zoneStart > ox + 0.5) ctx.strokeRect(ox, oy+sD, doors[0].zoneStart - ox, st);
     for (let i = 0; i < doors.length - 1; i++) {
@@ -5664,15 +5962,15 @@ function drawSheetDragOverlay() {
   ctx.restore();
 }
 
-function drawPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, pageIndex = 0) {
+function drawPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, pageIndex = 0, visualPageIndex = pageIndex) {
   if (pageNeedsLandscape(page)) {
-    drawLandscapePlanPageContent(page, layout, sheetOffsetX, sheetOffsetY, pageIndex);
+    drawLandscapePlanPageContent(page, layout, sheetOffsetX, sheetOffsetY, pageIndex, visualPageIndex);
     return;
   }
-  drawPortraitPlanPageContent(page, layout, sheetOffsetX, sheetOffsetY, pageIndex);
+  drawPortraitPlanPageContent(page, layout, sheetOffsetX, sheetOffsetY, pageIndex, visualPageIndex);
 }
 
-function drawLandscapePlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, pageIndex = 0) {
+function drawLandscapePlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, pageIndex = 0, visualPageIndex = pageIndex) {
   const P = layout.plot;
   const gaps = sheetContentGaps(pageIndex, true);
   const availableW = Math.max(1, P.w - gaps.left - gaps.right);
@@ -5680,32 +5978,27 @@ function drawLandscapePlanPageContent(page, layout, sheetOffsetX = 0, sheetOffse
   const rawContentW = Math.max(1, page.usedW);
   const rawContentH = Math.max(1, page.usedH);
   const pageFit = Math.min(1, availableW / rawContentW, availableH / rawContentH);
-  const baseScale = Math.max(0.0001, Math.min(1, ...page.blocks.map(block => Number(block.sheetScale) || 1)));
-  const fit = landscapePageAllowsScale(page) ? pageFit : baseScale;
+  const plannedScale = Math.max(0.0001, Math.min(1, ...page.blocks.map(block => Number(block.sheetScale) || 1)));
+  const plannedFits = rawContentW * plannedScale <= availableW + 0.5 && rawContentH * plannedScale <= availableH + 0.5;
+  const fit = plannedFits ? plannedScale : pageFit;
   const contentW = Math.max(1, rawContentW * fit);
   const contentH = Math.max(1, rawContentH * fit);
-  const rowYs = [...new Set(page.blocks.map(block => block.pageY))].sort((a, b) => a - b);
-  const spareH = Math.max(0, availableH - contentH);
-  const underFilledLaterPage = pageIndex > 0 && rowYs.length > 0 && rowYs.length < landscapeRowsPerPage(pageIndex);
-  const extraRowGap = underFilledLaterPage ? spareH / (rowYs.length + 1) : 0;
-  const rawExtraRowGap = extraRowGap / Math.max(0.0001, fit);
-  const rowOffsetByY = new Map(rowYs.map((y, index) => [y, rawExtraRowGap * (index + 1)]));
   const prevAnnoScale = planAnnotationScale;
   planAnnotationScale = 1;
-  const localX = sheetOffsetX + P.x + gaps.left + (availableW - contentW) / 2;
+  const localX = sheetOffsetX + P.x + gaps.left;
   const localY = sheetOffsetY + P.y + gaps.top;
   ctx.save();
   ctx.translate(localX, localY);
   ctx.scale(fit, fit);
   page.blocks.forEach(block => {
-    const visualY = block.pageY + (rowOffsetByY.get(block.pageY) || 0);
-    drawPlanBlock({...block, pageIndex, pageY: visualY}, block.pageX, visualY, fit, localX, localY);
+    const visualY = block.pageY;
+    drawPlanBlock({...block, pageIndex: visualPageIndex, pageY: visualY}, block.pageX, visualY, fit, localX, localY);
   });
   ctx.restore();
   planAnnotationScale = prevAnnoScale;
 }
 
-function drawPortraitPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, pageIndex = 0) {
+function drawPortraitPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffsetY = 0, pageIndex = 0, visualPageIndex = pageIndex) {
   const P = layout.plot;
   const gaps = sheetContentGaps(pageIndex);
   const baseContentW = Math.max(1, page.usedW);
@@ -5728,7 +6021,7 @@ function drawPortraitPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffset
   const rowOffsetByY = new Map(rowYs.map((y, index) => [y, rawVisualRowGap * index]));
   const prevAnnoScale = planAnnotationScale;
   planAnnotationScale = 1;
-  const localX = sheetOffsetX + P.x + gaps.left + (availableW - contentW) / 2;
+  const localX = sheetOffsetX + P.x + gaps.left;
   const titleClearance = singleBoothTaggedPage ? 90 : 0;
   const localY = sheetOffsetY + P.y + gaps.top + titleClearance;
   ctx.save();
@@ -5736,7 +6029,7 @@ function drawPortraitPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffset
   ctx.scale(fit, fit);
   page.blocks.forEach(block => {
     const visualY = block.pageY + (rowOffsetByY.get(block.pageY) || 0);
-    drawPlanBlock({...block, pageIndex, pageY: visualY}, block.pageX, visualY, fit, localX, localY);
+    drawPlanBlock({...block, pageIndex: visualPageIndex, pageY: visualY}, block.pageX, visualY, fit, localX, localY);
   });
   ctx.restore();
   planAnnotationScale = prevAnnoScale;
@@ -5744,28 +6037,29 @@ function drawPortraitPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffset
 
 function drawPlanSheetsPreview(p) {
   const baseLayout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
-  if (!blocks.length) return;
+  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
   const pages = paginatePlanBlocks(blocks, baseLayout);
-  const pageLayouts = pages.map(page => sheetLayoutForPage(page, p));
-  const gap = Math.max(80, Math.max(...pageLayouts.map(item => item.sheetW), baseLayout.sheetW) * 0.12);
+  const pageLayouts = pages.map((page, index) => sheetLayoutForPage(page, p, index));
+  const orientationIndices = pageOrientationIndices(pages);
+  const gap = sheetPreviewPageGap(baseLayout, pageLayouts);
   let x = 0;
   pages.forEach((page, index) => {
     const layout = pageLayouts[index];
-    const contentGaps = sheetContentGaps(index, pageNeedsLandscape(page));
+    const orientationPageIndex = orientationIndices[index] || 0;
+    const contentGaps = sheetContentGaps(orientationPageIndex, pageNeedsLandscape(page));
     const hitX = x + layout.plot.x + contentGaps.left;
     const hitY = layout.plot.y + contentGaps.top;
     const hitW = Math.max(1, layout.plot.w - contentGaps.left - contentGaps.right);
     const hitH = Math.max(1, layout.plot.h - contentGaps.top - contentGaps.bottom);
     drawSheet('卫生间隔断平面图', p, x, 0, index, layout);
     if (!drawingForExport) planHitAreas.push({type:'sheet-page', x:hitX, y:hitY, w:hitW, h:hitH, pageIndex:index});
-    drawPlanPageContent(page, layout, x, 0, index);
+    drawPlanPageContent(page, layout, x, 0, orientationPageIndex, index);
     ctx.save();
-    ctx.fillStyle = '#1f2328';
+    ctx.fillStyle = '#000000';
     ctx.font = `14px 'Microsoft YaHei', Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.fillText(`第 ${index + 1}/${pages.length} 页`, x + layout.frame.x + layout.frame.w / 2, layout.frame.y + layout.frame.h - 16);
+    ctx.fillText(`第 ${index + 1}/${pages.length} 页`, x + layout.frame.x + layout.frame.w / 2, sheetPageNumberBaselineY(layout));
     ctx.restore();
     x += layout.sheetW + gap;
   });
@@ -5773,30 +6067,31 @@ function drawPlanSheetsPreview(p) {
 }
 function drawPlan(p) {
   const baseLayout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled !== false);
-  if (!blocks.length) return;
+  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
   const pages = paginatePlanBlocks(blocks, baseLayout);
   const pageIndex = Math.max(0, Math.min(currentPlanPage, pages.length - 1));
   const page = pages[pageIndex];
-  const layout = sheetLayoutForPage(page, p);
+  const orientationPageIndex = planPageOrientationIndex(pages, pageIndex);
+  const layout = sheetLayoutForPage(page, p, pageIndex);
   ctx.save();
   ctx.beginPath();
   ctx.rect(layout.frame.x + layout.safeGap * 0.35, layout.frame.y + layout.safeGap * 0.35, layout.frame.w - layout.safeGap * 0.7, layout.frame.h - layout.safeGap * 0.7);
   ctx.clip();
 
-  drawPlanPageContent(page, layout, 0, 0);  if (pages.length > 1) {
+  drawPlanPageContent(page, layout, 0, 0, orientationPageIndex, pageIndex);  if (pages.length > 1) {
     ctx.save();
-    ctx.fillStyle = '#1f2328';
+    ctx.fillStyle = '#000000';
     ctx.font = `14px 'Microsoft YaHei', Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
-    ctx.fillText(`第 ${pageIndex + 1}/${pages.length} 页`, layout.frame.x + layout.frame.w / 2, layout.frame.y + layout.frame.h - 16);
+    ctx.fillText(`第 ${pageIndex + 1}/${pages.length} 页`, layout.frame.x + layout.frame.w / 2, sheetPageNumberBaselineY(layout));
     ctx.restore();
   }
   drawSheetDragOverlay();
   ctx.restore();
 }
 function drawFront(p) {
+  if (!hasDrawableRows() && p?.enabled !== true) return;
   const prevDimensionContext = activeDimensionContext;
   activeDimensionContext = {groupId:activeGroup()?.id, rowId:activeRow()?.id, hitScale:1, hitX:0, hitY:0};
   try {
@@ -5812,15 +6107,15 @@ function drawFront(p) {
   const sW = W * scale, sH = H * scale, st = Math.max(1.5, t * scale), swt = wt * scale;
   const hU = p.hUpright * scale, hDp = (p.hDoor || 1750) * scale, hM = p.hMid * scale, vis = p.hVis * scale;
 
-  ctx.strokeStyle='#888'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
-  if (c.hasLeft) { drawHatch(ox-swt, oy, swt, sH, 18); ctx.strokeStyle='#666'; ctx.strokeRect(ox-swt, oy, swt, sH); }
-  if (c.hasRight) { drawHatch(ox+sW, oy, swt, sH, 18); ctx.strokeStyle='#666'; ctx.strokeRect(ox+sW, oy, swt, sH); }
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
+  if (c.hasLeft) { drawHatch(ox-swt, oy, swt, sH, 18); ctx.strokeStyle='#000000'; ctx.strokeRect(ox-swt, oy, swt, sH); }
+  if (c.hasRight) { drawHatch(ox+sW, oy, swt, sH, 18); ctx.strokeStyle='#000000'; ctx.strokeRect(ox+sW, oy, swt, sH); }
 
   let x = ox;
   for (let i=0; i<=p.count; i++) {
     const isEdge = (i===0 && !c.hasLeft)||(i===p.count && !c.hasRight);
     if (isEdge || (i>0 && i<p.count)) {
-      ctx.strokeStyle='#222'; ctx.lineWidth=0.8; ctx.strokeRect(x, floor-hU, st, hU);
+      ctx.strokeStyle='#000000'; ctx.lineWidth=0.8; ctx.strokeRect(x, floor-hU, st, hU);
       x += st;
     }
     if (i < p.count) {
@@ -5836,7 +6131,7 @@ function drawFront(p) {
       x += bw;
     }
   }
-  ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
   drawDim(ox, oy-58, ox+sW, oy-58, `${c.adjustedLength ? '展开总长' : '总长'} ${W}mm`, 14, {kind:'total'});
   drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14, {kind:'h-upright'});
   drawDim(ox+sW+58, floor-vis, ox+sW+58, floor, `见光板 ${p.hVis}mm`, 14, {kind:'h-vis'});
@@ -5859,10 +6154,10 @@ function drawStandardFrontModule(p, c) {
   const doorW = p.doorW * scale;
   const dx = ox + (sW - doorW) / 2;
 
-  ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
   ctx.strokeStyle='#185FA5'; ctx.strokeRect(dx, floor-hDoor, doorW, hDoor);
   ctx.strokeStyle='#6a9bcc'; ctx.strokeRect(ox, floor-hMid, sW, vis);
-  ctx.strokeStyle='#888'; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
+  ctx.strokeStyle='#000000'; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
   drawDim(ox, oy-58, ox+sW, oy-58, `标准间宽 ${fmtMm(c.boothW)}mm`, 14);
   drawDim(ox+sW+58, floor-hDoor, ox+sW+58, floor, `门高 ${p.hDoor||1750}mm`, 14);
 
@@ -5870,6 +6165,7 @@ function drawStandardFrontModule(p, c) {
 }
 
 function drawSide(p) {
+  if (!hasDrawableRows() && p?.enabled !== true) return;
   const prevDimensionContext = activeDimensionContext;
   activeDimensionContext = {groupId:activeGroup()?.id, rowId:activeRow()?.id, hitScale:1, hitX:0, hitY:0};
   try {
@@ -5888,10 +6184,10 @@ function drawSide(p) {
 
   if (c.hasBack) {
     drawHatch(ox, oy-swt, sW, swt, 18);
-    ctx.strokeStyle='#666'; ctx.lineWidth=1; ctx.strokeRect(ox, oy-swt, sW, swt);
+    ctx.strokeStyle='#000000'; ctx.lineWidth=1; ctx.strokeRect(ox, oy-swt, sW, swt);
   }
 
-  ctx.strokeStyle='#222'; ctx.lineWidth=0.8; ctx.strokeRect(ox, floor-hU, st, hU);
+  ctx.strokeStyle='#000000'; ctx.lineWidth=0.8; ctx.strokeRect(ox, floor-hU, st, hU);
   ctx.strokeStyle='#6a9bcc'; ctx.lineWidth=0.6; ctx.strokeRect(ox+st, floor-hM, sW-st*2, vis);
   ctx.fillStyle='#185FA5'; ctx.font=`14px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('见光板', ox+st+(sW-st*2)/2, floor-hM+vis/2);
@@ -5899,9 +6195,9 @@ function drawSide(p) {
   const doorStartY = floor - doorH;
   ctx.strokeStyle='#185FA5'; ctx.lineWidth=1; ctx.strokeRect(ox+sW-st, doorStartY, st, doorH);
   ctx.fillStyle='#185FA5'; ctx.fillText('门', ox+sW-st/2, doorStartY+doorH/2);
-  ctx.strokeStyle='#222'; ctx.lineWidth=0.8; ctx.strokeRect(ox+sW-st, floor-hU, st, hU-doorH);
-  ctx.strokeStyle='#888'; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
-  ctx.strokeStyle='#222'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
+  ctx.strokeStyle='#000000'; ctx.lineWidth=0.8; ctx.strokeRect(ox+sW-st, floor-hU, st, hU-doorH);
+  ctx.strokeStyle='#000000'; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
 
   drawDim(ox, oy-58, ox+sW, oy-58, `深度 ${p.depth}mm`, 14, {kind:'depth'});
   drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14, {kind:'h-upright'});
@@ -5913,7 +6209,7 @@ function drawSide(p) {
 
 function renderBOM(p) {
   const rows = drawableGroupRows();
-  if (!rows.length && activeRow()?.enabled !== true) {
+  if (!rows.length && p?.enabled !== true) {
     renderBomItems([{name:'当前图纸', val:'空白', sub:'输入参数或点击生成后显示'}]);
     return;
   }
@@ -5963,6 +6259,7 @@ function buildMaterialListItems(rows) {
       return {main:fmtMm(mainDepth), joint:jointDepth ? fmtMm(jointDepth) : ''};
     };
     Array.from({length: Math.max(0, count - 1)}, (_, i) => i + 1).forEach(index => {
+      if (isDepthPanelDeleted(row, index)) return;
       const split = splitDepthTextFor(index);
       addBomPiece(midDepths, row.hMid, split.main, '');
       if (split.joint) addBomPiece(jointDepths, row.hMid, split.joint, '');
@@ -5971,7 +6268,10 @@ function buildMaterialListItems(rows) {
     const visibleIndexes = [];
     if (!c.hasLeft) visibleIndexes.push(0);
     if (!c.hasRight) visibleIndexes.push(count);
-    visibleIndexes.forEach(index => addBomPiece(visibleDepths, row.hVis, splitDepthTextFor(index).main, ''));
+    visibleIndexes.forEach(index => {
+      if (isDepthPanelDeleted(row, index)) return;
+      addBomPiece(visibleDepths, row.hVis, splitDepthTextFor(index).main, '');
+    });
   });
   return [
     {name:'前沿板', val:`${front.count} 块`, sub:formatBomBucket(front) || '无前沿板数据'},
@@ -6479,7 +6779,7 @@ function collectBomTextItemsFromData(items) {
 function currentBomTextItems() {
   const rows = drawableGroupRows();
   if (rows.length) return collectBomTextItemsFromData(buildMaterialListItems(rows.map(item => item.row)));
-  if (activeRow()?.enabled === true) return collectBomTextItemsFromData(buildMaterialListItems([lastParams || getParams()]));
+  if ((lastParams || getParams())?.enabled === true) return collectBomTextItemsFromData(buildMaterialListItems([lastParams || getParams()]));
   return collectBomTextItemsFromData([{name:'当前图纸', val:'空白', sub:'输入参数或点击生成后显示'}]);
 }
 
@@ -6545,7 +6845,7 @@ function exportAll() {
   const p = lastParams || getParams();
   const oldMode = canvasMode;
   canvasMode = 'sheets';
-  const planPages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), getSheetLayout(p));
+  const planPages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), getSheetLayout(p));
   canvasMode = oldMode;
   const jobs = [];
   planPages.forEach((_, pageIndex) => jobs.push({tab:'plan', name:`平面图-${pageIndex + 1}`, options:{planPage:pageIndex}}));
@@ -6567,15 +6867,8 @@ function exportAll() {
 async function printPdf() {
   try {
     const p = lastParams || getParams();
-    const pages = currentTab === 'plan'
-      ? getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE}))
-      : [renderSheetCanvas(currentTab, p, {canvasMode:'sheets', renderScale:PRINT_RENDER_SCALE})];
-    const pageImages = await Promise.all(pages.map(canvas => new Promise(resolve => {
-      canvas.toBlob(blob => {
-        resolve({url: blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/png'), landscape: canvas.width > canvas.height});
-      }, 'image/png');
-    })));
-    const paper = paperSize === 'a3' ? {w:297, h:420, label:'A3'} : {w:210, h:297, label:'A4'};
+    const pages = renderPdfSvgPagesForScope(p, currentTab === 'plan' ? 'plan' : 'current');
+    const paper = printPaperSpec();
     const oldFrame = document.getElementById('print-frame');
     if (oldFrame) oldFrame.remove();
     const frame = document.createElement('iframe');
@@ -6590,15 +6883,7 @@ async function printPdf() {
     document.body.appendChild(frame);
     const doc = frame.contentDocument || frame.contentWindow.document;
     doc.open();
-    doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>PDF打印</title><style>
-      @page{size:${paper.label} portrait;margin:0}
-      html,body{margin:0;width:100%;height:100%;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      body{overflow:visible}
-      .page{width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page;overflow:hidden}
-      .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
-      .page:last-child{page-break-after:auto;break-after:auto}
-      img{width:100%;height:100%;object-fit:contain;display:block}
-    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}</body></html>`);
+    doc.write(pdfPrintSvgHtml('PDF打印', pages, paper));
     doc.close();
     window.setTimeout(() => {
       try {
@@ -6729,7 +7014,7 @@ function exportNamedAllImages(baseName = '隔断全部视图') {
   const safeBase = sanitizeExportName(baseName, '隔断全部视图');
   const oldMode = canvasMode;
   canvasMode = 'sheets';
-  const planPages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled !== false), getSheetLayout(p));
+  const planPages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), getSheetLayout(p));
   canvasMode = oldMode;
   const jobs = [];
   planPages.forEach((_, pageIndex) => jobs.push({tab:'plan', name:`平面图${pageIndex + 1}`, options:{planPage:pageIndex}}));
@@ -6804,13 +7089,57 @@ function pdfPrintHtml(title, pageImages, paper, includeBom = false) {
       @page{size:${paper.label} portrait;margin:0}
       html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       body{overflow:visible}
-      .page{box-sizing:border-box;width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4mm;page-break-after:auto;break-after:auto}
+      .page{box-sizing:border-box;width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0;page-break-after:auto;break-after:auto}
       .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
       .page:not(:last-child){page-break-after:always;break-after:page}
       .page:last-of-type:not(:last-child){page-break-after:always;break-after:page}
-      img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
+      img{width:100%;height:100%;object-fit:contain;display:block}
       ${includeBom ? `${bomExportCss('embed')}.bom-print-page{width:190mm;min-height:0;padding:10mm;}` : ''}
     </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`;
+}
+
+function printPaperSpec() {
+  return paperSize === 'a3' ? {w:297, h:420, label:'A3'} : {w:210, h:297, label:'A4'};
+}
+
+function renderPdfSvgPage(tab, p, options = {}) {
+  const renderPlanPage = Number.isFinite(options.planPage) ? options.planPage : currentPlanPage;
+  const oldMode = canvasMode;
+  if (options.canvasMode) canvasMode = options.canvasMode;
+  const layout = sheetLayoutForRender(tab, p, renderPlanPage);
+  canvasMode = oldMode;
+  return {
+    svg: renderSheetSvg(tab, p, options),
+    landscape: layout.sheetW > layout.sheetH
+  };
+}
+
+function renderPdfSvgPagesForScope(p, scope = 'current') {
+  if (scope === 'all') {
+    const planPages = getSheetPlanPages(p).map((_, i) => renderPdfSvgPage('plan', p, {planPage:i, canvasMode:'sheets'}));
+    return [
+      ...planPages,
+      renderPdfSvgPage('front', p, {canvasMode:'sheets'}),
+      renderPdfSvgPage('side', p, {canvasMode:'sheets'})
+    ];
+  }
+  if (scope === 'plan' || currentTab === 'plan') {
+    return getSheetPlanPages(p).map((_, i) => renderPdfSvgPage('plan', p, {planPage:i, canvasMode:'sheets'}));
+  }
+  return [renderPdfSvgPage(currentTab, p, {canvasMode:'sheets'})];
+}
+
+function pdfPrintSvgHtml(title, pages, paper, includeBom = false) {
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
+      @page{size:${paper.label} portrait;margin:0}
+      html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body{overflow:visible}
+      .page{box-sizing:border-box;width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0;page-break-after:auto;break-after:auto;background:#fff}
+      .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
+      .page:not(:last-child){page-break-after:always;break-after:page}
+      .page svg{width:100%;height:100%;display:block}
+      ${includeBom ? `${bomExportCss('embed')}.bom-print-page{width:190mm;min-height:0;padding:10mm;}` : ''}
+    </style></head><body>${pages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}" aria-label="图纸${i + 1}">${item.svg}</div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`;
 }
 
 function openPrintWindow(title) {
@@ -6850,39 +7179,25 @@ async function addCanvasPageToPdf(pdfDoc, canvas, pageSize) {
   const png = await pdfDoc.embedPng(await canvasToPngBytes(canvas));
   const page = pdfDoc.addPage(pageSize);
   const {width:pageW, height:pageH} = page.getSize();
-  const margin = Math.min(pageW, pageH) * 0.025;
-  const boxW = pageW - margin * 2;
-  const boxH = pageH - margin * 2;
-  const scale = Math.min(boxW / png.width, boxH / png.height);
-  const drawW = png.width * scale;
-  const drawH = png.height * scale;
   page.drawImage(png, {
-    x:(pageW - drawW) / 2,
-    y:(pageH - drawH) / 2,
-    width:drawW,
-    height:drawH
+    x:0,
+    y:0,
+    width:pageW,
+    height:pageH
   });
 }
 
 async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeBom = false) {
   const title = sanitizeExportName(name, '隔断图纸');
   try {
-    const {PDFDocument} = await loadPdfLib();
     const p = lastParams || getParams();
-    const pages = exportPdfCanvasesForScope(p, scope);
-    const pdfDoc = await PDFDocument.create();
-    pdfDoc.setTitle(title);
-    pdfDoc.setCreator(navigator.userAgent || 'Chrome/Edge');
-    pdfDoc.setProducer('pdf-lib');
-    const portrait = paperSize === 'a3' ? [841.89, 1190.55] : [595.28, 841.89];
-    const landscape = [portrait[1], portrait[0]];
-    for (const canvas of pages) {
-      await addCanvasPageToPdf(pdfDoc, canvas, canvas.width > canvas.height ? landscape : portrait);
-    }
-    if (includeBom) {
-      await addCanvasPageToPdf(pdfDoc, renderBomCanvas('开料清单'), portrait);
-    }
-    downloadPdfBytes(await pdfDoc.save(), title);
+    const pages = renderPdfSvgPagesForScope(p, scope);
+    const win = openPrintWindow(title);
+    if (!win) throw new Error('浏览器拦截了打印窗口');
+    win.document.open();
+    win.document.write(pdfPrintSvgHtml(title, pages, printPaperSpec(), includeBom));
+    win.document.close();
+    triggerWindowPrint(win, 300);
   } catch (err) {
     alert(`PDF导出失败：${err.message || err}`);
   }
@@ -6896,7 +7211,7 @@ function currentBomHtml() {
 function currentBomSourceItems() {
   const rows = drawableGroupRows();
   if (rows.length) return buildMaterialListItems(rows.map(item => item.row));
-  if (activeRow()?.enabled === true) return buildMaterialListItems([lastParams || getParams()]);
+  if ((lastParams || getParams())?.enabled === true) return buildMaterialListItems([lastParams || getParams()]);
   return [{name:'当前图纸', val:'空白', sub:'输入参数或点击生成后显示'}];
 }
 
@@ -7723,7 +8038,7 @@ function hitPlanBlock(x, y) {
 }
 
 function currentSheetOrderKeys() {
-  return collectPlanBlocks(lastParams || getParams()).filter(block => block.row.enabled !== false).map(block => `${block.group.id}:${block.row.id}`);
+  return collectPlanBlocks(lastParams || getParams()).filter(block => block.row.enabled === true).map(block => `${block.group.id}:${block.row.id}`);
 }
 
 function pageOrderKeys(pageIndex) {
@@ -7746,10 +8061,23 @@ function hitSheetPage(x, y) {
 
 function applySheetOrderKeys(keys) {
   const order = new Map(keys.map((key, index) => [key, index]));
+  const compactCols = QUICK_COMPACT_COLS;
+  const pageByKey = new Map((sheetOrderDrag?.allPageBlocks || []).map(area => [area.orderKey, Number(area.pageIndex) || 0]));
+  const pageOffsets = new Map();
   groups.forEach(group => ensureRows(group).forEach(row => {
     const key = `${group.id}:${row.id}`;
-    if (order.has(key)) row.sheetOrder = order.get(key);
+    if (!order.has(key)) return;
+    const index = order.get(key);
+    const page = pageByKey.has(key) ? pageByKey.get(key) : Math.floor(index / Math.max(1, compactCols * Math.max(1, quickLayoutRows.length || 1)));
+    const pageIndex = Math.max(0, Number(page) || 0);
+    const localIndex = pageOffsets.get(pageIndex) || 0;
+    pageOffsets.set(pageIndex, localIndex + 1);
+    row.sheetOrder = index;
+    row.sheetPage = pageIndex;
+    row.layoutRow = Math.floor(localIndex / compactCols) + 1;
+    row.layoutCol = (localIndex % compactCols) + 1;
   }));
+  syncQuickLayoutFromGroup(activeGroup());
 }
 
 function previewOrderForTarget(targetKey, placeAfter = false) {
@@ -8539,6 +8867,17 @@ document.getElementById('dimension-editor')?.addEventListener('keydown', e => {
 });
 
 document.getElementById('dimension-editor')?.addEventListener('blur', () => finishDimensionEdit(true));
+
+window.addEventListener('keydown', e => {
+  if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const tag = document.activeElement?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (deleteSelectedItems()) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+});
 
 ['board-sheet-w','board-sheet-h'].forEach(id => {
   const input = document.getElementById(id);
