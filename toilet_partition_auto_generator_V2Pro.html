@@ -5355,14 +5355,21 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   if (showGroupName && !(drawingForExport && options.tagPreviewOnly)) {
     ctx.save();
     const tagText = String(options.tagText || showGroupName);
-    ctx.font = planFont(95);
-    const tagW = Math.max(anno(PLAN_ANCHOR.noteTagMinW), ctx.measureText(tagText).width + anno(90));
-    const tagH = anno(PLAN_ANCHOR.noteTagH);
+    const isSingleBoothTag = Math.max(1, Number(p.count) || 1) === 1;
+    const tagFontSize = isSingleBoothTag ? 66 : 95;
+    const tagHPreset = isSingleBoothTag ? 76 : PLAN_ANCHOR.noteTagH;
+    const tagMinW = isSingleBoothTag ? 250 : PLAN_ANCHOR.noteTagMinW;
+    const tagPadX = isSingleBoothTag ? 50 : 90;
+    ctx.font = planFont(tagFontSize);
+    const tagW = Math.max(anno(tagMinW), ctx.measureText(tagText).width + anno(tagPadX));
+    const tagH = anno(tagHPreset);
     const totalY = oy - swt - (options.totalDimGap ?? PLAN_ANCHOR.totalDimGap);
     const tagGap = anno(PLAN_ANCHOR.noteTagGap);
     const tagX = ox;
-    const singleBoothTagLift = Math.max(1, Number(p.count) || 1) === 1 ? anno(165) : 0;
-    const tagY = totalY - tagH - tagGap - singleBoothTagLift;
+    const wallTopY = oy - swt;
+    const tagY = isSingleBoothTag
+      ? Math.max(totalY + tagGap, Math.min(wallTopY - tagH - tagGap, totalY + (wallTopY - totalY - tagH) / 2))
+      : totalY - tagH - tagGap;
     if (!drawingForExport && options.groupId && options.rowId) {
       const hitScale = options.hitScale || 1;
       const hitX = options.hitX || 0;
