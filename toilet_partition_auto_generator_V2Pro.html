@@ -7055,17 +7055,18 @@ function roundRectPath(ctx, x, y, w, h, r) {
 }
 
 function drawBomCanvasStructuredLine(ctx, line, x, y, maxWidth) {
+  const textY = y + 11;
   if (line.plain) {
     const rows = wrapCanvasText(ctx, line.plain, maxWidth - 18);
     rows.forEach((text, index) => {
       if (index === 0) {
         ctx.fillStyle = '#57606a';
         ctx.beginPath();
-        ctx.arc(x + 6, y - 5, 3, 0, Math.PI * 2);
+        ctx.arc(x + 6, textY, 3, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.fillStyle = '#000';
-      ctx.fillText(text, x + 20, y);
+      ctx.fillText(text, x + 20, textY);
       y += 22;
     });
     return y;
@@ -7077,18 +7078,18 @@ function drawBomCanvasStructuredLine(ctx, line, x, y, maxWidth) {
   const heightW = heightText ? Math.max(58, Math.ceil(ctx.measureText(heightText).width) + 8) : 0;
   ctx.fillStyle = '#57606a';
   ctx.beginPath();
-  ctx.arc(x + 6, y - 5, 3, 0, Math.PI * 2);
+  ctx.arc(x + 6, textY, 3, 0, Math.PI * 2);
   ctx.fill();
   const contentX = x + 20;
   if (process) {
     ctx.fillStyle = '#185FA5';
     ctx.font = '800 14px Microsoft YaHei, Arial, sans-serif';
-    ctx.fillText(process, contentX, y);
+    ctx.fillText(process, contentX, textY);
   }
   ctx.fillStyle = '#000';
   ctx.font = '14px Microsoft YaHei, Arial, sans-serif';
-  if (!line.continued && heightText) ctx.fillText(heightText, contentX + processW, y);
-  ctx.fillText(sizeText, contentX + processW + heightW, y);
+  if (!line.continued && heightText) ctx.fillText(heightText, contentX + processW, textY);
+  ctx.fillText(sizeText, contentX + processW + heightW, textY);
   return y + 22;
 }
 
@@ -7133,11 +7134,12 @@ function renderBomCanvas(name = '开料清单') {
   out.height = Math.ceil(height * scale);
   const outCtx = out.getContext('2d');
   outCtx.scale(scale, scale);
+  outCtx.textBaseline = 'middle';
   outCtx.fillStyle = '#fff';
   outCtx.fillRect(0, 0, width, height);
   outCtx.fillStyle = '#000';
   outCtx.font = '700 28px Microsoft YaHei, Arial, sans-serif';
-  outCtx.fillText(title, pad, pad + 28);
+  outCtx.fillText(title, pad, pad + 20);
   outCtx.strokeStyle = '#d0d7de';
   outCtx.lineWidth = 1;
   outCtx.beginPath();
@@ -7153,18 +7155,18 @@ function renderBomCanvas(name = '开料清单') {
     outCtx.stroke();
     outCtx.fillStyle = '#000';
     outCtx.font = '700 17px Microsoft YaHei, Arial, sans-serif';
-    outCtx.fillText(item.name || '材料', pad + 14, y + 26);
+    outCtx.fillText(item.name || '材料', pad + 14, y + 23);
     outCtx.fillStyle = '#0C447C';
     outCtx.font = '700 15px Microsoft YaHei, Arial, sans-serif';
     outCtx.textAlign = 'right';
-    outCtx.fillText(item.val || '', width - pad - 14, y + 26);
+    outCtx.fillText(item.val || '', width - pad - 14, y + 23);
     outCtx.textAlign = 'left';
     let lineY = y + 50;
     if (item.mobileGroups?.length) {
       item.mobileGroups.forEach(group => {
         outCtx.fillStyle = '#185FA5';
         outCtx.font = '900 13px Microsoft YaHei, Arial, sans-serif';
-        outCtx.fillText(group.title || '', pad + 14, lineY + 17);
+        outCtx.fillText(group.title || '', pad + 14, lineY + frontCellH / 2);
         outCtx.font = '800 13px Microsoft YaHei, Arial, sans-serif';
         const tags = group.tags.length ? group.tags : ['无'];
         tags.forEach((tag, index) => {
@@ -7177,7 +7179,7 @@ function renderBomCanvas(name = '开料清单') {
           outCtx.fill();
           outCtx.fillStyle = '#000';
           outCtx.textAlign = 'center';
-          outCtx.fillText(String(tag), x + frontCellW / 2, ty + 17);
+          outCtx.fillText(String(tag), x + frontCellW / 2, ty + frontCellH / 2);
           outCtx.textAlign = 'left';
         });
         const rows = Math.max(1, Math.ceil(tags.length / frontCols));
