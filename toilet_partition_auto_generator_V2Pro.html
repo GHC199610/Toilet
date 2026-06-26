@@ -537,26 +537,6 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .bom-area.collapsed .bom-export{display:inline-flex}
   .bom-area.collapsed .bom-toggle{width:auto;height:2rem;min-height:0;padding:0 0.875rem;writing-mode:horizontal-tb;line-height:1}
 }
-@media print{
-  @page{margin:0}
-  body,body.theme-dark{background:#fff;color:#1f2328}
-  body.theme-dark{
-    --color-text-primary:#1f2328;
-    --color-text-secondary:#656d76;
-    --color-text-tertiary:#8c959f;
-    --color-background-primary:#ffffff;
-    --color-background-secondary:#f6f8fa;
-    --color-border-primary:#d0d7de;
-    --color-border-secondary:#d8dee4;
-    --color-border-tertiary:#e1e4e8;
-  }
-  html,body{width:100%;height:100%;margin:0!important}
-  .sidebar,.view-tabs,.sheet-actions,.bom-area,.export-row,.cv-controls{display:none!important}
-  .wrap{height:100vh;margin:0;border:none;border-radius:0;display:block;overflow:hidden;background:#fff}
-  .right{display:block;width:100%;height:100%}
-  .canvas-area{width:100vw;height:100vh;background:#fff!important;overflow:hidden}
-  canvas{width:100%!important;height:100%!important}
-}
 </style>
 
 <h2 class="sr-only">卫生间隔断自动生成器 — 输入参数后自动生成平面图和立面图，并输出开料清单</h2>
@@ -684,7 +664,11 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     <div class="export-row">
       <button class="ex-btn" id="btn-export-current" type="button"><i class="ti ti-download" aria-hidden="true" style="font-size:14px"></i> 导出当前视图</button>
       <button class="ex-btn" id="btn-export-all" type="button"><i class="ti ti-file-export" aria-hidden="true" style="font-size:14px"></i> 导出全部视图</button>
-      <button class="ex-btn" id="btn-print-pdf" type="button"><i class="ti ti-file-type-pdf" aria-hidden="true" style="font-size:14px"></i> 导出PDF</button>
+      <button class="ex-btn" id="btn-export-pdf" type="button"><i class="ti ti-file-type-pdf" aria-hidden="true" style="font-size:14px"></i> 导出PDF</button>
+      <button class="ex-btn" id="btn-export-svg" type="button"><i class="ti ti-vector" aria-hidden="true" style="font-size:14px"></i> 导出SVG</button>
+      <button class="ex-btn" id="btn-svg-print" type="button"><i class="ti ti-printer" aria-hidden="true" style="font-size:14px"></i> SVG打印</button>
+      <button class="ex-btn" id="btn-svg-pdf" type="button"><i class="ti ti-file-type-pdf" aria-hidden="true" style="font-size:14px"></i> SVG导出PDF</button>
+      <button class="ex-btn" id="btn-print-direct" type="button"><i class="ti ti-printer" aria-hidden="true" style="font-size:14px"></i> 直接打印</button>
     </div>
       </div>
     <div class="urinal-panel" id="urinal-panel">
@@ -702,7 +686,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" enterkeyhint="done" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><span class="bom-board-size bom-board-kerf"><span class="bom-board-kerf-label">锯缝</span><input id="board-kerf" type="number" inputmode="numeric" min="0" step="0.5" value="2" aria-label="锯缝"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
+        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><span class="bom-board-size bom-board-kerf"><span class="bom-board-kerf-label">锯缝</span><input id="board-kerf" type="number" inputmode="numeric" min="0" step="0.5" value="2" aria-label="锯缝"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><button class="bom-export" id="btn-svg-print-bom" type="button" onclick="printBomSvg()">SVG打印</button><button class="bom-export" id="btn-svg-pdf-bom" type="button" onclick="exportBomSvgPdf()">SVG导出PDF</button><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -754,15 +738,10 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
     <div class="project-dialog-body">
       <div class="project-save-form">
         <input id="export-file-name" type="text" maxlength="60" placeholder="请输入导出文件名称">
-        <div class="export-scope-row" id="export-pdf-scope">
-          <label><input type="radio" name="export-pdf-scope" value="current" checked>当前视图</label>
-          <label><input type="radio" name="export-pdf-scope" value="all">全部视图</label>
+        <div class="export-scope-row" id="export-scope-row">
+          <label><input type="radio" name="export-scope" value="current" checked>当前视图</label>
+          <label><input type="radio" name="export-scope" value="all">全部视图</label>
         </div>
-        <div class="export-format-row" id="export-bom-format">
-          <label><input type="radio" name="export-bom-format" value="image" checked>PNG图片</label>
-          <label><input type="radio" name="export-bom-format" value="pdf">PDF</label>
-        </div>
-        <label class="check-field" id="export-include-bom-row"><span>包含开料清单</span><input type="checkbox" id="export-include-bom" checked></label>
         <div class="project-actions">
           <button type="button" onclick="closeProjectModal('export-modal')">取消</button>
           <button class="primary" type="button" onclick="confirmNamedExport()">确认导出</button>
@@ -772,6 +751,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   </div>
 </div>
 
+<script src="./drawing-backend-v1.js"></script>
 <script>
 const cv = document.getElementById('cv');
 let ctx = cv.getContext('2d');
@@ -816,8 +796,7 @@ let drawingForExport = false;
 let lastGuardWarningSignature = '';
 let currentPlanPage = 0;
 const QUALITY_RENDER_SCALE = 6;
-const PDF_RENDER_SCALE = 5;
-const PRINT_RENDER_SCALE = 7;
+const PDF_RENDER_SCALE = 6;
 let pdfLibPromise = null;
 let svgPrintSeq = 0;
 let activeDimensionContext = null;
@@ -3868,6 +3847,30 @@ function createSvgRenderer(width, height) {
   let lineCap = 'butt';
   let lineJoin = 'miter';
   let clipId = null;
+  let globalAlpha = 1;
+
+  const normalizeSvgPaint = value => {
+    const paint = String(value ?? '#000').trim();
+    if (!paint || paint === 'undefined' || paint === 'null') return '#000000';
+    if (paint === 'var(--group-mono)') return '#000000';
+    if (paint === 'transparent') return 'none';
+    return paint;
+  };
+  const paintOpacity = value => {
+    const paint = String(value ?? '').trim();
+    const m = /^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)$/i.exec(paint);
+    return m ? Math.max(0, Math.min(1, Number(m[4]))) : 1;
+  };
+  const paintColor = value => {
+    const paint = normalizeSvgPaint(value);
+    const m = /^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*[\d.]+\s*\)$/i.exec(paint);
+    return m ? `rgb(${Math.round(Number(m[1]))},${Math.round(Number(m[2]))},${Math.round(Number(m[3]))})` : paint;
+  };
+  const opacityAttr = () => globalAlpha < 1 ? ` opacity="${Number(globalAlpha.toFixed(4))}"` : '';
+  const combinedOpacityAttr = paint => {
+    const opacity = Math.max(0, Math.min(1, globalAlpha * paintOpacity(paint)));
+    return opacity < 1 ? ` opacity="${Number(opacity.toFixed(4))}"` : '';
+  };
 
   const mul = (m1, m2) => ([
     m1[0] * m2[0] + m1[2] * m2[1],
@@ -3880,25 +3883,42 @@ function createSvgRenderer(width, height) {
   const transformAttr = () => (matrix[0] === 1 && matrix[1] === 0 && matrix[2] === 0 && matrix[3] === 1 && matrix[4] === 0 && matrix[5] === 0)
     ? ''
     : ` transform="matrix(${matrix.map(n => Number(n.toFixed(6))).join(' ')})"`;
-  const styleAttrs = (opts = {}) => {
-    const parts = [];
-    if (opts.fill !== false) parts.push(`fill="${svgEscape(fillStyle)}"`);
-    if (opts.stroke !== false) parts.push(`stroke="${svgEscape(strokeStyle)}"`);
-    if (opts.lineWidth !== false) parts.push(`stroke-width="${Number(lineWidth.toFixed(4))}"`);
-    if (lineDash.length) parts.push(`stroke-dasharray="${lineDash.join(' ')}"`);
-    if (lineCap) parts.push(`stroke-linecap="${lineCap}"`);
-    if (lineJoin) parts.push(`stroke-linejoin="${lineJoin}"`);
-    if (clipId) parts.push(`clip-path="url(#${clipId})"`);
-    if (opts.fillRule) parts.push(`fill-rule="${opts.fillRule}"`);
-    return parts.join(' ');
-  };
   const add = str => elements.push(str);
-  const addPath = (d, fill = false, fillRule = 'nonzero', extra = '') => {
+  const buildPath = () => {
+    const segs = [];
+    let hasPoint = false;
+    pathStack.forEach(cmd => {
+      if (cmd.t === 'M') {
+        segs.push(`M ${cmd.x} ${cmd.y}`);
+        hasPoint = true;
+      } else if (cmd.t === 'L') {
+        segs.push(`${hasPoint ? 'L' : 'M'} ${cmd.x} ${cmd.y}`);
+        hasPoint = true;
+      } else if (cmd.t === 'Z') {
+        segs.push('Z');
+      } else if (cmd.t === 'A') {
+        const delta = cmd.end - cmd.start;
+        const steps = Math.max(8, Math.ceil(Math.abs(delta) / (Math.PI / 12)));
+        const firstX = cmd.cx + Math.cos(cmd.start) * cmd.r;
+        const firstY = cmd.cy + Math.sin(cmd.start) * cmd.r;
+        if (!hasPoint) {
+          segs.push(`M ${firstX} ${firstY}`);
+          hasPoint = true;
+        }
+        for (let i = 1; i <= steps; i++) {
+          const t = cmd.start + delta * (i / steps);
+          segs.push(`L ${cmd.cx + Math.cos(t) * cmd.r} ${cmd.cy + Math.sin(t) * cmd.r}`);
+        }
+      }
+    });
+    return segs.join(' ');
+  };
+  const addPath = (d, fill = false, fillRule = 'nonzero') => {
     if (!d) return;
     const attrs = [
       `d="${d}"`,
-      fill ? `fill="${svgEscape(fillStyle)}"` : `fill="none"`,
-      !fill ? `stroke="${svgEscape(strokeStyle)}"` : '',
+      fill ? `fill="${svgEscape(paintColor(fillStyle))}"` : `fill="none"`,
+      !fill ? `stroke="${svgEscape(paintColor(strokeStyle))}"` : '',
       !fill ? `stroke-width="${Number(lineWidth.toFixed(4))}"` : '',
       lineDash.length ? `stroke-dasharray="${lineDash.join(' ')}"` : '',
       lineCap ? `stroke-linecap="${lineCap}"` : '',
@@ -3906,36 +3926,9 @@ function createSvgRenderer(width, height) {
       clipId ? `clip-path="url(#${clipId})"` : '',
       fillRule !== 'nonzero' ? `fill-rule="${fillRule}"` : '',
       transformAttr(),
-      extra
+      combinedOpacityAttr(fill ? fillStyle : strokeStyle)
     ].filter(Boolean).join(' ');
-    add(`<path ${attrs}/>\n`);
-  };
-  const currentFontSize = () => parseFontSize(font);
-  const getTextAnchor = () => ({left:'start', start:'start', center:'middle', right:'end', end:'end'}[textAlign] || 'start');
-  const getBaseline = () => {
-    if (textBaseline === 'middle') return 'middle';
-    if (textBaseline === 'top') return 'hanging';
-    if (textBaseline === 'bottom') return 'text-after-edge';
-    return 'alphabetic';
-  };
-  const buildPath = () => {
-    if (!pathStack.length) return '';
-    const segs = [];
-    pathStack.forEach(cmd => {
-      if (cmd.t === 'M') segs.push(`M ${cmd.x} ${cmd.y}`);
-      else if (cmd.t === 'L') segs.push(`L ${cmd.x} ${cmd.y}`);
-      else if (cmd.t === 'Z') segs.push('Z');
-      else if (cmd.t === 'A') {
-        const pts = [];
-        const steps = Math.max(8, Math.ceil(Math.abs(cmd.end - cmd.start) / (Math.PI / 12)));
-        for (let i = 1; i <= steps; i++) {
-          const t = cmd.start + (cmd.end - cmd.start) * (i / steps);
-          pts.push({x: cmd.cx + Math.cos(t) * cmd.r, y: cmd.cy + Math.sin(t) * cmd.r});
-        }
-        pts.forEach((pt, i) => segs.push(`${i === 0 && !segs.length ? 'M' : 'L'} ${pt.x} ${pt.y}`));
-      }
-    });
-    return segs.join(' ');
+    add(`<path ${attrs}/>`);
   };
   const flushClip = () => {
     const d = buildPath();
@@ -3944,14 +3937,11 @@ function createSvgRenderer(width, height) {
     defs.push(`<clipPath id="${id}"><path d="${d}" fill-rule="evenodd"${transformAttr()}/></clipPath>`);
     clipId = id;
   };
+  const getTextAnchor = () => ({left:'start', start:'start', center:'middle', right:'end', end:'end'}[textAlign] || 'start');
+  const getBaseline = () => ({middle:'middle', top:'hanging', bottom:'text-after-edge'}[textBaseline] || 'alphabetic');
   const ctx = {
-    save() { stateStack.push({matrix: [...matrix], strokeStyle, fillStyle, lineWidth, font, textAlign, textBaseline, lineDash: [...lineDash], lineCap, lineJoin, clipId}); },
-    restore() {
-      const s = stateStack.pop();
-      if (!s) return;
-      matrix = s.matrix; strokeStyle = s.strokeStyle; fillStyle = s.fillStyle; lineWidth = s.lineWidth; font = s.font;
-      textAlign = s.textAlign; textBaseline = s.textBaseline; lineDash = s.lineDash; lineCap = s.lineCap; lineJoin = s.lineJoin; clipId = s.clipId;
-    },
+    save() { stateStack.push({matrix:[...matrix], strokeStyle, fillStyle, lineWidth, font, textAlign, textBaseline, lineDash:[...lineDash], lineCap, lineJoin, clipId, globalAlpha}); },
+    restore() { const s = stateStack.pop(); if (!s) return; ({matrix, strokeStyle, fillStyle, lineWidth, font, textAlign, textBaseline, lineDash, lineCap, lineJoin, clipId, globalAlpha} = s); },
     translate(x, y) { matrix = mul(matrix, [1, 0, 0, 1, x, y]); },
     scale(x, y) { matrix = mul(matrix, [x, 0, 0, y, 0, 0]); },
     rotate(a) { const c = Math.cos(a), s = Math.sin(a); matrix = mul(matrix, [c, s, -s, c, 0, 0]); },
@@ -3960,61 +3950,39 @@ function createSvgRenderer(width, height) {
     beginPath() { pathStack.length = 0; },
     moveTo(x, y) { pathStack.push({t:'M', x, y}); },
     lineTo(x, y) { pathStack.push({t:'L', x, y}); },
-    rect(x, y, w, h) { pathStack.push({t:'M', x, y}); pathStack.push({t:'L', x: x + w, y}); pathStack.push({t:'L', x: x + w, y: y + h}); pathStack.push({t:'L', x, y: y + h}); pathStack.push({t:'Z'}); },
-    arc(cx, cy, r, start, end, anticlockwise = false) { pathStack.push({t:'A', cx, cy, r, start, end: anticlockwise ? start - (start - end) : end}); },
+    rect(x, y, w, h) { pathStack.push({t:'M', x, y}, {t:'L', x:x+w, y}, {t:'L', x:x+w, y:y+h}, {t:'L', x, y:y+h}, {t:'Z'}); },
+    arc(cx, cy, r, start, end, anticlockwise = false) {
+      let a0 = Number(start) || 0;
+      let a1 = Number(end) || 0;
+      if (!anticlockwise && a1 < a0) a1 += Math.PI * 2;
+      if (anticlockwise && a1 > a0) a1 -= Math.PI * 2;
+      pathStack.push({t:'A', cx, cy, r, start:a0, end:a1});
+    },
     closePath() { pathStack.push({t:'Z'}); },
-    stroke() { addPath(buildPath(), false, 'nonzero'); },
+    stroke() { addPath(buildPath(), false); },
     fill(rule = 'nonzero') { addPath(buildPath(), true, rule); },
-    clip(rule = 'nonzero') { if (rule === 'evenodd') flushClip(); else flushClip(); },
-    strokeRect(x, y, w, h) {
-      add(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${svgEscape(strokeStyle)}" stroke-width="${Number(lineWidth.toFixed(4))}"${lineDash.length ? ` stroke-dasharray="${lineDash.join(' ')}"` : ''}${lineCap ? ` stroke-linecap="${lineCap}"` : ''}${lineJoin ? ` stroke-linejoin="${lineJoin}"` : ''}${clipId ? ` clip-path="url(#${clipId})"` : ''}${transformAttr()}/>\n`);
-    },
-    fillRect(x, y, w, h) {
-      add(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${svgEscape(fillStyle)}"${clipId ? ` clip-path="url(#${clipId})"` : ''}${transformAttr()}/>\n`);
-    },
+    clip() { flushClip(); },
+    strokeRect(x, y, w, h) { add(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${svgEscape(paintColor(strokeStyle))}" stroke-width="${Number(lineWidth.toFixed(4))}"${lineDash.length ? ` stroke-dasharray="${lineDash.join(' ')}"` : ''}${lineCap ? ` stroke-linecap="${lineCap}"` : ''}${lineJoin ? ` stroke-linejoin="${lineJoin}"` : ''}${clipId ? ` clip-path="url(#${clipId})"` : ''}${transformAttr()}${combinedOpacityAttr(strokeStyle)}/>`); },
+    fillRect(x, y, w, h) { add(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${svgEscape(paintColor(fillStyle))}"${clipId ? ` clip-path="url(#${clipId})"` : ''}${transformAttr()}${combinedOpacityAttr(fillStyle)}/>`); },
     fillText(text, x, y) {
       measureCtx.font = font;
-      const fs = currentFontSize();
-      const width = measureCtx.measureText(String(text)).width;
-      let dx = x;
-      if (textAlign === 'center') dx = x - width / 2;
-      else if (textAlign === 'right' || textAlign === 'end') dx = x - width;
-      let dy = y;
-      if (textBaseline === 'middle') dy = y + fs * 0.35;
-      else if (textBaseline === 'top') dy = y + fs * 0.82;
-      else if (textBaseline === 'bottom') dy = y;
-      const baseline = getBaseline();
-      add(`<text x="${dx}" y="${dy}" font-family="Microsoft YaHei, Arial, sans-serif" font-size="${fs}" fill="${svgEscape(fillStyle)}" text-anchor="${getTextAnchor()}" dominant-baseline="${baseline}"${clipId ? ` clip-path="url(#${clipId})"` : ''}${transformAttr()}>${svgEscape(text)}</text>\n`);
+      const fs = parseFontSize(font);
+      add(`<text x="${x}" y="${y}" font-family="Microsoft YaHei, Arial, sans-serif" font-size="${fs}" fill="${svgEscape(paintColor(fillStyle))}" text-anchor="${getTextAnchor()}" dominant-baseline="${getBaseline()}"${clipId ? ` clip-path="url(#${clipId})"` : ''}${transformAttr()}${combinedOpacityAttr(fillStyle)}>${svgEscape(text)}</text>`);
     },
     measureText(text) { measureCtx.font = font; return measureCtx.measureText(String(text)); },
     setLineDash(arr) { lineDash = Array.isArray(arr) ? arr.map(n => Number(n.toFixed ? n.toFixed(4) : n)) : []; },
-    get lineWidth() { return lineWidth; },
-    set lineWidth(v) { lineWidth = Number(v) || 0; },
-    get strokeStyle() { return strokeStyle; },
-    set strokeStyle(v) { strokeStyle = v; },
-    get fillStyle() { return fillStyle; },
-    set fillStyle(v) { fillStyle = v; },
-    get font() { return font; },
-    set font(v) { font = v; },
-    get textAlign() { return textAlign; },
-    set textAlign(v) { textAlign = v; },
-    get textBaseline() { return textBaseline; },
-    set textBaseline(v) { textBaseline = v; },
-    get lineCap() { return lineCap; },
-    set lineCap(v) { lineCap = v; },
-    get lineJoin() { return lineJoin; },
-    set lineJoin(v) { lineJoin = v; },
-    shadowColor: 'transparent',
-    shadowBlur: 0,
-    shadowOffsetY: 0
+    get lineWidth() { return lineWidth; }, set lineWidth(v) { lineWidth = Number(v) || 0; },
+    get strokeStyle() { return strokeStyle; }, set strokeStyle(v) { strokeStyle = normalizeSvgPaint(v); },
+    get fillStyle() { return fillStyle; }, set fillStyle(v) { fillStyle = normalizeSvgPaint(v); },
+    get font() { return font; }, set font(v) { font = v; },
+    get textAlign() { return textAlign; }, set textAlign(v) { textAlign = v; },
+    get textBaseline() { return textBaseline; }, set textBaseline(v) { textBaseline = v; },
+    get lineCap() { return lineCap; }, set lineCap(v) { lineCap = v; },
+    get lineJoin() { return lineJoin; }, set lineJoin(v) { lineJoin = v; },
+    get globalAlpha() { return globalAlpha; }, set globalAlpha(v) { globalAlpha = Math.max(0, Math.min(1, Number(v))); if (!Number.isFinite(globalAlpha)) globalAlpha = 1; },
+    shadowColor:'transparent', shadowBlur:0, shadowOffsetY:0
   };
-  return {
-    ctx,
-    toSvg() {
-      const defsHtml = defs.length ? `<defs>${defs.join('')}</defs>` : '';
-      return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${defsHtml}${elements.join('')}</svg>`;
-    }
-  };
+  return {ctx, toSvg() { return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${defs.length ? `<defs>${defs.join('')}</defs>` : ''}${elements.join('')}</svg>`; }};
 }
 
 function renderSheetSvg(tab = currentTab, p = lastParams || getParams(), options = {}) {
@@ -4071,33 +4039,6 @@ function renderPlanSheetsStripCanvas(p = lastParams || getParams(), renderScale 
   currentPlanPage = oldPlanPage;
   canvasMode = oldCanvasMode;
   return out;
-}
-
-function loadPdfLib() {
-  if (window.PDFLib?.PDFDocument) return Promise.resolve(window.PDFLib);
-  if (!pdfLibPromise) {
-    pdfLibPromise = new Promise((resolve, reject) => {
-      const sources = [
-        './pdf-lib.min.js',
-        'file:///C:/Users/35045/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/pdf-lib/dist/pdf-lib.min.js'
-      ];
-      let index = 0;
-      const loadNext = () => {
-        if (index >= sources.length) {
-          reject(new Error('PDF 库加载失败'));
-          return;
-        }
-        const script = document.createElement('script');
-        script.src = sources[index++];
-        script.async = true;
-        script.onload = () => resolve(window.PDFLib);
-        script.onerror = loadNext;
-        document.head.appendChild(script);
-      };
-      loadNext();
-    });
-  }
-  return pdfLibPromise;
 }
 
 function planBlockMetrics(row) {
@@ -4216,7 +4157,7 @@ function sheetAvailableHeight(layout, pageIndex = 0, landscape = false) {
   return Math.max(1, layout.plot.h - gaps.top - gaps.bottom);
 }
 
-function planPrintableRawWidth(landscape = false, pageIndex = 0, p = lastParams || getParams()) {
+function planAvailableRawWidth(landscape = false, pageIndex = 0, p = lastParams || getParams()) {
   const layout = landscape ? sheetLayoutForPage({blocks: [], landscape: true}, p, pageIndex) : getSheetLayout(p, pageIndex);
   return sheetRowAvailableWidth(layout, pageIndex, landscape);
 }
@@ -4651,10 +4592,23 @@ function drawHatch(x, y, w, h, gap = 42, color = 'rgba(120,126,135,.16)', lineWi
   ctx.clip();
   ctx.strokeStyle = color;
   ctx.lineWidth = lineWidth;
+  const lineIntersections = c => {
+    const points = [];
+    const add = (px, py) => {
+      if (px >= x - 0.001 && px <= x + w + 0.001 && py >= y - 0.001 && py <= y + h + 0.001) points.push({x:px, y:py});
+    };
+    add(c, y + h);
+    add(c + h, y);
+    add(x, y + h - (x - c));
+    add(x + w, y + h - (x + w - c));
+    return points.filter((pt, idx, arr) => arr.findIndex(other => Math.abs(other.x - pt.x) < 0.001 && Math.abs(other.y - pt.y) < 0.001) === idx);
+  };
   for (let i = -h; i < w + h; i += gap) {
+    const pts = lineIntersections(x + i);
+    if (pts.length < 2) continue;
     ctx.beginPath();
-    ctx.moveTo(x + i, y + h);
-    ctx.lineTo(x + i + h, y);
+    ctx.moveTo(pts[0].x, pts[0].y);
+    ctx.lineTo(pts[1].x, pts[1].y);
     ctx.stroke();
   }
   ctx.restore();
@@ -4697,8 +4651,7 @@ function wheelMaxZoomScale(p = lastParams || getParams()) {
     const rawContentW = Math.max(1, page.usedW);
     const rawContentH = Math.max(1, page.usedH);
     const autoFitScale = Math.min(availableW / rawContentW, availableH / rawContentH, 1);
-    const singleBoothPage = page.blocks.length === 1 && Math.max(1, Number(page.blocks[0]?.row?.count) || 1) === 1;
-    return singleBoothPage ? autoFitScale * 0.75 : autoFitScale;
+    return autoFitScale;
   }).filter(fit => fit > 0);
   const minFit = Math.min(...fits, 1);
   return Math.max(5, 5 / Math.max(0.01, minFit));
@@ -5978,15 +5931,15 @@ function drawLandscapePlanPageContent(page, layout, sheetOffsetX = 0, sheetOffse
   const rawContentW = Math.max(1, page.usedW);
   const rawContentH = Math.max(1, page.usedH);
   const pageFit = Math.min(1, availableW / rawContentW, availableH / rawContentH);
-  const plannedScale = Math.max(0.0001, Math.min(1, ...page.blocks.map(block => Number(block.sheetScale) || 1)));
-  const plannedFits = rawContentW * plannedScale <= availableW + 0.5 && rawContentH * plannedScale <= availableH + 0.5;
-  const fit = plannedFits ? plannedScale : pageFit;
+  const fit = pageFit;
   const contentW = Math.max(1, rawContentW * fit);
   const contentH = Math.max(1, rawContentH * fit);
+  const centerX = Math.max(0, (availableW - contentW) / 2);
+  const centerY = Math.max(0, (availableH - contentH) / 2);
   const prevAnnoScale = planAnnotationScale;
   planAnnotationScale = 1;
-  const localX = sheetOffsetX + P.x + gaps.left;
-  const localY = sheetOffsetY + P.y + gaps.top;
+  const localX = sheetOffsetX + P.x + gaps.left + centerX;
+  const localY = sheetOffsetY + P.y + gaps.top + centerY;
   ctx.save();
   ctx.translate(localX, localY);
   ctx.scale(fit, fit);
@@ -6004,13 +5957,12 @@ function drawPortraitPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffset
   const baseContentW = Math.max(1, page.usedW);
   const baseContentH = Math.max(1, page.usedH);
   const singleBoothPage = page.blocks.length === 1 && Math.max(1, Number(page.blocks[0]?.row?.count) || 1) === 1;
-  const singleBoothTaggedPage = singleBoothPage;
   const rawContentW = baseContentW;
   const rawContentH = baseContentH;
   const availableW = Math.max(1, P.w - gaps.left - gaps.right);
   const availableH = Math.max(1, P.h - gaps.top - gaps.bottom);
   const autoFitScale = Math.min(availableW / rawContentW, availableH / rawContentH, 1);
-  const fit = singleBoothTaggedPage ? autoFitScale * 0.58 : singleBoothPage ? autoFitScale * 0.75 : autoFitScale;
+  const fit = autoFitScale;
   const contentW = Math.max(1, rawContentW * fit);
   const contentH = Math.max(1, rawContentH * fit);
   const rowYs = [...new Set(page.blocks.map(block => block.pageY))].sort((a, b) => a - b);
@@ -6019,11 +5971,13 @@ function drawPortraitPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffset
   const visualRowGap = rowYs.length > 1 ? Math.min(24, spareH / (rowYs.length - 1)) : 0;
   const rawVisualRowGap = visualRowGap / Math.max(0.0001, fit);
   const rowOffsetByY = new Map(rowYs.map((y, index) => [y, rawVisualRowGap * index]));
+  const adjustedContentH = contentH + visualRowGap * Math.max(0, rowYs.length - 1);
+  const centerX = Math.max(0, (availableW - contentW) / 2);
+  const centerY = singleBoothPage ? Math.max(0, (availableH - adjustedContentH) / 2) : 0;
   const prevAnnoScale = planAnnotationScale;
   planAnnotationScale = 1;
-  const localX = sheetOffsetX + P.x + gaps.left;
-  const titleClearance = singleBoothTaggedPage ? 90 : 0;
-  const localY = sheetOffsetY + P.y + gaps.top + titleClearance;
+  const localX = sheetOffsetX + P.x + gaps.left + centerX;
+  const localY = sheetOffsetY + P.y + gaps.top + centerY;
   ctx.save();
   ctx.translate(localX, localY);
   ctx.scale(fit, fit);
@@ -6075,7 +6029,13 @@ function drawPlan(p) {
   const layout = sheetLayoutForPage(page, p, pageIndex);
   ctx.save();
   ctx.beginPath();
-  ctx.rect(layout.frame.x + layout.safeGap * 0.35, layout.frame.y + layout.safeGap * 0.35, layout.frame.w - layout.safeGap * 0.7, layout.frame.h - layout.safeGap * 0.7);
+  const clipBleed = drawingForExport ? 80 : 0;
+  ctx.rect(
+    layout.frame.x + layout.safeGap * 0.35 - clipBleed,
+    layout.frame.y + layout.safeGap * 0.35 - clipBleed,
+    layout.frame.w - layout.safeGap * 0.7 + clipBleed * 2,
+    layout.frame.h - layout.safeGap * 0.7 + clipBleed * 2
+  );
   ctx.clip();
 
   drawPlanPageContent(page, layout, 0, 0, orientationPageIndex, pageIndex);  if (pages.length > 1) {
@@ -6864,78 +6824,6 @@ function exportAll() {
   });
 }
 
-async function printPdf() {
-  try {
-    const p = lastParams || getParams();
-    const pages = renderPdfSvgPagesForScope(p, currentTab === 'plan' ? 'plan' : 'current');
-    const paper = printPaperSpec();
-    const oldFrame = document.getElementById('print-frame');
-    if (oldFrame) oldFrame.remove();
-    const frame = document.createElement('iframe');
-    frame.id = 'print-frame';
-    frame.style.position = 'fixed';
-    frame.style.right = '0';
-    frame.style.bottom = '0';
-    frame.style.width = '1px';
-    frame.style.height = '1px';
-    frame.style.border = '0';
-    frame.style.opacity = '0';
-    document.body.appendChild(frame);
-    const doc = frame.contentDocument || frame.contentWindow.document;
-    doc.open();
-    doc.write(pdfPrintSvgHtml('PDF打印', pages, paper));
-    doc.close();
-    window.setTimeout(() => {
-      try {
-        frame.contentWindow.focus();
-        frame.contentWindow.print();
-      } catch (e) {
-        const link = document.createElement('a');
-        link.download = `隔断图纸.html`;
-        link.href = `data:text/html;charset=utf-8,${encodeURIComponent(doc.documentElement.outerHTML)}`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }
-      window.setTimeout(() => pageImages.forEach(item => {
-        if (String(item.url).startsWith('blob:')) URL.revokeObjectURL(item.url);
-      }), 5000);
-    }, 150);
-  } catch (err) {
-    alert(`PDF打印失败：${err.message || err}`);
-  }
-}
-
-function markButtonBusy(id, text) {
-  const btn = document.getElementById(id);
-  if (!btn) return () => {};
-  const old = btn.innerHTML;
-  btn.disabled = true;
-  btn.textContent = text;
-  return () => {
-    btn.disabled = false;
-    btn.innerHTML = old;
-  };
-}
-
-function bindExportButtons() {
-  const current = document.getElementById('btn-export-current');
-  const all = document.getElementById('btn-export-all');
-  const pdf = document.getElementById('btn-print-pdf');
-  if (current) current.addEventListener('click', () => {
-    const done = markButtonBusy('btn-export-current', '正在导出...');
-    try { exportImg('平面图'); } finally { window.setTimeout(done, 600); }
-  });
-  if (all) all.addEventListener('click', () => {
-    const done = markButtonBusy('btn-export-all', '正在导出...');
-    try { exportAll(); } finally { window.setTimeout(done, 1400); }
-  });
-  if (pdf) pdf.addEventListener('click', () => {
-    const done = markButtonBusy('btn-print-pdf', '正在打开打印...');
-    try { printPdf(); } finally { window.setTimeout(done, 1200); }
-  });
-}
-
 let pendingExportMode = 'current-image';
 
 function sanitizeExportName(name, fallback = '隔断图纸') {
@@ -7028,127 +6916,42 @@ function exportNamedAllImages(baseName = '隔断全部视图') {
   });
 }
 
-function exportPdfCanvasesForScope(p, scope = 'current') {
-  if (scope === 'all') {
-    const planPages = getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PDF_RENDER_SCALE}));
-    return [
-      ...planPages,
-      renderSheetCanvas('front', p, {canvasMode:'sheets', renderScale:PDF_RENDER_SCALE}),
-      renderSheetCanvas('side', p, {canvasMode:'sheets', renderScale:PDF_RENDER_SCALE})
-    ];
-  }
-  if (currentTab === 'plan') {
-    return getSheetPlanPages(p).map((_, i) => renderSheetCanvas('plan', p, {planPage:i, canvasMode:'sheets', renderScale:PDF_RENDER_SCALE}));
-  }
-  return [renderSheetCanvas(currentTab, p, {canvasMode:'sheets', renderScale:PDF_RENDER_SCALE})];
-}
-
-function triggerFramePrint(frame, delay = 250) {
-  let printed = false;
-  const run = () => {
-    if (printed) return;
-    printed = true;
-    window.setTimeout(() => {
-    try {
-      frame.contentWindow.focus();
-      frame.contentWindow.print();
-    } catch (e) {
-      const doc = frame.contentDocument || frame.contentWindow.document;
-      const link = document.createElement('a');
-      link.download = `${doc.title || '打印文件'}.html`;
-      link.href = `data:text/html;charset=utf-8,${encodeURIComponent(doc.documentElement.outerHTML)}`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
-    }, delay);
-  };
-  const doc = frame.contentDocument || frame.contentWindow.document;
-  if (doc.readyState === 'complete') run();
-  else frame.onload = run;
-  window.setTimeout(run, delay + 700);
-}
-
-function triggerWindowPrint(win, delay = 300) {
-  let printed = false;
-  const run = () => {
-    if (printed) return;
-    printed = true;
-    window.setTimeout(() => {
-    win.focus();
-    win.print();
-    }, delay);
-  };
-  if (win.document.readyState === 'complete') run();
-  else win.onload = run;
-  window.setTimeout(run, delay + 700);
-}
-
-function pdfPrintHtml(title, pageImages, paper, includeBom = false) {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
-      @page{size:${paper.label} portrait;margin:0}
-      html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      body{overflow:visible}
-      .page{box-sizing:border-box;width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0;page-break-after:auto;break-after:auto}
-      .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
-      .page:not(:last-child){page-break-after:always;break-after:page}
-      .page:last-of-type:not(:last-child){page-break-after:always;break-after:page}
-      img{width:100%;height:100%;object-fit:contain;display:block}
-      ${includeBom ? `${bomExportCss('embed')}.bom-print-page{width:190mm;min-height:0;padding:10mm;}` : ''}
-    </style></head><body>${pageImages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}"><img src="${item.url}" alt="图纸${i + 1}"></div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`;
-}
-
 function printPaperSpec() {
   return paperSize === 'a3' ? {w:297, h:420, label:'A3'} : {w:210, h:297, label:'A4'};
 }
 
-function renderPdfSvgPage(tab, p, options = {}) {
-  const renderPlanPage = Number.isFinite(options.planPage) ? options.planPage : currentPlanPage;
-  const oldMode = canvasMode;
-  if (options.canvasMode) canvasMode = options.canvasMode;
-  const layout = sheetLayoutForRender(tab, p, renderPlanPage);
-  canvasMode = oldMode;
-  return {
-    svg: renderSheetSvg(tab, p, options),
-    landscape: layout.sheetW > layout.sheetH
-  };
+function pdfPageSizePoints(landscape = false, paper = printPaperSpec()) {
+  const mmToPt = 72 / 25.4;
+  const w = paper.w * mmToPt;
+  const h = paper.h * mmToPt;
+  return landscape ? [h, w] : [w, h];
 }
 
-function renderPdfSvgPagesForScope(p, scope = 'current') {
-  if (scope === 'all') {
-    const planPages = getSheetPlanPages(p).map((_, i) => renderPdfSvgPage('plan', p, {planPage:i, canvasMode:'sheets'}));
-    return [
-      ...planPages,
-      renderPdfSvgPage('front', p, {canvasMode:'sheets'}),
-      renderPdfSvgPage('side', p, {canvasMode:'sheets'})
-    ];
+function loadPdfLib() {
+  if (window.PDFLib?.PDFDocument) return Promise.resolve(window.PDFLib);
+  if (!pdfLibPromise) {
+    pdfLibPromise = new Promise((resolve, reject) => {
+      const sources = [
+        './pdf-lib.min.js',
+        'file:///C:/Users/35045/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/pdf-lib/dist/pdf-lib.min.js'
+      ];
+      let index = 0;
+      const loadNext = () => {
+        if (index >= sources.length) {
+          reject(new Error('PDF库加载失败'));
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = sources[index++];
+        script.async = true;
+        script.onload = () => window.PDFLib?.PDFDocument ? resolve(window.PDFLib) : loadNext();
+        script.onerror = loadNext;
+        document.head.appendChild(script);
+      };
+      loadNext();
+    });
   }
-  if (scope === 'plan' || currentTab === 'plan') {
-    return getSheetPlanPages(p).map((_, i) => renderPdfSvgPage('plan', p, {planPage:i, canvasMode:'sheets'}));
-  }
-  return [renderPdfSvgPage(currentTab, p, {canvasMode:'sheets'})];
-}
-
-function pdfPrintSvgHtml(title, pages, paper, includeBom = false) {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
-      @page{size:${paper.label} portrait;margin:0}
-      html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      body{overflow:visible}
-      .page{box-sizing:border-box;width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0;page-break-after:auto;break-after:auto;background:#fff}
-      .page.landscape{width:${paper.h}mm;height:${paper.w}mm}
-      .page:not(:last-child){page-break-after:always;break-after:page}
-      .page svg{width:100%;height:100%;display:block}
-      ${includeBom ? `${bomExportCss('embed')}.bom-print-page{width:190mm;min-height:0;padding:10mm;}` : ''}
-    </style></head><body>${pages.map((item, i) => `<div class="page${item.landscape ? ' landscape' : ''}" aria-label="图纸${i + 1}">${item.svg}</div>`).join('')}${includeBom ? bomPrintPageHtml('开料清单') : ''}</body></html>`;
-}
-
-function openPrintWindow(title) {
-  const win = window.open('', '_blank');
-  if (!win) return null;
-  win.document.open();
-  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:"Microsoft YaHei",Arial,sans-serif;color:#1f2328;background:#fff}</style></head><body>正在生成打印文件...</body></html>`);
-  win.document.close();
-  return win;
+  return pdfLibPromise;
 }
 
 function canvasToPngBytes(canvas) {
@@ -7178,29 +6981,1247 @@ function downloadPdfBytes(bytes, filename) {
 async function addCanvasPageToPdf(pdfDoc, canvas, pageSize) {
   const png = await pdfDoc.embedPng(await canvasToPngBytes(canvas));
   const page = pdfDoc.addPage(pageSize);
-  const {width:pageW, height:pageH} = page.getSize();
+  const {width: pageW, height: pageH} = page.getSize();
+  page.drawImage(png, {x:0, y:0, width:pageW, height:pageH});
+}
+
+async function addBomCanvasPageToPdf(pdfDoc, canvas, pageSize) {
+  const png = await pdfDoc.embedPng(await canvasToPngBytes(canvas));
+  const page = pdfDoc.addPage(pageSize);
+  const {width: pageW, height: pageH} = page.getSize();
+  const logicalW = Number(canvas.dataset.logicalWidth) || canvas.width;
+  const logicalH = Number(canvas.dataset.logicalHeight) || canvas.height;
+  const margin = 28;
+  const maxW = pageW - margin * 2;
+  const maxH = pageH - margin * 2;
+  const scale = Math.min(maxW / Math.max(1, logicalW), maxH / Math.max(1, logicalH));
+  const drawW = logicalW * scale;
+  const drawH = logicalH * scale;
   page.drawImage(png, {
-    x:0,
-    y:0,
-    width:pageW,
-    height:pageH
+    x:(pageW - drawW) / 2,
+    y:pageH - margin - drawH,
+    width:drawW,
+    height:drawH
   });
 }
 
+function drawingJobsForScope(p, scope = 'current') {
+  if (scope === 'all') {
+    return [
+      ...getSheetPlanPages(p).map((_, i) => ({tab:'plan', options:{planPage:i}})),
+      {tab:'front', options:{}},
+      {tab:'side', options:{}}
+    ];
+  }
+  if (currentTab === 'plan') return getSheetPlanPages(p).map((_, i) => ({tab:'plan', options:{planPage:i}}));
+  return [{tab:currentTab, options:{}}];
+}
+
+function renderPrintPagesForScope(p, scope = 'current') {
+  const renderScale = Math.min(4, Math.max(2, QUALITY_RENDER_SCALE));
+  return drawingJobsForScope(p, scope).map(job => {
+    const renderPlanPage = Number.isFinite(job.options.planPage) ? job.options.planPage : currentPlanPage;
+    const layout = sheetLayoutForRender(job.tab, p, renderPlanPage);
+    const canvas = renderSheetCanvas(job.tab, p, {...job.options, canvasMode:'sheets', renderScale});
+    return {
+      image: canvas.toDataURL('image/png'),
+      landscape: layout.sheetW > layout.sheetH
+    };
+  });
+}
+
+function renderCanvasPrintPagesForScope(p, scope = 'current') {
+  return renderPrintPagesForScope(p, scope);
+}
+
+function renderSvgPdfPagesForScope(p, scope = 'current') {
+  return renderPrintPagesForScope(p, scope);
+}
+
+function canvasPrintDocumentHtml(title, pages, paper, includeBom = false) {
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
+    @page portraitPage{size:${paper.label} portrait;margin:0}
+    @page landscapePage{size:${paper.label} landscape;margin:0}
+    html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{overflow:visible}
+    .page{page:portraitPage;box-sizing:border-box;width:${paper.w}mm;height:${paper.h}mm;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0;background:#fff;break-after:page;page-break-after:always}
+    .page.landscape{page:landscapePage;width:${paper.h}mm;height:${paper.w}mm}
+    .page:last-child{break-after:auto;page-break-after:auto}
+    .page img{display:block;width:100%;height:100%;object-fit:contain}
+    ${includeBom ? `.bom-page{page:portraitPage;box-sizing:border-box;width:${paper.w}mm;min-height:${paper.h}mm;padding:10mm;background:#fff;break-before:page;page-break-before:always}` : ''}
+  </style></head><body>${pages.map((item, i) => `<section class="page${item.landscape ? ' landscape' : ''}" aria-label="图纸${i + 1}"><img alt="图纸${i + 1}" src="${item.image}"></section>`).join('')}${includeBom ? `<section class="bom-page"><h1>${escapeHtml(title)}-开料清单</h1>${currentBomHtml()}</section>` : ''}</body></html>`;
+}
+
+function svgPrintPagesForScope(p, scope = 'current') {
+  return drawingJobsForScope(p, scope).map(job => {
+    const pageIndex = Number.isFinite(job.options.planPage) ? job.options.planPage : currentPlanPage;
+    const layout = sheetLayoutForRender(job.tab, p, pageIndex);
+    const landscape = layout.sheetW > layout.sheetH;
+    return {
+      svg: renderBackendSheetSvg(job.tab, p, job.options || {}),
+      landscape,
+      pageWmm: landscape ? printPaperSpec().h : printPaperSpec().w,
+      pageHmm: landscape ? printPaperSpec().w : printPaperSpec().h
+    };
+  });
+}
+
+function svgPrintTypographyCss() {
+  return `
+    .page svg text{font-size:12px!important}
+    .page svg text[data-text-class="note-tag"]{font-size:13px!important}
+    .page svg text[data-text-class="booth-label"]{font-size:18px!important}
+    .page svg text[data-text-class="no-door-label"]{font-size:12px!important}
+    .page svg text[data-text-class="total-dimension"]{font-size:13px!important}
+    .page svg text[data-text-class="booth-width-dimension"]{font-size:12px!important}
+    .page svg text[data-text-class="depth-dimension"]{font-size:12px!important}
+    .page svg text[data-text-class="front-chain-dimension"]{font-size:11px!important}
+  `;
+}
+
+function normalizeSvgForPrint(svg) {
+  const blackened = String(svg || '')
+    .replace(/stroke="rgba\(0,0,0,\.36\)"/g, 'stroke="#000" stroke-opacity="0.55"')
+    .replace(/stroke="rgba\(0,0,0,0\.36\)"/g, 'stroke="#000" stroke-opacity="0.55"');
+  const boosted = blackened.replace(/stroke-width="([0-9.]+)"/g, (match, value, offset, source) => {
+    const width = Number(value);
+    if (!Number.isFinite(width) || width >= 1.2) return match;
+    const near = source.slice(Math.max(0, offset - 120), offset + 160);
+    if (!/stroke="#000(?:000)?"/.test(near)) return match;
+    return 'stroke-width="1.2"';
+  });
+  return boosted.replace(/^<svg\b([^>]*)>/i, (match, attrs) => {
+    const cleaned = attrs
+      .replace(/\swidth="[^"]*"/i, '')
+      .replace(/\sheight="[^"]*"/i, '');
+    return `<svg${cleaned} width="100%" height="100%" preserveAspectRatio="xMidYMid meet">`;
+  });
+}
+
+function svgPrintDocumentHtml(title, pages, paper, includeBom = false) {
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
+    @page portraitPage{size:${paper.label} portrait;margin:0}
+    @page landscapePage{size:${paper.label} landscape;margin:0}
+    html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{overflow:visible}
+    .page{page:portraitPage;box-sizing:border-box;width:${paper.w}mm;height:${paper.h}mm;display:block;overflow:hidden;padding:0;background:#fff;break-after:page;page-break-after:always}
+    .page.landscape{page:landscapePage;width:${paper.h}mm;height:${paper.w}mm}
+    .page:last-child{break-after:auto;page-break-after:auto}
+    .svg-sheet{display:block;width:100%;height:100%}
+    .svg-sheet svg{display:block;width:100%;height:100%;shape-rendering:geometricPrecision;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}
+    .svg-sheet svg line,.svg-sheet svg rect{shape-rendering:crispEdges;stroke-linecap:butt;stroke-linejoin:miter}
+    .svg-sheet svg path{shape-rendering:geometricPrecision;stroke-linejoin:round}
+    .svg-sheet svg [stroke-dasharray]{shape-rendering:geometricPrecision;stroke-linecap:round}
+    .svg-sheet svg line[stroke="#000"],.svg-sheet svg rect[stroke="#000"],.svg-sheet svg path[stroke="#000"],.svg-sheet svg line[stroke="#000000"],.svg-sheet svg rect[stroke="#000000"],.svg-sheet svg path[stroke="#000000"]{stroke:#000!important;stroke-opacity:1!important;opacity:1!important}
+    .svg-sheet svg text[fill="#000"],.svg-sheet svg text[fill="#000000"]{fill:#000!important;fill-opacity:1!important;opacity:1!important;font-weight:600}
+    ${svgPrintTypographyCss()}
+    ${includeBom ? `.bom-page{page:portraitPage;box-sizing:border-box;width:${paper.w}mm;min-height:${paper.h}mm;padding:10mm;background:#fff;break-before:page;page-break-before:always}` : ''}
+  </style></head><body>${pages.map((item, i) => `<section class="page${item.landscape ? ' landscape' : ''}" aria-label="SVG图纸${i + 1}"><div class="svg-sheet" style="width:${item.pageWmm}mm;height:${item.pageHmm}mm">${normalizeSvgForPrint(item.svg)}</div></section>`).join('')}${includeBom ? `<section class="bom-page"><h1>${escapeHtml(title)}-开料清单</h1>${currentBomHtml()}</section>` : ''}</body></html>`;
+}
+function injectSamePagePrintHtml(html) {
+  const oldFrame = document.getElementById('pdf-print-fallback-frame');
+  if (oldFrame) oldFrame.remove();
+  const frame = document.createElement('iframe');
+  frame.id = 'pdf-print-fallback-frame';
+  frame.setAttribute('aria-hidden', 'true');
+  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none';
+  document.body.appendChild(frame);
+  const doc = frame.contentDocument || frame.contentWindow?.document;
+  if (!doc) throw new Error('无法创建打印页面');
+  doc.open();
+  doc.write(html);
+  doc.close();
+  return frame;
+}
+
+function printFromFrame(html) {
+  const frame = injectSamePagePrintHtml(html);
+  const win = frame.contentWindow;
+  if (!win) throw new Error('浏览器不支持内嵌打印');
+  let didPrint = false;
+  const run = () => {
+    if (didPrint) return;
+    didPrint = true;
+    window.setTimeout(() => {
+      win.focus();
+      win.print();
+    }, 250);
+  };
+  if (frame.contentDocument?.readyState === 'complete') run();
+  else frame.onload = run;
+  window.setTimeout(run, 1000);
+  return frame;
+}
+
+function openPrintWindow(title, html, autoPrint = true) {
+  const win = window.open('', '_blank');
+  if (!win) return printFromFrame(html);
+  try {
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  } catch (err) {
+    try { win.close(); } catch (_) {}
+    return printFromFrame(html);
+  }
+  if (autoPrint) {
+    let didPrint = false;
+    const run = () => {
+      if (didPrint) return;
+      didPrint = true;
+      window.setTimeout(() => {
+        try {
+          win.focus();
+          win.print();
+        } catch (err) {
+          printFromFrame(html);
+        }
+      }, 250);
+    };
+    if (win.document.readyState === 'complete') run();
+    else win.onload = run;
+    window.setTimeout(run, 1000);
+  }
+  return win;
+}
+function requireDrawingBackendV1() {
+  const B = window.DrawingBackendV1;
+  if (!B) throw new Error('DrawingBackendV1 not loaded');
+  return B;
+}
+
+function backendDrawDim(B, model, x1, y1, x2, y2, label, side, fontSize = 38, textClass = 'dimension') {
+  const isH = Math.abs(x2 - x1) > Math.abs(y2 - y1);
+  const off = side || 45;
+  const productionWeight = textClass === 'booth-width-dimension';
+  const tick = productionWeight ? 28 : 14;
+  const lineStyle = {stroke:'#000', strokeWidth:productionWeight ? 4 : 1.1, className:`${textClass}-line`};
+  if (isH) {
+    const dy = (y1 + y2) / 2 - off;
+    B.line(model, x1, y1, x1, dy + off, lineStyle);
+    B.line(model, x2, y2, x2, dy + off, lineStyle);
+    B.line(model, x1, dy, x2, dy, lineStyle);
+    B.line(model, x1, dy - tick, x1, dy + tick, lineStyle);
+    B.line(model, x2, dy - tick, x2, dy + tick, lineStyle);
+    B.text(model, String(label), (x1 + x2) / 2, dy - 18, {fill:'#000', fontSize, align:'middle', baseline:'alphabetic', className:textClass, maxWidth:Math.max(1, Math.abs(x2 - x1) - 12), fitMode:'shrink'});
+  } else {
+    const dx = (x1 + x2) / 2 + off;
+    const tx = dx + (side < 0 ? -70 : 70) + (textClass === 'depth-dimension' ? 12 : 0);
+    B.line(model, x1, y1, dx - off, y1, lineStyle);
+    B.line(model, x2, y2, dx - off, y2, lineStyle);
+    B.line(model, dx, y1, dx, y2, lineStyle);
+    B.line(model, dx - tick, y1, dx + tick, y1, lineStyle);
+    B.line(model, dx - tick, y2, dx + tick, y2, lineStyle);
+    B.text(model, String(label), tx, (y1 + y2) / 2, {fill:'#000', fontSize, align:'middle', baseline:'central', rotate:90, className:textClass, maxWidth:Math.max(1, Math.abs(y2 - y1) - 12), fitMode:'shrink'});
+  }
+}
+
+function backendDrawChainDim(B, model, y, segments, fontSize = 34, textClass = 'chain-dimension') {
+  const safe = (segments || []).filter(seg => seg && seg.x2 > seg.x1);
+  if (!safe.length) return;
+  const lineStyle = {stroke:'#000', strokeWidth:1.1, className:`${textClass}-line`};
+  B.line(model, safe[0].x1, y, safe[safe.length - 1].x2, y, lineStyle);
+  safe.forEach(seg => {
+    const cx = (seg.x1 + seg.x2) / 2;
+    B.line(model, seg.x1, y - 14, seg.x1, y + 14, lineStyle);
+    B.line(model, seg.x2, y - 14, seg.x2, y + 14, lineStyle);
+    if (seg.label) B.text(model, String(seg.label), cx, y - 24, {fill:'#000', fontSize, align:'middle', baseline:'alphabetic', className:textClass, maxWidth:Math.max(1, seg.x2 - seg.x1 - 12), fitMode:'shrink'});
+  });
+}
+
+function backendDrawDoorSwing(B, model, door, baseY, st, p) {
+  const swing = swingDefs[door.swing || p.swing || 'in-right'] || swingDefs['in-right'];
+  const isRight = swing.hinge === 'right';
+  const closedStart = Number.isFinite(door.bigStart) ? door.bigStart : door.start;
+  const closedEnd = Number.isFinite(door.bigEnd) ? door.bigEnd : door.end;
+  const hingeX = isRight ? door.end : door.start;
+  const closedHingeX = isRight ? closedEnd : closedStart;
+  const closedY = baseY + st / 2;
+  const openEndY = closedY + (swing.opensUp ? -1 : 1) * door.width;
+  const drawDoorBoard = (x1, y1, x2, y2, topIsSmall) => {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    if (len <= 0.5) return;
+    const ux = dx / len;
+    const uy = dy / len;
+    const nx = -uy;
+    const ny = ux;
+    const panelMm = Math.max(1, Number(p.tPanel) || 12);
+    const pxPerMm = st / panelMm;
+    const rebate = p.rebate ? Math.min(Math.max(0, Number(p.rebateDepth) || 0) * pxPerMm, len / 3) : 0;
+    const topA = topIsSmall ? rebate : 0;
+    const topB = topIsSmall ? len - rebate : len;
+    const botA = topIsSmall ? 0 : rebate;
+    const botB = topIsSmall ? len : len - rebate;
+    const px = (s, side) => x1 + ux * s + nx * side;
+    const py = (s, side) => y1 + uy * s + ny * side;
+    const points = [
+      {x:px(topA, -st / 2), y:py(topA, -st / 2)},
+      {x:px(topB, -st / 2), y:py(topB, -st / 2)}
+    ];
+    if (topB !== botB) points.push({x:px(topB, 0), y:py(topB, 0)});
+    points.push(
+      {x:px(botB, 0), y:py(botB, 0)},
+      {x:px(botB, st / 2), y:py(botB, st / 2)},
+      {x:px(botA, st / 2), y:py(botA, st / 2)}
+    );
+    if (botA !== topA) points.push({x:px(botA, 0), y:py(botA, 0)});
+    points.push({x:px(topA, 0), y:py(topA, 0)});
+    B.path(model, points, {fill:'none', stroke:'#185FA5', strokeWidth:0.75, closed:true, lineCap:'butt', lineJoin:'miter'});
+  };
+  drawDoorBoard(closedStart, closedY, closedEnd, closedY, doorSmallOnTopForSwing(door.swing));
+  drawDoorBoard(hingeX, closedY, hingeX, openEndY, doorSmallOnTopForSwing(door.swing));
+  const arcMap = {
+    'in-left': [0, -Math.PI / 2],
+    'in-right': [Math.PI, Math.PI * 1.5],
+    'out-left': [0, Math.PI / 2],
+    'out-right': [Math.PI, Math.PI / 2]
+  };
+  const arc = arcMap[door.swing || p.swing || 'in-right'] || arcMap['in-right'];
+  B.arc(model, closedHingeX, closedY, door.width, arc[0], arc[1], {stroke:'#8EC5FF', strokeWidth:2, dash:[12, 8]});
+}
+
+function backendDrawPlanRebateDetails(B, model, p, ox, oy, sW, sD, st, scale, boardModel) {
+  if (!p.rebate || !boardModel?.doors?.length) return;
+  const rebatePx = Math.max(1.5, (p.rebateDepth || 0) * scale);
+  const yTop = oy + sD;
+  const yBot = yTop + st;
+  const yMid = yTop + st * 0.5;
+  const drawBoardProfile = (bigX1, bigX2, leftRebate, rightRebate, leftTopIsSmall, rightTopIsSmall = leftTopIsSmall) => {
+    if (bigX2 <= bigX1 + 1) return;
+    const r = Math.min(rebatePx, Math.max(1, (bigX2 - bigX1) / 3));
+    const smallX1 = leftRebate ? bigX1 + r : bigX1;
+    const smallX2 = rightRebate ? bigX2 - r : bigX2;
+    const topLeft = leftTopIsSmall ? smallX1 : bigX1;
+    const topRight = rightTopIsSmall ? smallX2 : bigX2;
+    const botLeft = leftTopIsSmall ? bigX1 : smallX1;
+    const botRight = rightTopIsSmall ? bigX2 : smallX2;
+    const points = [
+      {x:topLeft, y:yTop},
+      {x:topRight, y:yTop}
+    ];
+    if (topRight !== botRight) points.push({x:topRight, y:yMid});
+    points.push(
+      {x:botRight, y:yMid},
+      {x:botRight, y:yBot},
+      {x:botLeft, y:yBot}
+    );
+    if (botLeft !== topLeft) points.push({x:botLeft, y:yMid});
+    points.push({x:topLeft, y:yMid}, {x:topLeft, y:yTop});
+    B.path(model, points, {fill:'none', stroke:'#000', strokeWidth:0.75, lineCap:'butt', lineJoin:'miter'});
+  };
+  boardModel.panels.forEach(panel => drawBoardProfile(panel.bigX1, panel.bigX2, panel.leftRebate, panel.rightRebate, panel.leftTopIsSmall, panel.rightTopIsSmall));
+}
+
+function backendDrawPlanWalls(B, model, ox, oy, sW, sD, swt, c, extras = {}) {
+  const extraLeft = Math.max(0, Number(extras.left) || 0);
+  const extraRight = Math.max(0, Number(extras.right) || 0);
+  const frontExtend = Math.max(0, Number(extras.frontExtend) || 0);
+  const middleExtras = Array.isArray(extras.middle) ? extras.middle.filter(item => item && item.h > 0 && item.x2 > item.x1) : [];
+  const left = (c.hasLeft || extraLeft > 0) ? swt : 0;
+  const right = (c.hasRight || extraRight > 0) ? swt : 0;
+  const back = c.hasBack ? swt : 0;
+  if (!left && !right && !back) return;
+  const fullSideH = sD + frontExtend + back;
+  const leftH = c.hasLeft ? fullSideH : Math.min(fullSideH, back + extraLeft);
+  const rightH = c.hasRight ? fullSideH : Math.min(fullSideH, back + extraRight);
+  const leftX = left ? ox - left : ox;
+  const rightX = right ? ox + sW : ox + sW;
+  const backX = back ? Math.min(left ? leftX : ox, ox) : ox;
+  const backRight = back ? Math.max(right ? rightX + right : ox + sW, ox + sW) : ox + sW;
+  const wallRects = [];
+  if (back) wallRects.push({x:backX, y:oy - back, w:backRight - backX, h:back});
+  if (left) wallRects.push({x:leftX, y:oy - back, w:left, h:leftH});
+  if (right) wallRects.push({x:rightX, y:oy - back, w:right, h:rightH});
+  middleExtras.forEach(item => wallRects.push({x:item.x1, y:oy - back, w:item.x2 - item.x1, h:back + item.h}));
+  wallRects.forEach(rect => {
+    B.rect(model, rect.x, rect.y, rect.w, rect.h, {fill:'#fbfbfb', stroke:'none'});
+    B.hatch(model, rect.x, rect.y, rect.w, rect.h, 46, {stroke:'rgba(0,0,0,.36)', strokeWidth:1.05});
+  });
+  const wallLine = {stroke:'#000', strokeWidth:1.6, lineJoin:'miter'};
+  const drawSegmentedLine = (x1, x2, y, gaps) => {
+    let cursor = x1;
+    gaps
+      .map(gap => ({x1:Math.max(x1, gap.x1), x2:Math.min(x2, gap.x2)}))
+      .filter(gap => gap.x2 > gap.x1)
+      .sort((a, b) => a.x1 - b.x1)
+      .forEach(gap => {
+        if (gap.x1 > cursor) B.line(model, cursor, y, gap.x1, y, wallLine);
+        cursor = Math.max(cursor, gap.x2);
+      });
+    if (cursor < x2) B.line(model, cursor, y, x2, y, wallLine);
+  };
+  if (back) {
+    B.line(model, backX, oy - back, backRight, oy - back, wallLine);
+    if (!left) B.line(model, ox, oy - back, ox, oy, wallLine);
+    if (!right) B.line(model, ox + sW, oy - back, ox + sW, oy, wallLine);
+    drawSegmentedLine(ox, ox + sW, oy, middleExtras);
+  }
+  if (left) {
+    B.line(model, leftX, oy - back, leftX, oy - back + leftH, wallLine);
+    B.line(model, leftX, oy - back + leftH, leftX + left, oy - back + leftH, wallLine);
+    B.line(model, leftX + left, oy - back + leftH, leftX + left, oy, wallLine);
+  }
+  if (right) {
+    B.line(model, rightX + right, oy - back, rightX + right, oy - back + rightH, wallLine);
+    B.line(model, rightX + right, oy - back + rightH, rightX, oy - back + rightH, wallLine);
+    B.line(model, rightX, oy - back + rightH, rightX, oy, wallLine);
+  }
+  middleExtras.forEach(item => {
+    const wallBottom = oy + item.h;
+    B.line(model, item.x1, oy, item.x1, wallBottom, wallLine);
+    B.line(model, item.x1, wallBottom, item.x2, wallBottom, wallLine);
+    B.line(model, item.x2, wallBottom, item.x2, oy, wallLine);
+  });
+}
+
+function buildPlanRowDrawingModel(p, ox = 150, oy = 260, scale = null, labelPrefix = 'B', options = {}) {
+  const B = requireDrawingBackendV1();
+  const showGroupName = String(options.showGroupName || options.groupName || '');
+  const c = compute(p);
+  const W = c.totalRun;
+  const D = p.depth;
+  const fit = Number.isFinite(scale) && scale > 0 ? scale : Math.min(0.62, 620 / Math.max(1, W + c.wallT * 2), 760 / Math.max(1, D + c.wallT));
+  const sW = W * fit;
+  const sD = D * fit;
+  const st = Math.max(3, p.tPanel * fit);
+  const swt = c.wallT * fit;
+  const model = B.createDrawingModel(Math.ceil(ox + sW + swt + 230), Math.ceil(oy + sD + st + 230));
+  const panelGeoms = depthPanelGeometry(p, c, ox, oy, fit);
+  backendDrawPlanWalls(B, model, ox, oy, sW, sD, swt, c, {
+    left: panelGeoms[0]?.wallH || 0,
+    right: panelGeoms[Math.max(1, Number(p.count) || 1)]?.wallH || 0,
+    frontExtend: st,
+    middle: panelGeoms.filter(item => !item.isEdge && item.wallH > 0).map(item => ({x1:item.wallX, x2:item.wallX + item.wallW, h:item.wallH}))
+  });
+  if (showGroupName && !(drawingForExport && options.tagPreviewOnly)) {
+    const tagText = String(options.tagText || showGroupName);
+    const isSingleBoothTag = Math.max(1, Number(p.count) || 1) === 1;
+    const tagFontSize = isSingleBoothTag ? 30 : 42;
+    const tagH = isSingleBoothTag ? 76 : PLAN_ANCHOR.noteTagH;
+    const tagMinW = isSingleBoothTag ? 250 : PLAN_ANCHOR.noteTagMinW;
+    const tagPadX = isSingleBoothTag ? 50 : 90;
+    const approxTextW = tagText.length * tagFontSize;
+    const tagW = Math.max(tagMinW, approxTextW + tagPadX);
+    const totalY = oy - swt - (options.totalDimGap ?? PLAN_ANCHOR.totalDimGap);
+    const tagGap = PLAN_ANCHOR.noteTagGap;
+    const wallTopY = oy - swt;
+    const tagY = isSingleBoothTag
+      ? Math.max(totalY + tagGap, Math.min(wallTopY - tagH - tagGap, totalY + (wallTopY - totalY - tagH) / 2))
+      : totalY - tagH - tagGap;
+    B.rect(model, ox, tagY, tagW, tagH, {fill:'#fff', stroke:'#d64242', strokeWidth:1.2});
+    B.text(model, tagText, ox + tagW / 2, tagY + tagH / 2, {fill:'#d64242', fontSize:tagFontSize, align:'middle', baseline:'central', className:'note-tag', maxWidth:Math.max(1, tagW - tagPadX), fitMode:'shrink'});
+  }
+  const drawDepthPanel = geom => {
+    if (geom) B.rect(model, geom.panelX, geom.panelY, geom.panelW, Math.max(1, geom.panelH), {fill:'none', stroke:'#000', strokeWidth:0.8});
+  };
+  if (!c.hasLeft) drawDepthPanel(panelGeoms[0]);
+  const doors = [];
+  let boothX = ox;
+  for (let i = 0; i < p.count; i++) {
+    const bx = boothX;
+    const boothMm = c.boothWidths[i] || c.boothW;
+    const bw = boothMm * fit;
+    const doorW = (c.doorInstallWidths[i] || c.doorWidths[i] || p.doorW) * fit;
+    const gapLeft = c.gapPairs[i]?.[0] || 0;
+    const gapRight = c.gapPairs[i]?.[1] || 0;
+    const zoneStart = bx + (c.sidePairs[i]?.[0] || 0) * fit;
+    const dsx = zoneStart + gapLeft * fit;
+    const zoneEnd = dsx + doorW + gapRight * fit;
+    const rebatePx = p.rebate ? Math.max(0, Number(p.rebateDepth) || 0) * fit : 0;
+    const door = {start:dsx, end:dsx + doorW, bigStart:dsx - rebatePx, bigEnd:dsx + doorW + rebatePx, zoneStart, zoneEnd, width:doorW, boothX:bx, boothW:bw, swing:boothSwingAt(p, i), index:i, hasDoor:hasDoorAt(p, i)};
+    doors.push(door);
+    B.text(model, `${labelPrefix}${(options.labelStart || 0) + i + 1}`, bx + bw / 2, oy + sD / 2, {fill:'#185FA5', fontSize:44, fontWeight:'400', align:'middle', baseline:'central', className:'booth-label', maxWidth:Math.max(1, bw - 24), fitMode:'shrink'});
+    if (!door.hasDoor) B.text(model, 'no door', bx + bw / 2, oy + sD / 2 + 54, {fill:'#d64242', fontSize:30, align:'middle', baseline:'central', className:'no-door-label', maxWidth:Math.max(1, bw - 24), fitMode:'shrink'});
+    if (i < p.count - 1) drawDepthPanel(panelGeoms[i + 1]);
+    boothX += bw;
+  }
+  if (doors.length && !p.rebate) {
+    if (doors[0].zoneStart > ox + 0.5) B.rect(model, ox, oy + sD, doors[0].zoneStart - ox, st, {fill:'none', stroke:'#000', strokeWidth:0.8});
+    for (let i = 0; i < doors.length - 1; i++) {
+      const start = doors[i].zoneEnd;
+      const end = doors[i + 1].zoneStart;
+      if (end > start + 0.5) B.rect(model, start, oy + sD, end - start, st, {fill:'none', stroke:'#000', strokeWidth:0.8});
+    }
+    if (ox + sW > doors[doors.length - 1].zoneEnd + 0.5) B.rect(model, doors[doors.length - 1].zoneEnd, oy + sD, ox + sW - doors[doors.length - 1].zoneEnd, st, {fill:'none', stroke:'#000', strokeWidth:0.8});
+  }
+  if (!c.hasRight) drawDepthPanel(panelGeoms[p.count]);
+  doors.filter(door => door.hasDoor !== false).forEach(door => backendDrawDoorSwing(B, model, door, oy + sD, st, p));
+  const boardModel = buildBoardModel(p, c, doors, ox, sW, fit);
+  backendDrawPlanRebateDetails(B, model, p, ox, oy, sW, sD, st, fit, boardModel);
+  if (options.showTopDims !== false) backendDrawDim(B, model, ox, oy - swt - 70, ox + sW, oy - swt - 70, `${c.adjustedLength ? '展开总长' : '总长'} ${fmtMm(W)}mm`, 10, 38, 'total-dimension');
+  if (options.showBoothDim !== false) {
+    const boothY = oy + Math.max(26, sD * 0.18);
+    let boothDimX = ox;
+    for (let i = 0; i < p.count; i++) {
+      const boothMm = c.boothWidths[i] || c.boothW;
+      const boothPx = boothMm * fit;
+      backendDrawDim(B, model, boothDimX, boothY, boothDimX + boothPx, boothY, `${fmtMm(boothMm)}mm`, -10, 32, 'booth-width-dimension');
+      boothDimX += boothPx;
+    }
+  }
+  backendDrawDim(B, model, ox + sW + swt + 78, oy, ox + sW + swt + 78, oy + sD, `深 ${fmtMm(p.depth)}mm`, 14, 34, 'depth-dimension');
+  const segments = [];
+  if (doors.length) {
+    if (doors[0].zoneStart > ox + 0.5) segments.push({x1:ox, x2:doors[0].zoneStart, label:fmtMm((doors[0].zoneStart - ox) / fit)});
+    doors.forEach((door, i) => {
+      segments.push({x1:door.bigStart, x2:door.bigEnd, label:fmtMm((door.bigEnd - door.bigStart) / fit)});
+      const next = doors[i + 1];
+      if (next && next.zoneStart > door.zoneEnd + 0.5) segments.push({x1:door.zoneEnd, x2:next.zoneStart, label:fmtMm((next.zoneStart - door.zoneEnd) / fit)});
+    });
+    if (ox + sW > doors[doors.length - 1].zoneEnd + 0.5) segments.push({x1:doors[doors.length - 1].zoneEnd, x2:ox + sW, label:fmtMm((ox + sW - doors[doors.length - 1].zoneEnd) / fit)});
+  }
+  backendDrawChainDim(B, model, oy + sD + st + 86, segments, 30, 'front-chain-dimension');
+  return model;
+}
+
+function renderPlanRowBackendSvg(p = lastParams || getParams()) {
+  return requireDrawingBackendV1().modelToSvg(buildPlanRowDrawingModel(p));
+}
+
+function renderPlanRowBackendCanvas(p = lastParams || getParams()) {
+  const B = requireDrawingBackendV1();
+  const model = buildPlanRowDrawingModel(p);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(model.width);
+  canvas.height = Math.ceil(model.height);
+  const rctx = canvas.getContext('2d');
+  rctx.fillStyle = '#fff';
+  rctx.fillRect(0, 0, canvas.width, canvas.height);
+  B.renderToCanvas(rctx, model);
+  return canvas;
+}
+
+function rasterizeSvgText(svgText, width, height) {
+  return new Promise((resolve, reject) => {
+    const blob = new Blob([svgText], {type:'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(width);
+        canvas.height = Math.ceil(height);
+        const rctx = canvas.getContext('2d');
+        rctx.fillStyle = '#fff';
+        rctx.fillRect(0, 0, canvas.width, canvas.height);
+        rctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas);
+      } catch (err) {
+        URL.revokeObjectURL(url);
+        reject(err);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('SVG rasterize failed'));
+    };
+    img.src = url;
+  });
+}
+
+function canvasInkBounds(canvas, threshold = 245) {
+  const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+  let minX = canvas.width;
+  let minY = canvas.height;
+  let maxX = -1;
+  let maxY = -1;
+  for (let y = 0; y < canvas.height; y++) {
+    for (let x = 0; x < canvas.width; x++) {
+      const i = (y * canvas.width + x) * 4;
+      const a = data[i + 3];
+      if (a === 0) continue;
+      if (data[i] < threshold || data[i + 1] < threshold || data[i + 2] < threshold) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  return maxX >= minX ? {x:minX, y:minY, w:maxX - minX + 1, h:maxY - minY + 1} : null;
+}
+
+function compareCanvasPixels(a, b, tolerance = 28) {
+  if (!a || !b || a.width !== b.width || a.height !== b.height) {
+    return {sameSize:false, mismatchRatio:1, maxDelta:255, compared:0, mismatched:0};
+  }
+  const ad = a.getContext('2d').getImageData(0, 0, a.width, a.height).data;
+  const bd = b.getContext('2d').getImageData(0, 0, b.width, b.height).data;
+  let mismatched = 0;
+  let maxDelta = 0;
+  const compared = a.width * a.height;
+  for (let i = 0; i < ad.length; i += 4) {
+    const delta = Math.max(
+      Math.abs(ad[i] - bd[i]),
+      Math.abs(ad[i + 1] - bd[i + 1]),
+      Math.abs(ad[i + 2] - bd[i + 2]),
+      Math.abs(ad[i + 3] - bd[i + 3])
+    );
+    if (delta > maxDelta) maxDelta = delta;
+    if (delta > tolerance) mismatched += 1;
+  }
+  return {sameSize:true, mismatchRatio:mismatched / Math.max(1, compared), maxDelta, compared, mismatched};
+}
+
+function compareCanvasPixelRegions(a, b, regions = [], tolerance = 36) {
+  if (!a || !b || a.width !== b.width || a.height !== b.height) return [];
+  const ad = a.getContext('2d').getImageData(0, 0, a.width, a.height).data;
+  const bd = b.getContext('2d').getImageData(0, 0, b.width, b.height).data;
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  return regions.map(region => {
+    const x1 = clamp(Math.floor(region.x), 0, a.width);
+    const y1 = clamp(Math.floor(region.y), 0, a.height);
+    const x2 = clamp(Math.ceil(region.x + region.w), x1, a.width);
+    const y2 = clamp(Math.ceil(region.y + region.h), y1, a.height);
+    let mismatched = 0;
+    let compared = 0;
+    for (let y = y1; y < y2; y++) {
+      for (let x = x1; x < x2; x++) {
+        const i = (y * a.width + x) * 4;
+        const delta = Math.max(
+          Math.abs(ad[i] - bd[i]),
+          Math.abs(ad[i + 1] - bd[i + 1]),
+          Math.abs(ad[i + 2] - bd[i + 2]),
+          Math.abs(ad[i + 3] - bd[i + 3])
+        );
+        compared += 1;
+        if (delta > tolerance) mismatched += 1;
+      }
+    }
+    return {...region, compared, mismatched, mismatchRatio:mismatched / Math.max(1, compared)};
+  }).sort((aRegion, bRegion) => bRegion.mismatchRatio - aRegion.mismatchRatio);
+}
+
+function backendTextRegionsForModel(model, scaleX = 1, scaleY = scaleX, pad = 10) {
+  const measure = document.createElement('canvas').getContext('2d');
+  return (model?.commands || []).filter(cmd => cmd.type === 'text').map((cmd, index) => {
+    const s = cmd.style || {};
+    const fontSize = Math.max(1, Number(s.fontSize) || 12);
+    measure.font = `${s.fontWeight || '400'} ${fontSize}px ${s.fontFamily || 'Microsoft YaHei, Arial, sans-serif'}`;
+    const metrics = measure.measureText(String(cmd.value ?? ''));
+    const textW = Math.max(fontSize * 0.8, metrics.width || 0);
+    const textH = Math.max(fontSize, (metrics.actualBoundingBoxAscent || fontSize * 0.8) + (metrics.actualBoundingBoxDescent || fontSize * 0.2));
+    const anchor = s.align || 'start';
+    const baseline = s.baseline || 'alphabetic';
+    let x = Number(cmd.x) || 0;
+    let y = Number(cmd.y) || 0;
+    let left = anchor === 'middle' ? x - textW / 2 : anchor === 'end' ? x - textW : x;
+    let top = baseline === 'central' || baseline === 'middle' ? y - textH / 2 : baseline === 'top' || baseline === 'hanging' ? y : y - textH;
+    let w = textW;
+    let h = textH;
+    if (s.rotate) {
+      left = x - textH / 2;
+      top = y - textW / 2;
+      w = textH;
+      h = textW;
+    }
+    const p = Math.max(2, pad);
+    return {
+      name:s.className || s.role || 'text',
+      textIndex:index,
+      x:(left - p) * scaleX,
+      y:(top - p) * scaleY,
+      w:(w + p * 2) * scaleX,
+      h:(h + p * 2) * scaleY,
+      value:String(cmd.value ?? ''),
+      fontSize:fontSize * scaleY
+    };
+  });
+}
+
+function summarizeRegionComparisons(regions) {
+  const out = {};
+  (regions || []).forEach(region => {
+    const item = out[region.name] || {count:0, compared:0, mismatched:0, worst:0};
+    item.count += 1;
+    item.compared += region.compared || 0;
+    item.mismatched += region.mismatched || 0;
+    item.worst = Math.max(item.worst, region.mismatchRatio || 0);
+    out[region.name] = item;
+  });
+  Object.values(out).forEach(item => {
+    item.mismatchRatio = item.mismatched / Math.max(1, item.compared);
+  });
+  return out;
+}
+
+function backendCommandRegionsForModel(model, scaleX = 1, scaleY = scaleX, pad = 4) {
+  return (model?.commands || []).flatMap((cmd, index) => {
+    const cls = cmd.style?.className || cmd.style?.role || '';
+    if (cmd.type === 'text') return [];
+    const stroke = Math.max(1, Number(cmd.style?.strokeWidth) || 1);
+    const p = Math.max(pad, stroke + 2);
+    const region = (name, x, y, w, h) => ({name, commandIndex:index, x:(x - p) * scaleX, y:(y - p) * scaleY, w:(w + p * 2) * scaleX, h:(h + p * 2) * scaleY});
+    if (cmd.type === 'line') {
+      const name = cls || 'line';
+      const x = Math.min(cmd.x1, cmd.x2);
+      const y = Math.min(cmd.y1, cmd.y2);
+      return [region(name, x, y, Math.abs(cmd.x2 - cmd.x1), Math.abs(cmd.y2 - cmd.y1))];
+    }
+    if (cmd.type === 'rect') return [region(cls || 'rect', cmd.x, cmd.y, cmd.w, cmd.h)];
+    if (cmd.type === 'path') {
+      const pts = cmd.points || [];
+      if (!pts.length) return [];
+      const xs = pts.map(pt => pt.x);
+      const ys = pts.map(pt => pt.y);
+      return [region(cls || 'path', Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys))];
+    }
+    if (cmd.type === 'arc') return [region(cls || 'arc', cmd.cx - cmd.r, cmd.cy - cmd.r, cmd.r * 2, cmd.r * 2)];
+    if (cmd.type === 'hatch') return [region(cls || 'hatch', cmd.x, cmd.y, cmd.w, cmd.h)];
+    return [];
+  });
+}
+
+function resizeCanvasForCompare(source, width, height) {
+  if (source.width === width && source.height === height) return source;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const rctx = canvas.getContext('2d');
+  rctx.fillStyle = '#fff';
+  rctx.fillRect(0, 0, width, height);
+  rctx.drawImage(source, 0, 0, width, height);
+  return canvas;
+}
+
+function renderPlanPageBackendCanvas(p = lastParams || getParams(), pageIndex = currentPlanPage) {
+  const B = requireDrawingBackendV1();
+  const model = buildPlanPageDrawingModel(p, pageIndex);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(model.width);
+  canvas.height = Math.ceil(model.height);
+  const rctx = canvas.getContext('2d');
+  rctx.fillStyle = '#fff';
+  rctx.fillRect(0, 0, canvas.width, canvas.height);
+  B.renderToCanvas(rctx, model);
+  return canvas;
+}
+
+async function comparePlanRowBackendOutputs(p = lastParams || getParams()) {
+  const B = requireDrawingBackendV1();
+  const model = buildPlanRowDrawingModel(p);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(model.width);
+  canvas.height = Math.ceil(model.height);
+  const rctx = canvas.getContext('2d');
+  rctx.fillStyle = '#fff';
+  rctx.fillRect(0, 0, canvas.width, canvas.height);
+  B.renderToCanvas(rctx, model);
+  const svg = B.modelToSvg(model);
+  const svgCanvas = await rasterizeSvgText(svg, model.width, model.height);
+  const canvasBounds = canvasInkBounds(canvas);
+  const svgBounds = canvasInkBounds(svgCanvas);
+  const pixels = compareCanvasPixels(canvas, svgCanvas);
+  const boundsDelta = canvasBounds && svgBounds ? {
+    x: Math.abs(canvasBounds.x - svgBounds.x),
+    y: Math.abs(canvasBounds.y - svgBounds.y),
+    w: Math.abs(canvasBounds.w - svgBounds.w),
+    h: Math.abs(canvasBounds.h - svgBounds.h)
+  } : null;
+  return {
+    width: model.width,
+    height: model.height,
+    commandCount: model.commands.length,
+    commandTypes: [...new Set(model.commands.map(cmd => cmd.type))].sort(),
+    textSummary: B.textSummary ? B.textSummary(model) : null,
+    svgStarts: svg.startsWith('<svg'),
+    canvasBounds,
+    svgBounds,
+    boundsDelta,
+    pixels
+  };
+}
+
+function backendAddSheetFrame(B, model, layout, title, pageIndex = 0, pagesLength = 1) {
+  B.rect(model, 0, 0, layout.sheetW, layout.sheetH, {fill:'#fff', stroke:'none'});
+  B.rect(model, 0.5, 0.5, layout.sheetW - 1, layout.sheetH - 1, {fill:'none', stroke:'#c7cbd1', strokeWidth:1});
+  if (pageIndex === 0) {
+    B.rect(model, layout.frame.x, layout.frame.y, layout.frame.w, SHEET_TITLE_H, {fill:'none', stroke:'#c7cbd1', strokeWidth:1});
+  }
+  if (pagesLength > 1) {
+    B.text(model, `${pageIndex + 1}/${pagesLength}`, layout.frame.x + layout.frame.w / 2, sheetPageNumberBaselineY(layout), {fill:'#000', fontSize:14, align:'middle', baseline:'alphabetic'});
+  }
+}
+
+function backendPlanPagePlacement(page, layout, pageIndex = 0) {
+  const landscape = pageNeedsLandscape(page);
+  const P = layout.plot;
+  const gaps = sheetContentGaps(pageIndex, landscape);
+  const availableW = Math.max(1, P.w - gaps.left - gaps.right);
+  const availableH = Math.max(1, P.h - gaps.top - gaps.bottom);
+  const rawContentW = Math.max(1, page.usedW);
+  const rawContentH = Math.max(1, page.usedH);
+  const fit = Math.min(1, availableW / rawContentW, availableH / rawContentH);
+  if (landscape) {
+    const contentW = Math.max(1, rawContentW * fit);
+    const contentH = Math.max(1, rawContentH * fit);
+    return {
+      fit,
+      localX: P.x + gaps.left + Math.max(0, (availableW - contentW) / 2),
+      localY: P.y + gaps.top + Math.max(0, (availableH - contentH) / 2),
+      rowOffsetByY: new Map()
+    };
+  }
+  const rowYs = [...new Set(page.blocks.map(block => block.pageY))].sort((a, b) => a - b);
+  const contentW = Math.max(1, rawContentW * fit);
+  const contentH = Math.max(1, rawContentH * fit);
+  const bottomReserve = 48;
+  const spareH = Math.max(0, availableH - contentH - bottomReserve);
+  const visualRowGap = rowYs.length > 1 ? Math.min(24, spareH / (rowYs.length - 1)) : 0;
+  const rawVisualRowGap = visualRowGap / Math.max(0.0001, fit);
+  const rowOffsetByY = new Map(rowYs.map((y, index) => [y, rawVisualRowGap * index]));
+  const adjustedContentH = contentH + visualRowGap * Math.max(0, rowYs.length - 1);
+  const singleBoothPage = page.blocks.length === 1 && Math.max(1, Number(page.blocks[0]?.row?.count) || 1) === 1;
+  return {
+    fit,
+    localX: P.x + gaps.left + Math.max(0, (availableW - contentW) / 2),
+    localY: P.y + gaps.top + (singleBoothPage ? Math.max(0, (availableH - adjustedContentH) / 2) : 0),
+    rowOffsetByY
+  };
+}
+
+function buildPlanPageDrawingModel(p = lastParams || getParams(), pageIndex = currentPlanPage) {
+  const B = requireDrawingBackendV1();
+  const baseLayout = getSheetLayout(p);
+  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
+  const pages = paginatePlanBlocks(blocks, baseLayout);
+  const safePageIndex = Math.max(0, Math.min(pageIndex, pages.length - 1));
+  const page = pages[safePageIndex] || {blocks:[], usedW:1, usedH:1};
+  const orientationPageIndex = planPageOrientationIndex(pages, safePageIndex);
+  const layout = sheetLayoutForPage(page, p, safePageIndex);
+  const model = B.createDrawingModel(layout.sheetW, layout.sheetH);
+  backendAddSheetFrame(B, model, layout, 'Plan', safePageIndex, pages.length);
+  const placement = backendPlanPagePlacement(page, layout, orientationPageIndex);
+  page.blocks.forEach(block => {
+    const visualY = block.pageY + (placement.rowOffsetByY.get(block.pageY) || 0);
+    const rowModel = buildPlanRowDrawingModel(block.row, block.metrics.drawX, block.metrics.drawY, 1, groupLabelPrefix(block.group), {
+      labelStart:block.labelStart || 0,
+      showGroupName:String(block.row.note || '').trim(),
+      tagText:String(block.row.note || '').trim(),
+      tagPreviewOnly:!String(block.row.note || '').trim(),
+      showTopDims:true,
+      showBoothDim:true
+    });
+    B.appendModel(model, rowModel, placement.localX + block.pageX * placement.fit, placement.localY + visualY * placement.fit, placement.fit);
+  });
+  return model;
+}
+
+function renderPlanPageBackendSvg(p = lastParams || getParams(), pageIndex = currentPlanPage) {
+  return requireDrawingBackendV1().modelToSvg(buildPlanPageDrawingModel(p, pageIndex));
+}
+
+function buildFrontPageDrawingModel(p = lastParams || getParams()) {
+  const B = requireDrawingBackendV1();
+  const layout = sheetLayoutForRender('front', p, 0);
+  const model = B.createDrawingModel(layout.sheetW, layout.sheetH);
+  backendAddSheetFrame(B, model, layout, 'Front', 0, 1);
+  const c = compute(p);
+  const P = layout.plot;
+  const W = c.totalRun;
+  const H = Math.max(p.hUpright, p.hMid);
+  const t = p.tPanel;
+  const wt = c.wallT;
+  const leftWall = c.hasLeft ? wt : 0;
+  const rightWall = c.hasRight ? wt : 0;
+  const fit = Math.min((P.w - 170) / Math.max(1, W + leftWall + rightWall), (P.h - 180) / Math.max(1, H));
+  const ox = P.x + (P.w - (W + leftWall + rightWall) * fit) / 2 + leftWall * fit;
+  const floor = P.y + 118 + (P.h - 180 + H * fit) / 2;
+  const oy = floor - H * fit;
+  const sW = W * fit;
+  const sH = H * fit;
+  const st = Math.max(1.5, t * fit);
+  const swt = wt * fit;
+  const hU = p.hUpright * fit;
+  const hDoor = (p.hDoor || 1750) * fit;
+  const hMid = p.hMid * fit;
+  const vis = p.hVis * fit;
+
+  B.line(model, ox, floor, ox + sW, floor, {stroke:'#000', strokeWidth:1});
+  if (c.hasLeft) {
+    B.rect(model, ox - swt, oy, swt, sH, {fill:'#fbfbfb', stroke:'none'});
+    B.hatch(model, ox - swt, oy, swt, sH, 18, {stroke:'rgba(0,0,0,.36)', strokeWidth:1});
+    B.rect(model, ox - swt, oy, swt, sH, {fill:'none', stroke:'#000', strokeWidth:1});
+  }
+  if (c.hasRight) {
+    B.rect(model, ox + sW, oy, swt, sH, {fill:'#fbfbfb', stroke:'none'});
+    B.hatch(model, ox + sW, oy, swt, sH, 18, {stroke:'rgba(0,0,0,.36)', strokeWidth:1});
+    B.rect(model, ox + sW, oy, swt, sH, {fill:'none', stroke:'#000', strokeWidth:1});
+  }
+
+  let x = ox;
+  for (let i = 0; i <= p.count; i++) {
+    const isEdge = (i === 0 && !c.hasLeft) || (i === p.count && !c.hasRight);
+    if (isEdge || (i > 0 && i < p.count)) {
+      B.rect(model, x, floor - hU, st, hU, {fill:'none', stroke:'#000', strokeWidth:0.8});
+      x += st;
+    }
+    if (i < p.count) {
+      const boothMm = c.boothWidths[i] || c.boothW;
+      const doorMm = c.doorWidths[i] || p.doorW;
+      const bw = boothMm * fit;
+      const doorOff = Math.max(0, (boothMm - doorMm) / 2) * fit;
+      const dsx = x + doorOff;
+      const dsw = doorMm * fit;
+      B.rect(model, dsx, floor - hDoor, dsw, hDoor, {fill:'none', stroke:'#185FA5', strokeWidth:1});
+      B.rect(model, x, floor - hMid, bw, vis, {fill:'none', stroke:'#6a9bcc', strokeWidth:0.6});
+      B.text(model, `${p.hDoor || 1750}`, dsx + dsw / 2, floor - hDoor / 2, {fill:'#185FA5', fontSize:14, align:'middle', baseline:'central', className:'front-door-height'});
+      x += bw;
+    }
+  }
+  B.rect(model, ox, oy, sW, sH, {fill:'none', stroke:'#000', strokeWidth:1.2});
+  backendDrawDim(B, model, ox, oy - 58, ox + sW, oy - 58, `${c.adjustedLength ? '展开总长' : '总长'} ${W}mm`, 14, 14, 'front-total-dimension');
+  backendDrawDim(B, model, ox - 56, floor - hU, ox - 56, floor, `立板高 ${p.hUpright}mm`, -14, 14, 'front-upright-dimension');
+  backendDrawDim(B, model, ox + sW + 58, floor - vis, ox + sW + 58, floor, `见光板 ${p.hVis}mm`, 14, 14, 'front-visible-dimension');
+  return model;
+}
+
+function buildSidePageDrawingModel(p = lastParams || getParams()) {
+  const B = requireDrawingBackendV1();
+  const layout = sheetLayoutForRender('side', p, 0);
+  const model = B.createDrawingModel(layout.sheetW, layout.sheetH);
+  backendAddSheetFrame(B, model, layout, 'Side', 0, 1);
+  const c = compute(p);
+  const P = layout.plot;
+  const W = p.depth;
+  const H = Math.max(p.hUpright, p.hMid);
+  const t = p.tPanel;
+  const wt = c.wallT;
+  const fit = Math.min((P.w - 300) / Math.max(1, W + wt), (P.h - 180) / Math.max(1, H));
+  const ox = P.x + (P.w - W * fit) / 2;
+  const floor = P.y + 118 + (P.h - 180 + H * fit) / 2;
+  const oy = floor - H * fit;
+  const sW = W * fit;
+  const sH = H * fit;
+  const st = Math.max(1.5, t * fit);
+  const swt = wt * fit;
+  const hU = p.hUpright * fit;
+  const hDoor = (p.hDoor || 1750) * fit;
+  const hMid = p.hMid * fit;
+  const vis = p.hVis * fit;
+  const doorH = p.doorW * fit;
+
+  if (c.hasBack) {
+    B.rect(model, ox, oy - swt, sW, swt, {fill:'#fbfbfb', stroke:'none'});
+    B.hatch(model, ox, oy - swt, sW, swt, 18, {stroke:'rgba(0,0,0,.36)', strokeWidth:1});
+    B.rect(model, ox, oy - swt, sW, swt, {fill:'none', stroke:'#000', strokeWidth:1});
+  }
+  B.rect(model, ox, floor - hU, st, hU, {fill:'none', stroke:'#000', strokeWidth:0.8});
+  B.rect(model, ox + st, floor - hMid, sW - st * 2, vis, {fill:'none', stroke:'#6a9bcc', strokeWidth:0.6});
+  B.text(model, '见光板', ox + st + (sW - st * 2) / 2, floor - hMid + vis / 2, {fill:'#185FA5', fontSize:14, align:'middle', baseline:'central', className:'side-visible-label'});
+  const doorStartY = floor - doorH;
+  B.rect(model, ox + sW - st, doorStartY, st, doorH, {fill:'none', stroke:'#185FA5', strokeWidth:1});
+  B.text(model, '门', ox + sW - st / 2, doorStartY + doorH / 2, {fill:'#185FA5', fontSize:14, align:'middle', baseline:'central', className:'side-door-label'});
+  B.rect(model, ox + sW - st, floor - hU, st, hU - doorH, {fill:'none', stroke:'#000', strokeWidth:0.8});
+  B.line(model, ox, floor, ox + sW, floor, {stroke:'#000', strokeWidth:1});
+  B.rect(model, ox, oy, sW, sH, {fill:'none', stroke:'#000', strokeWidth:1.2});
+  backendDrawDim(B, model, ox, oy - 58, ox + sW, oy - 58, `深度 ${p.depth}mm`, 14, 14, 'side-depth-dimension');
+  backendDrawDim(B, model, ox - 56, floor - hU, ox - 56, floor, `立板高 ${p.hUpright}mm`, -14, 14, 'side-upright-dimension');
+  backendDrawDim(B, model, ox + sW + 58, floor - hDoor, ox + sW + 58, floor, `门高 ${p.hDoor || 1750}mm`, 14, 14, 'side-door-height-dimension');
+  return model;
+}
+
+function buildBackendSheetDrawingModel(tab, p = lastParams || getParams(), options = {}) {
+  if (tab === 'plan') return buildPlanPageDrawingModel(p, Number.isFinite(options.planPage) ? options.planPage : currentPlanPage);
+  if (tab === 'front') return buildFrontPageDrawingModel(p);
+  if (tab === 'side') return buildSidePageDrawingModel(p);
+  throw new Error(`Unsupported SVG tab: ${tab}`);
+}
+
+function renderBackendSheetSvg(tab, p = lastParams || getParams(), options = {}) {
+  const B = requireDrawingBackendV1();
+  return B.modelToSvg(buildBackendSheetDrawingModel(tab, p, options));
+}
+
+async function comparePlanPageBackendOutputs(p = lastParams || getParams(), pageIndex = currentPlanPage) {
+  const B = requireDrawingBackendV1();
+  const model = buildPlanPageDrawingModel(p, pageIndex);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(model.width);
+  canvas.height = Math.ceil(model.height);
+  const rctx = canvas.getContext('2d');
+  rctx.fillStyle = '#fff';
+  rctx.fillRect(0, 0, canvas.width, canvas.height);
+  B.renderToCanvas(rctx, model);
+  const svg = B.modelToSvg(model);
+  const svgCanvas = await rasterizeSvgText(svg, model.width, model.height);
+  const canvasBounds = canvasInkBounds(canvas);
+  const svgBounds = canvasInkBounds(svgCanvas);
+  const pixels = compareCanvasPixels(canvas, svgCanvas);
+  return {
+    width: model.width,
+    height: model.height,
+    commandCount: model.commands.length,
+    commandTypes: [...new Set(model.commands.map(cmd => cmd.type))].sort(),
+    textSummary: B.textSummary ? B.textSummary(model) : null,
+    svgStarts: svg.startsWith('<svg'),
+    canvasBounds,
+    svgBounds,
+    boundsDelta: canvasBounds && svgBounds ? {
+      x: Math.abs(canvasBounds.x - svgBounds.x),
+      y: Math.abs(canvasBounds.y - svgBounds.y),
+      w: Math.abs(canvasBounds.w - svgBounds.w),
+      h: Math.abs(canvasBounds.h - svgBounds.h)
+    } : null,
+    pixels
+  };
+}
+
+function comparePlanPageToProductionCanvas(p = lastParams || getParams(), pageIndex = currentPlanPage) {
+  const production = renderSheetCanvas('plan', p, {canvasMode:'sheets', renderScale:1, planPage:pageIndex});
+  const backend = renderPlanPageBackendCanvas(p, pageIndex);
+  const backendSized = resizeCanvasForCompare(backend, production.width, production.height);
+  const model = buildPlanPageDrawingModel(p, pageIndex);
+  const textScaleX = production.width / Math.max(1, model.width || production.width);
+  const textScaleY = production.height / Math.max(1, model.height || production.height);
+  const productionBounds = canvasInkBounds(production);
+  const backendBounds = canvasInkBounds(backendSized);
+  const pixels = compareCanvasPixels(production, backendSized, 36);
+  const regions = compareCanvasPixelRegions(production, backendSized, [
+    {name:'sheet-note', x:0, y:0, w:production.width, h:120},
+    {name:'plan-body', x:0, y:120, w:production.width, h:production.height - 260},
+    {name:'bottom-dims', x:0, y:production.height - 260, w:production.width, h:190},
+    {name:'footer', x:0, y:production.height - 70, w:production.width, h:70}
+  ], 36);
+  const textRegions = compareCanvasPixelRegions(production, backendSized, backendTextRegionsForModel(model, textScaleX, textScaleY, 12), 36);
+  const commandRegions = compareCanvasPixelRegions(production, backendSized, backendCommandRegionsForModel(model, textScaleX, textScaleY, 4), 36);
+  return {
+    width: production.width,
+    height: production.height,
+    productionBounds,
+    backendBounds,
+    boundsDelta: productionBounds && backendBounds ? {
+      x: Math.abs(productionBounds.x - backendBounds.x),
+      y: Math.abs(productionBounds.y - backendBounds.y),
+      w: Math.abs(productionBounds.w - backendBounds.w),
+      h: Math.abs(productionBounds.h - backendBounds.h)
+    } : null,
+    pixels,
+    regions,
+    textRegions: summarizeRegionComparisons(textRegions),
+    commandRegions: summarizeRegionComparisons(commandRegions)
+  };
+}
+
+async function runSvgBackendScenarioMatrix() {
+  const oldGroups = groups;
+  const oldLast = lastParams;
+  const oldActiveGroupId = activeGroupId;
+  const oldActiveRowId = activeRowId;
+  const makeRow = (id, overrides = {}) => {
+    const count = Math.max(1, Number(overrides.count ?? defaultRow.count) || 1);
+    const row = {
+      ...defaultRow,
+      id,
+      enabled:true,
+      count,
+      total:Number(overrides.total ?? count * 1000),
+      depth:Number(overrides.depth ?? defaultRow.depth),
+      doorW:Number(overrides.doorW ?? defaultRow.doorW),
+      doorGap:Number(overrides.doorGap ?? defaultRow.doorGap),
+      wall:overrides.wall || defaultRow.wall,
+      rebate:overrides.rebate === true,
+      rebateDepth:Number(overrides.rebateDepth ?? defaultRow.rebateDepth),
+      note:overrides.note || '',
+      widthsText:overrides.widthsText || ''
+    };
+    row.boothSwings = normalizeBoothSwings(overrides.boothSwings || row.boothSwings, count, row.swing || swingMode);
+    row.noDoorBooths = normalizeNoDoorBooths(overrides.noDoorBooths || row.noDoorBooths, count);
+    row.depthPanelSpecials = normalizeDepthPanelSpecials(overrides.depthPanelSpecials || row.depthPanelSpecials, count + 1);
+    return row;
+  };
+  const scenarios = [
+    {name:'plain-3', row:makeRow(8001, {note:'Plain', boothSwings:['in-right','in-left','out-right']})},
+    {name:'rebate-3', row:makeRow(8002, {note:'Rebate', rebate:true, boothSwings:['in-right','in-left','out-right']})},
+    {name:'no-door-3', row:makeRow(8003, {note:'No door', noDoorBooths:[false,true,false], boothSwings:['in-right','in-left','out-right']})},
+    {name:'left-wall-4', row:makeRow(8004, {note:'Left wall', count:4, total:4200, wall:'left', boothSwings:['in-right','out-left','in-left','out-right']})},
+    {name:'back-wall-5', row:makeRow(8005, {note:'Back wall', count:5, total:5200, wall:'back', boothSwings:['in-right','in-left','out-right','out-left','in-right']})},
+    {name:'wide-10', row:makeRow(8006, {note:'Wide', count:10, total:10000, boothSwings:['in-right','in-left','out-right','out-left','in-right','in-left','out-right','out-left','in-right','in-left']})}
+  ];
+  try {
+    const results = [];
+    for (const scenario of scenarios) {
+      groups = [{id:scenario.row.id, name:scenario.name, rows:[scenario.row]}];
+      activeGroupId = scenario.row.id;
+      activeRowId = scenario.row.id;
+      lastParams = scenario.row;
+      const baseLayout = getSheetLayout(scenario.row);
+      const pages = paginatePlanBlocks(collectPlanBlocks(scenario.row).filter(block => block.row.enabled === true), baseLayout);
+      const pageResults = [];
+      for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+        const production = comparePlanPageToProductionCanvas(scenario.row, pageIndex);
+        const backend = await comparePlanPageBackendOutputs(scenario.row, pageIndex);
+        pageResults.push({
+          pageIndex,
+          productionMismatch: production.pixels.mismatchRatio,
+          productionMaxDelta: production.pixels.maxDelta,
+          productionBoundsDelta: production.boundsDelta,
+          worstRegion: production.regions[0] || null,
+          textRegions: production.textRegions,
+          commandRegions: production.commandRegions,
+          backendMismatch: backend.pixels.mismatchRatio,
+          backendMaxDelta: backend.pixels.maxDelta,
+          backendBoundsDelta: backend.boundsDelta,
+          commandCount: backend.commandCount,
+          commandTypes: backend.commandTypes,
+          textSummary: backend.textSummary
+        });
+      }
+      results.push({name:scenario.name, pageCount:pages.length, pages:pageResults});
+    }
+    return results;
+  } finally {
+    groups = oldGroups;
+    lastParams = oldLast;
+    activeGroupId = oldActiveGroupId;
+    activeRowId = oldActiveRowId;
+  }
+}
+
+function buildPrototypePlanDrawingModel(p = lastParams || getParams()) {
+  const B = window.DrawingBackendV1;
+  if (!B) throw new Error('DrawingBackendV1 未加载');
+  const model = B.createDrawingModel(900, 1200);
+  const c = compute(p);
+  const scale = Math.min(0.62, 560 / Math.max(1, c.totalRun), 760 / Math.max(1, p.depth));
+  const ox = 150;
+  const oy = 260;
+  const sW = c.totalRun * scale;
+  const sD = p.depth * scale;
+  const swt = c.wallT * scale;
+  const st = Math.max(3, p.tPanel * scale);
+  const doorW = (c.doorInstallWidths?.[0] || c.doorWidths?.[0] || p.doorW) * scale;
+  const doorX = ox + (sW - doorW) / 2;
+  B.rect(model, 40, 40, 820, 76, {fill:'#fff', stroke:'#c7cbd1', strokeWidth:1});
+  if (c.hasBack) {
+    B.rect(model, ox - (c.hasLeft ? swt : 0), oy - swt, sW + (c.hasLeft ? swt : 0) + (c.hasRight ? swt : 0), swt, {fill:'#fbfbfb', stroke:'none'});
+    B.hatch(model, ox - (c.hasLeft ? swt : 0), oy - swt, sW + (c.hasLeft ? swt : 0) + (c.hasRight ? swt : 0), swt, 28, {stroke:'rgba(0,0,0,.24)', strokeWidth:1});
+  }
+  if (c.hasLeft) {
+    B.rect(model, ox - swt, oy - swt, swt, sD + swt + st, {fill:'#fbfbfb', stroke:'none'});
+    B.hatch(model, ox - swt, oy - swt, swt, sD + swt + st, 28, {stroke:'rgba(0,0,0,.24)', strokeWidth:1});
+  }
+  if (c.hasRight) {
+    B.rect(model, ox + sW, oy - swt, swt, sD + swt + st, {fill:'#fbfbfb', stroke:'none'});
+    B.hatch(model, ox + sW, oy - swt, swt, sD + swt + st, 28, {stroke:'rgba(0,0,0,.24)', strokeWidth:1});
+  }
+  B.line(model, ox - (c.hasLeft ? swt : 0), oy - swt, ox + sW + (c.hasRight ? swt : 0), oy - swt, {stroke:'#000', strokeWidth:1.4});
+  B.line(model, ox - swt, oy - swt, ox - swt, oy + sD + st, {stroke:'#000', strokeWidth:1.4});
+  B.line(model, ox + sW + swt, oy - swt, ox + sW + swt, oy + sD + st, {stroke:'#000', strokeWidth:1.4});
+  B.line(model, ox, oy + sD, doorX, oy + sD, {stroke:'#000', strokeWidth:0.8});
+  B.line(model, doorX + doorW, oy + sD, ox + sW, oy + sD, {stroke:'#000', strokeWidth:0.8});
+  B.rect(model, doorX, oy + sD - st / 2, doorW, st / 2, {fill:'none', stroke:'#8EC5FF', strokeWidth:0.8});
+  B.arc(model, doorX + doorW, oy + sD - st / 2, doorW, Math.PI, Math.PI * 1.5, {stroke:'#8EC5FF', strokeWidth:2, dash:[12, 8]});
+  B.text(model, 'A1', ox + sW / 2, oy + sD / 2, {fill:'#185FA5', fontSize:44, fontWeight:'400', align:'middle', baseline:'central'});
+  B.line(model, ox, oy - swt - 70, ox + sW, oy - swt - 70, {stroke:'#000', strokeWidth:1.2});
+  B.line(model, ox, oy - swt - 84, ox, oy - swt - 56, {stroke:'#000', strokeWidth:1.2});
+  B.line(model, ox + sW, oy - swt - 84, ox + sW, oy - swt - 56, {stroke:'#000', strokeWidth:1.2});
+  B.text(model, `总长 ${fmtMm(c.totalRun)}mm`, ox + sW / 2, oy - swt - 92, {fill:'#000', fontSize:42, fontWeight:'400', align:'middle', baseline:'alphabetic'});
+  B.line(model, ox, oy + sD + 70, doorX, oy + sD + 70, {stroke:'#000', strokeWidth:1.2});
+  B.line(model, doorX, oy + sD + 70, doorX + doorW, oy + sD + 70, {stroke:'#000', strokeWidth:1.2});
+  B.line(model, doorX + doorW, oy + sD + 70, ox + sW, oy + sD + 70, {stroke:'#000', strokeWidth:1.2});
+  B.text(model, fmtMm((doorX - ox) / scale), (ox + doorX) / 2, oy + sD + 120, {fill:'#000', fontSize:38, align:'middle', baseline:'central'});
+  B.text(model, fmtMm(doorW / scale), doorX + doorW / 2, oy + sD + 120, {fill:'#000', fontSize:38, align:'middle', baseline:'central'});
+  B.text(model, fmtMm((ox + sW - doorX - doorW) / scale), (doorX + doorW + ox + sW) / 2, oy + sD + 120, {fill:'#000', fontSize:38, align:'middle', baseline:'central'});
+  B.line(model, ox + sW + swt + 78, oy, ox + sW + swt + 78, oy + sD, {stroke:'#000', strokeWidth:1.2});
+  B.line(model, ox + sW + swt + 64, oy, ox + sW + swt + 92, oy, {stroke:'#000', strokeWidth:1.2});
+  B.line(model, ox + sW + swt + 64, oy + sD, ox + sW + swt + 92, oy + sD, {stroke:'#000', strokeWidth:1.2});
+  B.text(model, `深 ${fmtMm(p.depth)}mm`, ox + sW + swt + 126, oy + sD / 2, {fill:'#000', fontSize:38, align:'middle', baseline:'central', rotate:90});
+  return model;
+}
+
+function renderPrototypePlanSvg(p = lastParams || getParams()) {
+  const B = window.DrawingBackendV1;
+  if (!B) throw new Error('DrawingBackendV1 未加载');
+  return B.modelToSvg(buildPrototypePlanDrawingModel(p));
+}
+
+function exportPrototypeSvg(name = '隔断图纸-prototype') {
+  downloadTextFile(renderPrototypePlanSvg(lastParams || getParams()), `${sanitizeExportName(name, '隔断图纸-prototype')}.svg`);
+}
+function downloadTextFile(content, filename, mime = 'image/svg+xml;charset=utf-8') {
+  const blob = new Blob([content], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportNamedSvg(name = '隔断图纸', scope = 'current') {
+  try {
+    saveActiveGroup(true);
+    const p = getParams();
+    lastParams = p;
+    const title = sanitizeExportName(name, '隔断图纸');
+    const jobs = drawingJobsForScope(p, scope);
+    jobs.forEach((job, index) => {
+      const svg = renderBackendSheetSvg(job.tab, p, job.options || {});
+      const suffix = jobs.length > 1 ? `-${String(index + 1).padStart(2, '0')}-${job.tab}` : '';
+      downloadTextFile(svg, `${title}${suffix}.svg`);
+    });
+  } catch (err) {
+    alert(`导出SVG失败：${err.message || err}`);
+  }
+}
 async function exportNamedPdf(name = '隔断图纸', scope = 'current', includeBom = false) {
   const title = sanitizeExportName(name, '隔断图纸');
   try {
-    const p = lastParams || getParams();
-    const pages = renderPdfSvgPagesForScope(p, scope);
-    const win = openPrintWindow(title);
-    if (!win) throw new Error('浏览器拦截了打印窗口');
-    win.document.open();
-    win.document.write(pdfPrintSvgHtml(title, pages, printPaperSpec(), includeBom));
-    win.document.close();
-    triggerWindowPrint(win, 300);
+    saveActiveGroup(true);
+    const p = getParams();
+    lastParams = p;
+    const {PDFDocument} = await loadPdfLib();
+    const pdfDoc = await PDFDocument.create();
+    const jobs = drawingJobsForScope(p, scope);
+    for (const job of jobs) {
+      const renderPlanPage = Number.isFinite(job.options.planPage) ? job.options.planPage : currentPlanPage;
+      const layout = sheetLayoutForRender(job.tab, p, renderPlanPage);
+      const canvas = renderSheetCanvas(job.tab, p, {...job.options, canvasMode:'sheets', renderScale:PDF_RENDER_SCALE});
+      await addCanvasPageToPdf(pdfDoc, canvas, pdfPageSizePoints(layout.sheetW > layout.sheetH));
+    }
+    if (includeBom) {
+      const bomCanvas = renderBomCanvas(`${title}-开料清单`);
+      await addBomCanvasPageToPdf(pdfDoc, bomCanvas, pdfPageSizePoints(false));
+    }
+    downloadPdfBytes(await pdfDoc.save(), title);
   } catch (err) {
-    alert(`PDF导出失败：${err.message || err}`);
+    alert(`导出PDF失败：${err.message || err}`);
   }
+}
+function directCanvasPrint(scope = 'current', includeBom = false) {
+  try {
+    saveActiveGroup(true);
+    const p = getParams();
+    lastParams = p;
+    const title = scope === 'all' ? '直接打印全部视图' : '直接打印当前视图';
+    const pages = renderCanvasPrintPagesForScope(p, scope);
+    openPrintWindow(title, canvasPrintDocumentHtml(title, pages, printPaperSpec(), includeBom), true);
+  } catch (err) {
+    alert(`直接打印失败：${err.message || err}`);
+  }
+}
+
+function directSvgPrint(scope = 'current', includeBom = false, titlePrefix = 'SVG打印') {
+  try {
+    saveActiveGroup(true);
+    const p = getParams();
+    lastParams = p;
+    const title = scope === 'all' ? `${titlePrefix}全部视图` : `${titlePrefix}当前视图`;
+    const pages = svgPrintPagesForScope(p, scope);
+    printFromFrame(svgPrintDocumentHtml(title, pages, printPaperSpec(), includeBom));
+  } catch (err) {
+    alert(`${titlePrefix}失败：${err.message || err}`);
+  }
+}
+
+function exportSvgPdfViaPrint(scope = 'current', includeBom = false) {
+  directSvgPrint(scope, includeBom, 'SVG导出PDF');
 }
 
 function currentBomHtml() {
@@ -7213,74 +8234,6 @@ function currentBomSourceItems() {
   if (rows.length) return buildMaterialListItems(rows.map(item => item.row));
   if ((lastParams || getParams())?.enabled === true) return buildMaterialListItems([lastParams || getParams()]);
   return [{name:'当前图纸', val:'空白', sub:'输入参数或点击生成后显示'}];
-}
-
-function bomPrintCardsHtml() {
-  const items = currentBomSourceItems();
-  const urinal = urinalBomItem();
-  if (urinal) items.push(urinal);
-  return items.map(item => `<div class="bom-card"><div class="bom-card-head"><div class="name">${escapeHtml(item.name)}</div><div class="val">${formatBomChips(item.val)}</div></div>${item.name === '前沿板' ? formatBomMobileLines(item.sub) : formatBomLines(item.sub, item.name)}</div>`).join('');
-}
-
-function bomExportCss(mode = 'print') {
-  const isSnapshot = mode === 'snapshot';
-  const isEmbed = mode === 'embed';
-  const titleSize = isSnapshot ? 28 : isEmbed ? 22 : 22;
-  const pageWidth = isSnapshot ? '900px' : isEmbed ? '190mm' : '190mm';
-  const pagePad = isSnapshot ? '32px' : '0';
-  const cardGap = isSnapshot ? '14px' : '8px';
-  const cardPad = isSnapshot ? '12px 14px' : '8px 10px';
-  const nameSize = isSnapshot ? '17px' : '15px';
-  const valSize = isSnapshot ? '15px' : '13px';
-  const lineSize = isSnapshot ? '14px' : '12px';
-  const mobileCell = isSnapshot ? '54px' : '54px';
-  const mobileGap = isSnapshot ? '7px' : '7px';
-  const mobileTitle = isSnapshot ? '100px' : '100px';
-  const mobileTagH = isSnapshot ? '24px' : '24px';
-  const mobileTagSize = isSnapshot ? '13px' : '13px';
-  return `
-    *{box-sizing:border-box}
-    html,body{margin:0;background:#fff;color:#000;font-family:"Microsoft YaHei",Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    body{${isSnapshot || isEmbed ? '' : `width:${pageWidth};margin:0 auto;`}}
-    .bom-print-page,.bom-snapshot{width:${pageWidth};${isSnapshot ? `padding:${pagePad};` : ''}background:#fff;color:#000;page-break-after:auto;break-after:auto}
-    .bom-print-page:last-child{page-break-after:auto;break-after:auto}
-    h1{font-size:${titleSize}px;line-height:1.25;margin:0 0 ${isSnapshot ? 18 : 10}px;border-bottom:1px solid #d0d7de;padding-bottom:${isSnapshot ? 14 : 8}px;color:#000;font-weight:800}
-    .bom-print-grid{display:grid;grid-template-columns:1fr;gap:${cardGap}}
-    .bom-card{border:1px solid #d8dee4;border-radius:${isSnapshot ? 8 : 6}px;padding:${cardPad};background:#fff;break-inside:avoid;page-break-inside:avoid;min-width:0;color:#000}
-    .bom-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:${isSnapshot ? 10 : 8}px;font-weight:700;min-width:0}
-    .bom-card .name,.name{font-size:${nameSize};font-weight:700;color:#000;line-height:1.35;white-space:nowrap}
-    .bom-card .val,.val{font-size:${valSize};font-weight:700;color:#0C447C;line-height:1.35;text-align:right;word-break:keep-all}
-    .bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700;line-height:1.45;white-space:nowrap}
-    .bom-lines{display:grid;grid-template-columns:1fr;row-gap:${isSnapshot ? 6 : 4}px;overflow:visible;max-width:100%}
-    .bom-line-row{display:grid;grid-template-columns:repeat(var(--bom-row-columns,1),max-content);column-gap:${isSnapshot ? 28 : 18}px;align-items:start;max-width:100%}
-    .bom-column{display:grid;grid-template-columns:1fr;row-gap:${isSnapshot ? 6 : 4}px;align-items:start}
-    .bom-line{display:flex;align-items:flex-start;gap:8px;font-size:${lineSize};line-height:1.55;color:#000;word-break:normal;white-space:nowrap;font-variant-numeric:tabular-nums}
-    .bom-line::before{content:"";width:5px;height:5px;margin-top:${isSnapshot ? 9 : 7}px;border-radius:999px;background:#57606a;opacity:.9;flex:0 0 auto}
-    .bom-size-line{display:inline-grid;grid-template-columns:auto 3.45em auto;column-gap:.3em;align-items:baseline}
-    .bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-line{grid-template-columns:auto auto}
-    .bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-left{display:none}
-    .bom-size-process{white-space:nowrap;text-align:left;color:#185FA5;font-weight:800}
-    .bom-size-process.align-three{letter-spacing:.5em}
-    .bom-process-placeholder{visibility:hidden}
-    .bom-size-left,.bom-size-right{white-space:nowrap;text-align:left;color:#000}
-    .bom-gap{height:${isSnapshot ? 8 : 6}px}.bom-gap::before{display:none}
-    .bom-mobile-groups{--bom-mobile-cell:${mobileCell};--bom-mobile-gap:${mobileGap};--bom-mobile-title:${mobileTitle};display:grid;gap:${isSnapshot ? 14 : 12}px;max-width:100%;overflow:hidden}
-    .bom-mobile-group{display:grid;grid-template-columns:var(--bom-mobile-title) minmax(0,1fr);gap:8px;align-items:start;min-width:0;max-width:100%}
-    .bom-mobile-group-title{display:flex;align-items:center;height:${mobileTagH};color:#185FA5;font-size:${mobileTagSize};font-weight:900;white-space:nowrap;padding-right:4px;overflow:visible}
-    .bom-mobile-tags{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--bom-mobile-cell),var(--bom-mobile-cell)));gap:7px var(--bom-mobile-gap);align-items:start;max-width:calc(var(--bom-mobile-cell) * 8 + var(--bom-mobile-gap) * 7);overflow:hidden}
-    .bom-mobile-tag{display:flex;align-items:center;justify-content:center;min-width:0;height:${mobileTagH};padding:0 4px;border-radius:5px;background:#F6F8FA;color:#000;font-size:${mobileTagSize};font-weight:800;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
-  `;
-}
-
-function bomPrintPageHtml(title = '开料清单') {
-  return `<section class="bom-print-page"><h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${bomPrintCardsHtml()}</div></section>`;
-}
-
-function bomPrintDocumentHtml(title = '开料清单') {
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>
-    @page{size:A4 portrait;margin:10mm}
-    ${bomExportCss('print')}
-  </style></head><body>${bomPrintPageHtml(title)}</body></html>`;
 }
 
 function collectBomImageItems() {
@@ -7296,10 +8249,71 @@ function collectBomImageItems() {
   })).filter(item => item.name || item.val || item.lines.length || item.mobileGroups?.length);
 }
 
+function bomImageCardsHtml() {
+  const items = currentBomSourceItems();
+  const urinal = urinalBomItem();
+  if (urinal) items.push(urinal);
+  return items.map(item => `<div class="bom-image-card"><div class="bom-image-card-head"><div class="name">${escapeHtml(item.name)}</div><div class="val">${formatBomChips(item.val)}</div></div>${item.name === '前沿板' ? formatBomMobileLines(item.sub) : formatBomLines(item.sub, item.name)}</div>`).join('');
+}
+
+function bomImageCss() {
+  return `
+    *{box-sizing:border-box}
+    .bom-snapshot{width:900px;padding:32px;background:#fff;color:#000;font-family:"Microsoft YaHei",Arial,sans-serif}
+    h1{font-size:28px;line-height:1.25;margin:0 0 18px;border-bottom:1px solid #d0d7de;padding-bottom:14px;color:#000;font-weight:800}
+    .bom-image-grid{display:grid;grid-template-columns:1fr;gap:14px}
+    .bom-image-card{border:1px solid #d8dee4;border-radius:8px;padding:12px 14px;background:#fff;min-width:0;color:#000}
+    .bom-image-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;font-weight:700;min-width:0}
+    .bom-image-card .name,.name{font-size:17px;font-weight:700;color:#000;line-height:1.35;white-space:nowrap}
+    .bom-image-card .val,.val{font-size:15px;font-weight:700;color:#0C447C;line-height:1.35;text-align:right;word-break:keep-all}
+    .bom-chip{display:inline-block;margin:0 3px 3px 0;padding:1px 6px;border-radius:999px;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:700;line-height:1.45;white-space:nowrap}
+    .bom-lines{display:grid;grid-template-columns:1fr;row-gap:6px;overflow:visible;max-width:100%}
+    .bom-line-row{display:grid;grid-template-columns:repeat(var(--bom-row-columns,1),max-content);column-gap:28px;align-items:start;max-width:100%}
+    .bom-column{display:grid;grid-template-columns:1fr;row-gap:6px;align-items:start}
+    .bom-line{display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.55;color:#000;word-break:normal;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .bom-line::before{content:"";width:5px;height:5px;margin-top:9px;border-radius:999px;background:#57606a;opacity:.9;flex:0 0 auto}
+    .bom-size-line{display:inline-grid;grid-template-columns:auto 3.45em auto;column-gap:.3em;align-items:baseline}
+    .bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-line{grid-template-columns:auto auto}
+    .bom-column.is-overflow .bom-line[data-bom-cont="1"] .bom-size-left{display:none}
+    .bom-size-process{white-space:nowrap;text-align:left;color:#185FA5;font-weight:800}
+    .bom-size-process.align-three{letter-spacing:.5em}
+    .bom-process-placeholder{visibility:hidden}
+    .bom-size-left,.bom-size-right{white-space:nowrap;text-align:left;color:#000}
+    .bom-gap{height:8px}.bom-gap::before{display:none}
+    .bom-mobile-groups{--bom-mobile-cell:54px;--bom-mobile-gap:7px;--bom-mobile-title:100px;display:grid;gap:14px;max-width:100%;overflow:hidden}
+    .bom-mobile-group{display:grid;grid-template-columns:var(--bom-mobile-title) minmax(0,1fr);gap:8px;align-items:start;min-width:0;max-width:100%}
+    .bom-mobile-group-title{display:flex;align-items:center;height:24px;color:#185FA5;font-size:13px;font-weight:900;white-space:nowrap;padding-right:4px;overflow:visible}
+    .bom-mobile-tags{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--bom-mobile-cell),var(--bom-mobile-cell)));gap:7px var(--bom-mobile-gap);align-items:start;max-width:calc(var(--bom-mobile-cell) * 8 + var(--bom-mobile-gap) * 7);overflow:hidden}
+    .bom-mobile-tag{display:flex;align-items:center;justify-content:center;min-width:0;height:24px;padding:0 4px;border-radius:5px;background:#F6F8FA;color:#000;font-size:13px;font-weight:800;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
+  `;
+}
+
 function bomSnapshotHtml(title) {
   return `<div xmlns="http://www.w3.org/1999/xhtml" class="bom-snapshot"><style>
-    ${bomExportCss('snapshot')}
-  </style><h1>${escapeHtml(title)}</h1><div class="bom-print-grid">${bomPrintCardsHtml()}</div></div>`;
+    ${bomImageCss()}
+  </style><h1>${escapeHtml(title)}</h1><div class="bom-image-grid">${bomImageCardsHtml()}</div></div>`;
+}
+
+function bomSvgMarkup(title = '开料清单') {
+  const safeTitle = sanitizeExportName(title, '开料清单');
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;visibility:hidden;pointer-events:none';
+  probe.innerHTML = bomSnapshotHtml(safeTitle);
+  document.body.appendChild(probe);
+  const height = Math.ceil(probe.firstElementChild?.getBoundingClientRect().height || 600);
+  probe.remove();
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="${height}" viewBox="0 0 900 ${height}"><foreignObject width="900" height="${height}">${bomSnapshotHtml(safeTitle)}</foreignObject></svg>`;
+}
+
+function bomPrintDocumentHtml(title = '开料清单', mode = 'canvas') {
+  const safeTitle = sanitizeExportName(title, '开料清单');
+  const paper = printPaperSpec();
+  if (mode === 'svg') {
+    return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(safeTitle)}</title><style>@page{size:${paper.label} portrait;margin:0}html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.bom-print-page{box-sizing:border-box;width:${paper.w}mm;min-height:${paper.h}mm;padding:8mm;background:#fff}.bom-print-page svg{display:block;width:100%;height:auto}</style></head><body><section class="bom-print-page">${bomSvgMarkup(safeTitle)}</section></body></html>`;
+  }
+  const canvas = renderBomCanvas(safeTitle, {scale:4});
+  const image = canvas.toDataURL('image/png');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(safeTitle)}</title><style>@page{size:${paper.label} portrait;margin:0}html,body{margin:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.bom-print-page{box-sizing:border-box;width:${paper.w}mm;min-height:${paper.h}mm;padding:8mm;background:#fff;display:flex;align-items:flex-start;justify-content:center}.bom-print-page img{display:block;width:100%;height:auto}</style></head><body><section class="bom-print-page"><img alt="${escapeAttr(safeTitle)}" src="${image}"></section></body></html>`;
 }
 
 function exportBomDomImage(name = '开料清单') {
@@ -7415,7 +8429,7 @@ function drawBomCanvasStructuredLine(ctx, line, x, y, maxWidth) {
   return y + 22;
 }
 
-function renderBomCanvas(name = '开料清单') {
+function renderBomCanvas(name = '开料清单', options = {}) {
   const title = sanitizeExportName(name, '开料清单');
   const items = collectBomImageItems();
   const width = 900;
@@ -7428,7 +8442,7 @@ function renderBomCanvas(name = '开料清单') {
   const frontGapX = 7;
   const frontGapY = 7;
   const frontCols = 8;
-  const scale = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  const scale = Math.max(1, Number(options.scale || 0) || Math.min(2, window.devicePixelRatio || 1));
   const measure = document.createElement('canvas').getContext('2d');
   measure.font = '15px Microsoft YaHei, Arial, sans-serif';
   const cardInnerW = width - pad * 2 - 24;
@@ -7454,6 +8468,8 @@ function renderBomCanvas(name = '开料清单') {
   const out = document.createElement('canvas');
   out.width = Math.ceil(width * scale);
   out.height = Math.ceil(height * scale);
+  out.dataset.logicalWidth = String(width);
+  out.dataset.logicalHeight = String(height);
   const outCtx = out.getContext('2d');
   outCtx.scale(scale, scale);
   outCtx.textBaseline = 'middle';
@@ -7532,55 +8548,53 @@ function exportBomImage(name = '开料清单') {
   exportBomDomImage(name);
 }
 
-function exportBomPrint(name = '开料清单') {
+async function exportBomPdf(name = '开料清单') {
   const title = sanitizeExportName(name, '开料清单');
-  const html = bomPrintDocumentHtml(title);
-  const win = window.open('', '_blank');
-  if (win) {
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-    triggerWindowPrint(win, 300);
-    return;
+  try {
+    const {PDFDocument} = await loadPdfLib();
+    const pdfDoc = await PDFDocument.create();
+    const canvas = renderBomCanvas(title, {scale:4});
+    await addBomCanvasPageToPdf(pdfDoc, canvas, pdfPageSizePoints(false));
+    downloadPdfBytes(await pdfDoc.save(), title);
+  } catch (err) {
+    alert(`导出开料清单PDF失败：${err.message || err}`);
   }
-  if (isMobileViewport()) {
-    alert('浏览器阻止了PDF打印窗口，请允许弹出窗口后重试。');
-    return;
-  }
-  const oldFrame = document.getElementById('print-frame');
-  if (oldFrame) oldFrame.remove();
-  const frame = document.createElement('iframe');
-  frame.id = 'print-frame';
-  frame.style.position = 'fixed';
-  frame.style.right = '0';
-  frame.style.bottom = '0';
-  frame.style.width = '0';
-  frame.style.height = '0';
-  frame.style.border = '0';
-  document.body.appendChild(frame);
-  const doc = frame.contentDocument || frame.contentWindow.document;
-  doc.open();
-  doc.write(html);
-  doc.close();
-  triggerFramePrint(frame, 250);
 }
+
+function printBom(name = '开料清单') {
+  const title = sanitizeExportName(name, '开料清单');
+  try {
+    printFromFrame(bomPrintDocumentHtml(title, 'canvas'));
+  } catch (err) {
+    alert(`打印开料清单失败：${err.message || err}`);
+  }
+}
+
+function printBomSvg(name = '开料清单', titlePrefix = 'SVG打印') {
+  const title = sanitizeExportName(name, '开料清单');
+  try {
+    printFromFrame(bomPrintDocumentHtml(title, 'svg'));
+  } catch (err) {
+    alert(`${titlePrefix}开料清单失败：${err.message || err}`);
+  }
+}
+
+function exportBomSvgPdf(name = '开料清单') {
+  printBomSvg(name, 'SVG导出PDF');
+}
+
 function openExportDialog(mode) {
   pendingExportMode = mode;
   const input = document.getElementById('export-file-name');
-  const scopeRow = document.getElementById('export-pdf-scope');
-  const formatRow = document.getElementById('export-bom-format');
-  const bomRow = document.getElementById('export-include-bom-row');
-  const bomInput = document.getElementById('export-include-bom');
+  const scopeRow = document.getElementById('export-scope-row');
   const title = document.getElementById('export-modal-title');
-  const label = mode === 'bom' ? '导出开料清单' : mode === 'all-image' ? '导出全部视图' : mode === 'pdf' ? '导出PDF' : '导出当前视图';
+  const confirmBtn = document.getElementById('export-confirm-btn');
+  const label = mode === 'bom' ? '导出开料清单' : mode === 'all-image' ? '导出全部视图' : mode === 'pdf' ? '导出PDF' : mode === 'svg' ? '导出SVG' : mode === 'svg-print' ? 'SVG打印' : mode === 'svg-pdf' ? 'SVG导出PDF' : mode === 'print' ? '直接打印' : '导出当前视图';
   if (title) title.textContent = label;
-  if (input) input.value = mode === 'bom' ? '开料清单' : mode === 'all-image' ? '隔断全部视图' : mode === 'pdf' ? '隔断图纸' : `隔断${currentViewLabel()}`;
-  scopeRow?.classList.toggle('show', mode === 'pdf');
-  formatRow?.classList.toggle('show', mode === 'bom');
-  const imageFormat = document.querySelector('input[name="export-bom-format"][value="image"]');
-  if (imageFormat) imageFormat.checked = true;
-  if (bomInput) bomInput.checked = true;
-  if (bomRow) bomRow.style.display = (mode === 'current-image' || mode === 'all-image' || mode === 'pdf') ? 'flex' : 'none';
+  if (input) input.value = mode === 'bom' ? '开料清单' : mode === 'all-image' ? '隔断全部视图' : (mode === 'pdf' || mode === 'print' || mode === 'svg' || mode === 'svg-print' || mode === 'svg-pdf') ? '隔断图纸' : `隔断${currentViewLabel()}`;
+  if (input) input.style.display = (mode === 'print' || mode === 'svg-print' || mode === 'svg-pdf') ? 'none' : '';
+  if (scopeRow) scopeRow.classList.toggle('show', mode === 'pdf' || mode === 'print' || mode === 'svg' || mode === 'svg-print' || mode === 'svg-pdf');
+  if (confirmBtn) confirmBtn.textContent = (mode === 'print' || mode === 'svg-print' || mode === 'svg-pdf') ? '确认打印' : '确认导出';
   openProjectModal('export-modal');
   window.setTimeout(() => input?.focus(), 0);
 }
@@ -7588,38 +8602,60 @@ function openExportDialog(mode) {
 function confirmNamedExport() {
   const input = document.getElementById('export-file-name');
   const name = sanitizeExportName(input?.value, '隔断图纸');
-  const includeBom = document.getElementById('export-include-bom')?.checked !== false;
   closeProjectModal('export-modal');
   if (pendingExportMode === 'bom') {
-    const format = document.querySelector('input[name="export-bom-format"]:checked')?.value || 'image';
-    if (format === 'pdf') exportBomPrint(name);
-    else {
-      try { exportBomImage(name); }
-      catch (err) { alert(`导出图片失败：${err.message || err}`); }
-    }
+    try { exportBomImage(name); }
+    catch (err) { alert(`导出图片失败：${err.message || err}`); }
     return;
   }
   if (pendingExportMode === 'all-image') {
     exportNamedAllImages(name);
-    if (includeBom) window.setTimeout(() => exportBomImage(`${name}-开料清单`), 1200);
     return;
   }
   if (pendingExportMode === 'pdf') {
-    const scope = document.querySelector('input[name="export-pdf-scope"]:checked')?.value || 'current';
-    exportNamedPdf(name, scope, includeBom);
+    const scope = document.querySelector('input[name="export-scope"]:checked')?.value || 'current';
+    exportNamedPdf(name, scope, false);
     return;
   }
-  exportNamedImage(name, includeBom);
+  if (pendingExportMode === 'svg') {
+    const scope = document.querySelector('input[name="export-scope"]:checked')?.value || 'current';
+    exportNamedSvg(name, scope);
+    return;
+  }
+  if (pendingExportMode === 'svg-print') {
+    const scope = document.querySelector('input[name="export-scope"]:checked')?.value || 'current';
+    directSvgPrint(scope, false);
+    return;
+  }
+  if (pendingExportMode === 'svg-pdf') {
+    const scope = document.querySelector('input[name="export-scope"]:checked')?.value || 'current';
+    exportSvgPdfViaPrint(scope, false);
+    return;
+  }
+  if (pendingExportMode === 'print') {
+    const scope = document.querySelector('input[name="export-scope"]:checked')?.value || 'current';
+    directCanvasPrint(scope, false);
+    return;
+  }
+  exportNamedImage(name, false);
 }
 
 function bindNamedExportButtons() {
   const current = document.getElementById('btn-export-current');
   const all = document.getElementById('btn-export-all');
-  const pdf = document.getElementById('btn-print-pdf');
+  const pdf = document.getElementById('btn-export-pdf');
+  const svg = document.getElementById('btn-export-svg');
+  const svgPrint = document.getElementById('btn-svg-print');
+  const svgPdf = document.getElementById('btn-svg-pdf');
+  const print = document.getElementById('btn-print-direct');
   const bom = document.getElementById('btn-export-bom');
   if (current) current.onclick = () => openExportDialog('current-image');
   if (all) all.onclick = () => openExportDialog('all-image');
   if (pdf) pdf.onclick = () => openExportDialog('pdf');
+  if (svg) svg.onclick = () => openExportDialog('svg');
+  if (svgPrint) svgPrint.onclick = () => openExportDialog('svg-print');
+  if (svgPdf) svgPdf.onclick = () => openExportDialog('svg-pdf');
+  if (print) print.onclick = () => openExportDialog('print');
   if (bom) bom.onclick = () => openExportDialog('bom');
 }
 

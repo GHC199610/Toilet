@@ -112,6 +112,7 @@
 改任何相关功能前，必须先搜索并阅读以下函数或等价入口：
 
 - 图纸 PNG：`exportNamedImage`、`exportNamedAllImages`、`downloadCanvasPng`。
+- 图纸 SVG：必须遵守 SVG_EXPORT_SPEC.md；SVG 不得作为 PDF/打印/PNG 的中间格式。
 - 图纸 PDF：`exportNamedPdf`、`exportPdfCanvasesForScope`、打印 iframe/window 触发函数。
 - 开料清单：`renderBomItems`、`formatBomLines`、`formatBomMobileLines`、`bomPrintCardsHtml`、`bomPrintDocumentHtml`、`renderBomCanvas`、`exportBomImage`、`exportBomPrint`。
 - 图纸绘制：`renderSheetCanvas`、`renderPlanSheetsStripCanvas`、分页相关函数。
