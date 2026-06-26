@@ -48,6 +48,18 @@
 - 移动端：开料清单单独导出 PNG。
 - 移动端：开料清单单独导出 PDF。
 
+SVG 入口必须单独核对，且必须遵守 `SVG_EXPORT_SPEC.md`：
+
+- 桌面端：导出 SVG 当前视图。
+- 桌面端：导出 SVG 全部视图。
+- 桌面端：SVG 打印当前视图。
+- 桌面端：SVG 打印全部视图。
+- 桌面端：SVG 导出 PDF 当前视图。
+- 桌面端：SVG 导出 PDF 全部视图。
+- 移动端如保留 SVG 入口，也必须按同样矩阵核对。
+
+SVG 是独立路线：`exportNamedSvg()` 与 `svgPrintPagesForScope()` 必须走 `renderBackendSheetSvg()`，不得切到 `renderSheetSvg()`、`renderSheetCanvas()`、PNG、普通 PDF 或普通直接打印路线。
+
 如果入口有“包含开料清单”勾选项，必须额外验证：
 
 - PNG 当前视图勾选开料清单时，不能只导出清单而丢失图纸。
@@ -112,7 +124,8 @@
 改任何相关功能前，必须先搜索并阅读以下函数或等价入口：
 
 - 图纸 PNG：`exportNamedImage`、`exportNamedAllImages`、`downloadCanvasPng`。
-- 图纸 SVG：必须遵守 SVG_EXPORT_SPEC.md；SVG 不得作为 PDF/打印/PNG 的中间格式。
+- 图纸 SVG：必须遵守 SVG_EXPORT_SPEC.md；SVG 不得作为普通 PDF/打印/PNG 的中间格式，普通 PDF/打印/PNG 也不得作为 SVG 的替代路线。
+- SVG 独立路线：`exportNamedSvg()`、`svgPrintPagesForScope()`、`directSvgPrint()`、`exportSvgPdfViaPrint()`、`renderBackendSheetSvg()`、backend drawing model builders、`drawing-backend-v1.js`。
 - 图纸 PDF：`exportNamedPdf`、`exportPdfCanvasesForScope`、打印 iframe/window 触发函数。
 - 开料清单：`renderBomItems`、`formatBomLines`、`formatBomMobileLines`、`bomPrintCardsHtml`、`bomPrintDocumentHtml`、`renderBomCanvas`、`exportBomImage`、`exportBomPrint`。
 - 图纸绘制：`renderSheetCanvas`、`renderPlanSheetsStripCanvas`、分页相关函数。
@@ -150,3 +163,6 @@
 - 禁止修改公共导出函数后不检查所有导出入口。
 - 禁止为了当前截图正确而扩大公共函数行为范围。
 - 禁止未验证就承诺“手机端没问题”。
+- 禁止把 SVG 导出、SVG 打印、SVG 导出 PDF 改成 Canvas、PNG、普通 PDF、普通打印或 `renderSheetSvg()` 路线。
+- 禁止把普通 PNG/PDF/直接打印改成 backend SVG 路线。
+- 禁止在未明确获得用户批准前改变 SVG 独立架构。
