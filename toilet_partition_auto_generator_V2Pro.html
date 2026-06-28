@@ -598,6 +598,8 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <div class="collapsible-body">
         <div class="field"><label>立板高度</label><input type="number" id="h-upright" value="1830" min="1000" max="2400" step="50"></div>
         <div class="field"><label>门板高度</label><input type="number" id="h-door" value="1750" min="900" max="2400" step="50"></div>
+        <div class="field"><label>门头板高度</label><input type="number" id="h-header" value="0" min="0" max="600" step="10"></div>
+        <div class="field"><label>门头门缝</label><input type="number" id="h-header-gap" value="0" min="0" max="50" step="1"></div>
         <div class="field"><label>中隔板高度</label><input type="number" id="h-mid" value="1800" min="1000" max="2400" step="50"></div>
         <div class="field"><label>见光板高度</label><input type="number" id="h-vis" value="1830" min="100" max="2400" step="50"></div>
       </div>
@@ -862,7 +864,7 @@ const swingDefs = {
   'out-right': {label:'右外开', hinge:'right', opensUp:false, vx:40, y1:30, y2:6, arcEndX:16, arcEndY:6, arcSweep:1},
 };
 const swingOrder = ['in-left', 'in-right', 'out-left', 'out-right'];
-const defaultRow = {id:1, layoutType:'cell', layoutRow:1, layoutCol:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], noDoorBooths:[], depthPanelSpecials:[], dimensionLocks:null, hUpright:1830, hDoor:1750, hMid:1800, hVis:1830, tPanel:12, wall:'three'};
+const defaultRow = {id:1, layoutType:'cell', layoutRow:1, layoutCol:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], noDoorBooths:[], depthPanelSpecials:[], dimensionLocks:null, hUpright:1830, hDoor:1750, hHeader:0, hHeaderGap:0, hMid:1800, hVis:1830, tPanel:12, wall:'three'};
 const blankRow = {...defaultRow, enabled:false};
 let groups = [
   {id:1, name:'', rows:[{...blankRow}]},
@@ -1940,6 +1942,8 @@ function loadGroupToForm(group, row = activeRow()) {
   document.getElementById('p-rebate-depth').value = row.rebateDepth ?? 10;
   document.getElementById('h-upright').value = row.hUpright;
   document.getElementById('h-door').value = row.hDoor;
+  document.getElementById('h-header').value = row.hHeader ?? defaultRow.hHeader;
+  document.getElementById('h-header-gap').value = row.hHeaderGap ?? defaultRow.hHeaderGap;
   document.getElementById('h-mid').value = row.hMid;
   document.getElementById('h-vis').value = row.hVis;
   document.getElementById('t-panel').value = row.tPanel;
@@ -3608,6 +3612,8 @@ function getParams() {
     dimensionLocks: currentRow?.dimensionLocks || null,
     hUpright: parseInt(document.getElementById('h-upright').value)||1830,
     hDoor: parseInt(document.getElementById('h-door').value)||1750,
+    hHeader: Math.max(0, parseInt(document.getElementById('h-header').value) || 0),
+    hHeaderGap: Math.max(0, parseInt(document.getElementById('h-header-gap').value) || 0),
     hMid: parseInt(document.getElementById('h-mid').value)||1800,
     hVis: parseInt(document.getElementById('h-vis').value)||1830,
     tPanel: parseInt(document.getElementById('t-panel').value)||12,
@@ -5205,7 +5211,7 @@ function drawDim(x1,y1,x2,y2,label,side, meta = null) {
 }
 function drawElevationDim(x1, y1, x2, y2, label, side, meta = null, options = {}) {
   ctx.save();
-  ctx.strokeStyle = '#000000';
+  ctx.strokeStyle = '#185FA5';
   ctx.fillStyle = '#000000';
   ctx.lineWidth = options.lineWidth || Math.max(0.25, anno(2));
   ctx.font = options.font || planFont(options.fontSize || 62);
@@ -5417,7 +5423,7 @@ function drawPlanWalls(ox, oy, sW, sD, swt, c, extras = {}) {
   ctx.fillStyle = '#fbfbfb';
   wallRects.forEach(rect => ctx.fillRect(rect.x, rect.y, rect.w, rect.h));
 
-  ctx.strokeStyle = '#000000';
+  ctx.strokeStyle = '#185FA5';
   wallRects.forEach(rect => drawHatch(rect.x, rect.y, rect.w, rect.h, 46, 'rgba(0,0,0,.36)', 1.05));
   ctx.restore();
 
@@ -6288,6 +6294,8 @@ function frontElevationLayout(p, layoutOverride = null) {
   const W = Math.max(1, Number(c.totalRun) || Number(p.total) || 1);
   const hUMm = Number(p.hUpright) || 1830;
   const hDoorMm = Number(p.hDoor) || 1750;
+  const hHeaderMm = Math.max(0, Number(p.hHeader) || 0);
+  const hHeaderGapMm = Math.max(0, Number(p.hHeaderGap) || 0);
   const hMidMm = Number(p.hMid) || 1800;
   const hVisMm = Number(p.hVis) || 1830;
   const H = Math.max(hUMm, hMidMm, hDoorMm, hVisMm);
@@ -6306,6 +6314,8 @@ function frontElevationLayout(p, layoutOverride = null) {
   const swt = wt * scale;
   const hU = hUMm * scale;
   const hDoor = hDoorMm * scale;
+  const hHeader = hHeaderMm * scale;
+  const hHeaderGap = hHeaderGapMm * scale;
   const hMid = hMidMm * scale;
   const vis = hVisMm * scale;
   const rebate = Math.max(0, Number(p.rebateDepth) || 0) * scale;
@@ -6331,6 +6341,7 @@ function frontElevationLayout(p, layoutOverride = null) {
   });
   const booths = [];
   const doors = [];
+  const headerPanels = [];
   for (let i = 0; i < count; i++) {
     const boothX = ox + (boundaries[i] || 0) * scale;
     const boothW = boothWidths[i] * scale;
@@ -6350,10 +6361,13 @@ function frontElevationLayout(p, layoutOverride = null) {
     const lockX = swingDef.hinge === 'right' ? doorX + doorW * 0.22 : doorX + doorW * 0.78;
     const door = {index:i, hasDoor, x:doorX, y:floor - hDoor, w:doorW, h:hDoor, installX, installW, bigMm, installMm, swing, hingeX, lockX, gapLeft, gapRight, start:installX, end:installX + installW, bigStart:doorX, bigEnd:doorX + doorW, zoneStart, zoneEnd:installX + installW + gapRight * scale, width:installW};
     booths.push({index:i, x:boothX, y:floor - vis, w:boothW, h:vis, boothMm:boothWidths[i], label:`${labelPrefix}${i + 1}门`, hasDoor, door});
-    if (hasDoor) doors.push(door);
+    if (hasDoor) {
+      doors.push(door);
+      if (hHeader > 0) headerPanels.push({index:i, x:doorX, y:floor - hDoor - hHeaderGap - hHeader, w:doorW, h:hHeader, heightMm:hHeaderMm, gapMm:hHeaderGapMm, door});
+    }
   }
   const boardModel = buildBoardModel(p, c, doors, ox, sW, scale);
-  return {c, layout, P, count, W, H, scale, ox, oy, floor, sW, sH, st, swt, hU, hDoor, hMid, vis, leftWall, rightWall, walls:{left:c.hasLeft, right:c.hasRight}, posts, booths, doors, boardModel};
+  return {c, layout, P, count, W, H, scale, ox, oy, floor, sW, sH, st, swt, hU, hDoor, hHeader, hHeaderGap, hMid, vis, leftWall, rightWall, walls:{left:c.hasLeft, right:c.hasRight}, posts, booths, doors, headerPanels, boardModel};
 }
 
 function frontDoorSwingSegments(door, inset = 7) {
@@ -6451,6 +6465,17 @@ function drawFrontPanelSegmentsCanvas(L) {
   ctx.restore();
 }
 
+function drawFrontHeaderPanelsCanvas(L) {
+  const panels = L.headerPanels || [];
+  if (!panels.length) return;
+  ctx.save();
+  ctx.strokeStyle = '#185FA5';
+  ctx.lineWidth = Math.max(0.25, anno(1.6));
+  ctx.setLineDash([]);
+  panels.forEach(panel => ctx.strokeRect(panel.x, panel.y, panel.w, panel.h));
+  ctx.restore();
+}
+
 function drawFrontDoorAnnotationsCanvas(L) {
   ctx.save();
   ctx.fillStyle = '#000000';
@@ -6511,6 +6536,12 @@ function backendDrawFrontPanelSegments(B, model, L) {
   });
 }
 
+function backendDrawFrontHeaderPanels(B, model, L) {
+  (L.headerPanels || []).forEach(panel => {
+    B.rect(model, panel.x, panel.y, panel.w, panel.h, {fill:'none', stroke:'#185FA5', strokeWidth:1, className:'front-door-header-panel'});
+  });
+}
+
 function backendDrawFrontDoorAnnotations(B, model, L) {
   L.doors.forEach(door => {
     const booth = L.booths[door.index];
@@ -6563,6 +6594,7 @@ function drawFront(p) {
     }
   });
   drawFrontPanelSegmentsCanvas(L);
+  drawFrontHeaderPanelsCanvas(L);
 
   L.doors.forEach(door => {
     ctx.strokeStyle = '#185FA5';
@@ -8481,6 +8513,7 @@ function buildFrontPageDrawingModel(p = lastParams || getParams()) {
     }
   });
   backendDrawFrontPanelSegments(B, model, L);
+  backendDrawFrontHeaderPanels(B, model, L);
   L.doors.forEach(door => {
     B.rect(model, door.x, door.y, door.w, door.h, {fill:'none', stroke:'#185FA5', strokeWidth:1, className:'front-door-panel'});
     frontDoorSwingSegments(door, 7).forEach(seg => {
@@ -10526,6 +10559,8 @@ function applyBatchFieldOnly(fieldId) {
     't-panel': () => ({tPanel: parseInt(document.getElementById('t-panel').value) || 12}),
     'h-upright': () => ({hUpright: parseInt(document.getElementById('h-upright').value) || 1830}),
     'h-door': () => ({hDoor: parseInt(document.getElementById('h-door').value) || 1750}),
+    'h-header': () => ({hHeader: Math.max(0, parseInt(document.getElementById('h-header').value) || 0)}),
+    'h-header-gap': () => ({hHeaderGap: Math.max(0, parseInt(document.getElementById('h-header-gap').value) || 0)}),
     'h-mid': () => ({hMid: parseInt(document.getElementById('h-mid').value) || 1800}),
     'h-vis': () => ({hVis: parseInt(document.getElementById('h-vis').value) || 1830})
   };
@@ -10600,7 +10635,7 @@ document.querySelectorAll('.field input[type=number], .field select').forEach(el
       commitHeightFieldOnEnter(el.id);
       return;
     }
-    if (['p-depth','p-door','p-rebate-depth','t-panel'].includes(el.id)) commitFieldAndAdvance(el.id);
+    if (['p-depth','p-door','p-rebate-depth','t-panel','h-header','h-header-gap'].includes(el.id)) commitFieldAndAdvance(el.id);
     else refreshDrawingAfterManualEdit(false);
   });
 });

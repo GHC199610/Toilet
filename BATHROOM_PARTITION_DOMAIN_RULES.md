@@ -39,6 +39,7 @@ When clear width is below 700 mm, the layout is invalid and the user should be t
 
 - Door width participates in net-width calculation, collision detection, drawing, and cut-list generation.
 - Door gaps participate in total length closure and door-opening clearance.
+- Door header board height and the gap between the header board and door panel are independent row parameters.
 - Door swing values must support at least: left-in, right-in, left-out, right-out.
 - Door collision checks must consider door-to-door, door-to-wall, door-to-column, and door-to-equipment conflicts when those structures exist in the model.
 - No-door booths must remain explicit in the model and must not be inferred from a zero door width.
@@ -50,6 +51,11 @@ When clear width is below 700 mm, the layout is invalid and the user should be t
 - Door panel thickness follows the front-edge panel outside baseline.
 - Depth below 800 mm must generate a warning or invalid state according to the active validation mode.
 - Side elevation depth must match plan depth exactly.
+
+## Height Rules
+
+- Visible-board height may default-sync from upright height, but users can edit it independently.
+- Door header board placement uses door height, door header board height, and the configured header-door gap.
 
 ## Rebate Rules
 

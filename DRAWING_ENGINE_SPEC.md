@@ -40,6 +40,7 @@ Supported backend command types:
 - Plan depth dimensions stop at the depth panel outer end.
 - Front-edge panels sit outside the depth dimension.
 - Door panel thickness aligns with the front-edge panel outside baseline.
+- Door header boards are front-elevation visible-layer components above door panels and use the configured header height plus header-door gap.
 - Wall extents follow the depth panel plus front-edge panel outer edge.
 - Rebate doors preserve both big-face body coordinates and small-face installation coordinates.
 

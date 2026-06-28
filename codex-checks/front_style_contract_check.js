@@ -23,6 +23,7 @@ function assertNotIncludes(haystack, needle, message) {
 const drawElevationDim = sectionBetween('function drawElevationDim', 'function drawLeftOuterDepthDim');
 const frontLayout = sectionBetween('function frontElevationLayout', 'function frontDoorSwingSegments');
 const frontHelpers = sectionBetween('function frontTouchesMiddlePostEdge', 'function backendDrawFrontDatum');
+const frontHeaderCanvas = sectionBetween('function drawFrontHeaderPanelsCanvas', 'function drawFrontDoorAnnotationsCanvas');
 const drawFront = sectionBetween('function drawFront(p)', 'function drawDetailCallout');
 const frontDoorLoop = sectionBetween("ctx.strokeRect(door.x, door.y, door.w, door.h);", 'const topDimY = L.oy - 46');
 const backendFront = sectionBetween('function buildFrontPageDrawingModel', 'function buildSidePageDrawingModel');
@@ -58,6 +59,10 @@ assertNotIncludes(backendFront, "stroke:'#8fb2d6'", 'backend front fixed/front p
 assertNotIncludes(drawFront, "#378ADD", 'front middle partition board lines should be black, not blue.');
 assertNotIncludes(backendFront, "#378ADD", 'backend front middle partition board lines should be black, not blue.');
 assertIncludes(drawFront, "ctx.strokeStyle = '#185FA5'", 'front door panels should keep the current blue.');
+assertIncludes(source, 'hHeader:0, hHeaderGap:0', 'door header height and header-door gap should default to 0.');
+assertIncludes(source, "className:'front-door-header-panel'", 'front header panels should have a distinct class.');
+assertIncludes(frontHeaderCanvas, "ctx.strokeStyle = '#185FA5'", 'canvas front header panels should use the same blue stroke as door panels.');
+assertIncludes(source, "stroke:'#185FA5', strokeWidth:1, className:'front-door-header-panel'", 'front header panels should use the same blue stroke as door panels.');
 assertIncludes(frontDoorLoop, "ctx.strokeStyle = '#185FA5'", 'front door swing direction should keep the current blue color.');
 assertIncludes(frontDoorLoop, 'ctx.setLineDash([anno(84), anno(18)])', 'front door swing direction should use long segments with short breaks like the reference.');
 assertIncludes(backendFront, "className:'front-door-swing-segment'", 'backend front door swing direction should be present.');

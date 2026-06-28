@@ -13,6 +13,7 @@ This file defines project-wide development rules. Domain, drawing, export, UI, a
 - Business dimensions come from the active project/group/row model, not from rendered DOM, Canvas pixels, SVG output, or temporary UI state.
 - Computed geometry is produced once and reused by drawing, export, and cut-list code.
 - A view may read shared models, but must not mutate the source data while rendering.
+- UI preview, Canvas drawing, backend drawing model, SVG/PDF/print/export, and any related generated output must express the same user-requested behavior. Do not implement one path and leave another path with separate logic, color, geometry, defaults, labels, or visibility rules.
 
 ## Change Boundary Rules
 
@@ -28,7 +29,9 @@ This file defines project-wide development rules. Domain, drawing, export, UI, a
 
 These rules are mandatory for AI-assisted edits:
 
+- Do not guess. Before designing, editing, validating, or answering about project behavior, inspect the actual owning code and relevant specs first. State conclusions from checked code, not memory or assumption.
 - Treat the user's current request as the hard boundary. For example, an elevation drawing request does not authorize plan-view, BOM, export, hardware-library, text-encoding, or global syntax changes.
+- When a user asks to change a UI-visible behavior, identify and inspect every paired implementation path that can show or export it, including UI state collection, Canvas preview, backend/SVG/PDF/print export, and saved defaults. Keep those paths unified or explicitly report an unchecked path before finishing.
 - Never perform broad file rewrites on `toilet_partition_auto_generator_V2Pro.html` for a small behavior change.
 - Do not use PowerShell full-file read/write commands to modify large HTML/JS files. Use `apply_patch` or a Node UTF-8 script with explicit function/marker boundaries.
 - Inspect `git diff --stat` after every meaningful edit. If the diff is larger than the expected scope, stop and correct the scope before continuing.
@@ -39,6 +42,9 @@ These rules are mandatory for AI-assisted edits:
 
 - Plan view is the relationship source of truth. Do not alter plan logic to fix elevation drawing expression.
 - Elevation drawing may have independent presentation code, but it must read the same `compute(p)` relationship chain used by the plan view.
+- Front elevation is a visibility drawing from the door-operating side, not a flattened plan view. The front-edge/front-facing board layer is the foremost visible layer.
+- Components behind the front-edge/front-facing board layer must not be drawn as solid visible objects. If a hidden rear/internal relationship is necessary for installation understanding, show it only with a restrained dashed/hidden line; otherwise do not express it in the front elevation.
+- Do not draw continuous lines, background frames, or full booth rectangles that imply hidden rear boards are visible through the front layer.
 - Board heights must use their own real fields: `hUpright` for upright panels, `hDoor` for doors, `hMid` for middle partitions, and `hVis` for visible/fixed panels.
 - Panel thickness expression must use `tPanel` after scaling, not an arbitrary decorative line offset.
 - Middle partitions are expressed by their real height and real thickness. Do not add an extra center line that makes the front board look split.

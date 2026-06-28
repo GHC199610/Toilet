@@ -13,6 +13,8 @@ This file defines project-level behavior constraints for AI-assisted changes. If
 - Do not change unrelated UI, style, calculation, drawing, cut-list, or export behavior.
 - Do not invent missing data. Return an explicit error or warning.
 - Do not silently repair invalid production data.
+- Do not guess about code behavior. Inspect the actual code and relevant specs before designing, changing, validating, or answering.
+- Do not leave UI preview and backend/export paths inconsistent for the same user-requested behavior.
 - Do not claim completion without verification evidence.
 
 ## Frozen Boundaries
@@ -46,6 +48,7 @@ Before editing, identify:
 - Data source feeding those functions.
 - Rendering/export path consuming the result.
 - Shared helpers that would be risky to touch.
+- Any paired UI/backend/export implementation paths that must remain identical for the requested behavior.
 
 ### 3. Impact Matrix
 
@@ -74,6 +77,7 @@ Run checks appropriate to the touched surface. Required for most code edits:
 - Syntax check.
 - Diff check.
 - Target behavior check.
+- UI/backend/export consistency check when the behavior appears in more than one path.
 - Non-target regression check when shared code changed.
 
 ## Error Shape

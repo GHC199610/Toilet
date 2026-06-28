@@ -72,6 +72,7 @@ The plan view shows horizontal layout from above.
 ### Purpose
 
 The front elevation shows the partition unfolded from the door operating side. It expresses width and height, not depth.
+It is a visibility drawing: the front-edge/front-facing board layer is the foremost visible layer. Rear or internal structure behind that front layer is not visible from the elevation viewpoint.
 
 ### Data Source
 
@@ -83,14 +84,13 @@ The front elevation shows the partition unfolded from the door operating side. I
 ### Must Show
 
 - F.F.L. baseline as height zero.
-- Top finish line or top rail line.
 - Door panel outlines for every door booth.
-- Fixed/front panels, visible panel seams, door gaps, and booth boundaries.
+- Door header boards above door openings when configured.
+- Front-edge/front-facing boards, visible panel seams, door gaps, and actually visible booth boundaries.
 - Left/right wall or end closure when present in the model.
-- Door tags such as `A1门`, `A2门`, `B1门`.
 - Door swing indication inside each door panel.
 - Hardware required by the active hardware profile: hinges, lock/handle, top rail, legs, etc.
-- No-door indication for no-door booths.
+- Hidden rear/internal relationships only when needed for installation understanding, and only as restrained dashed/hidden lines.
 
 ### Must Dimension
 
@@ -108,6 +108,11 @@ The front elevation shows the partition unfolded from the door operating side. I
 - Do not hardcode hardware type, count, or position in the view drawing function.
 - Do not draw wall hatching unless wall data exists.
 - Do not stretch or compress a booth for visual alignment.
+- Do not draw the front elevation as a flattened plan view.
+- Do not draw hidden rear/internal boards or structures as solid visible lines over the front-edge/front-facing board layer.
+- Do not draw continuous top/body lines, background frames, or full booth rectangles unless they are real visible front-layer components.
+- Do not calculate door header board height or header-door gap from visible-board height.
+- Do not add door tags, P labels, no-door labels, or other body text unless the user explicitly asks for a labeled elevation view.
 
 ## Side Elevation
 
