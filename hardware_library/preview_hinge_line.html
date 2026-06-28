@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>合页五金线稿预览</title>
+<style>
+  body{margin:0;padding:32px;background:#f4f6f8;font-family:"Microsoft YaHei",Arial,sans-serif;color:#222}
+  .wrap{max-width:1120px;margin:0 auto;background:#fff;padding:28px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+  h1{margin:0 0 8px;font-size:20px;font-weight:700}
+  .sub{margin:0 0 22px;color:#666;font-size:13px}
+  svg{display:block;width:100%;height:auto;background:#fff;border:1px solid #d8dde3}
+  .note{margin-top:16px;padding:12px 14px;background:#f6f8fb;border-left:4px solid #333;font-size:13px;line-height:1.7;color:#333}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>节点 H1 - 合页五金线稿</h1>
+  <p class="sub">参考不锈钢圆筒合页照片，仅用线条表达结构，不带尺寸标注</p>
+
+  <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="合页五金线稿图纸预览">
+    <defs>
+      <style>
+        .outline{fill:none;stroke:#111;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+        .line{fill:none;stroke:#222;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+        .thin{fill:none;stroke:#444;stroke-width:.9;stroke-linecap:round;stroke-linejoin:round}
+        .axis{fill:none;stroke:#9aa0aa;stroke-width:.8;stroke-dasharray:6 5}
+        text{font-family:"Microsoft YaHei",Arial,sans-serif;fill:#222}
+      </style>
+    </defs>
+
+    <rect x="24" y="24" width="952" height="512" fill="none" stroke="#222" stroke-width="1.2"/>
+
+    <rect x="732" y="38" width="214" height="96" fill="none" stroke="#222" stroke-width="1"/>
+    <line x1="732" y1="62" x2="946" y2="62" class="thin"/>
+    <line x1="732" y1="86" x2="946" y2="86" class="thin"/>
+    <line x1="732" y1="110" x2="946" y2="110" class="thin"/>
+    <line x1="830" y1="38" x2="830" y2="134" class="thin"/>
+    <text x="744" y="55" font-size="11">图名</text>
+    <text x="842" y="55" font-size="11">合页五金线稿</text>
+    <text x="744" y="79" font-size="11">节点</text>
+    <text x="842" y="79" font-size="11">H1</text>
+    <text x="744" y="103" font-size="11">视图</text>
+    <text x="842" y="103" font-size="11">正视 / 侧视</text>
+    <text x="744" y="127" font-size="11">材质</text>
+    <text x="842" y="127" font-size="11">304 不锈钢</text>
+
+    <circle cx="72" cy="76" r="20" fill="none" stroke="#222" stroke-width="1.6"/>
+    <text x="72" y="82" text-anchor="middle" font-size="17" font-weight="700">H1</text>
+
+    <!-- ============ 正视 FRONT VIEW ============ -->
+    <g transform="translate(80 170)">
+      <text x="280" y="-20" text-anchor="middle" font-size="15" font-weight="700">正视 / FRONT</text>
+
+      <!-- 左侧夹板 -->
+      <rect x="20" y="46" width="180" height="244" rx="4" class="outline"/>
+      <!-- 板面内缩棱线，表现倒角 -->
+      <rect x="28" y="54" width="164" height="228" rx="3" class="thin"/>
+      <!-- 左板固定孔（四角沉头螺孔） -->
+      <g class="line">
+        <circle cx="58"  cy="84"  r="9"/>
+        <circle cx="162" cy="84"  r="9"/>
+        <circle cx="58"  cy="252" r="9"/>
+        <circle cx="162" cy="252" r="9"/>
+      </g>
+      <g class="thin">
+        <circle cx="58"  cy="84"  r="3.4"/>
+        <circle cx="162" cy="84"  r="3.4"/>
+        <circle cx="58"  cy="252" r="3.4"/>
+        <circle cx="162" cy="252" r="3.4"/>
+      </g>
+
+      <!-- 右侧夹板 -->
+      <rect x="360" y="46" width="180" height="244" rx="4" class="outline"/>
+      <rect x="368" y="54" width="164" height="228" rx="3" class="thin"/>
+      <g class="line">
+        <circle cx="398" cy="84"  r="9"/>
+        <circle cx="502" cy="84"  r="9"/>
+        <circle cx="398" cy="252" r="9"/>
+        <circle cx="502" cy="252" r="9"/>
+      </g>
+      <g class="thin">
+        <circle cx="398" cy="84"  r="3.4"/>
+        <circle cx="502" cy="84"  r="3.4"/>
+        <circle cx="398" cy="252" r="3.4"/>
+        <circle cx="502" cy="252" r="3.4"/>
+      </g>
+
+      <!-- 中央圆筒（轴筒） -->
+      <path d="M200 20
+               C214 8 346 8 360 20
+               L360 316
+               C346 328 214 328 200 316 Z" class="outline"/>
+      <!-- 圆筒顶/底端面椭圆 -->
+      <path d="M200 20 C214 32 346 32 360 20" class="thin"/>
+      <path d="M200 316 C214 304 346 304 360 316" class="thin"/>
+      <!-- 圆筒中段分缝（合页可转动处） -->
+      <line x1="200" y1="168" x2="360" y2="168" class="line"/>
+      <!-- 上下两节的端面线 -->
+      <line x1="200" y1="60"  x2="360" y2="60"  class="thin"/>
+      <line x1="200" y1="276" x2="360" y2="276" class="thin"/>
+      <!-- 圆筒中心轴线 -->
+      <line x1="280" y1="-4"  x2="280" y2="340" class="axis"/>
+
+      <!-- 夹板与圆筒交接的过渡短线 -->
+      <line x1="190" y1="60"  x2="200" y2="60"  class="line"/>
+      <line x1="190" y1="276" x2="200" y2="276" class="line"/>
+      <line x1="360" y1="60"  x2="370" y2="60"  class="line"/>
+      <line x1="360" y1="276" x2="370" y2="276" class="line"/>
+    </g>
+
+    <!-- ============ 侧视 SIDE VIEW ============ -->
+    <g transform="translate(720 170)">
+      <text x="100" y="-20" text-anchor="middle" font-size="15" font-weight="700">侧视 / SIDE</text>
+
+      <!-- 圆筒侧视：上下端略带弧度 -->
+      <path d="M48 28
+               C48 18 152 18 152 28
+               L152 308
+               C152 318 48 318 48 308 Z" class="outline"/>
+      <!-- 顶端封盖椭圆 -->
+      <path d="M48 28  C48 38 152 38 152 28" class="thin"/>
+      <path d="M48 308 C48 298 152 298 152 308" class="thin"/>
+      <!-- 中段分缝 -->
+      <line x1="48" y1="168" x2="152" y2="168" class="line"/>
+      <!-- 上下端面 -->
+      <line x1="48" y1="60"  x2="152" y2="60"  class="thin"/>
+      <line x1="48" y1="276" x2="152" y2="276" class="thin"/>
+      <!-- 中心轴线 -->
+      <line x1="100" y1="4"  x2="100" y2="332" class="axis"/>
+      <!-- 表示厚度的细窄棱线 -->
+      <line x1="58"  y1="32" x2="58"  y2="304" class="thin"/>
+      <line x1="142" y1="32" x2="142" y2="304" class="thin"/>
+    </g>
+
+  </svg>
+
+  <div class="note">线稿只保留外轮廓与必要的局部结构：圆筒分缝表示可转动节点、端面椭圆表示封盖、四角圆孔表示沉头螺孔位置。后续可直接作为五金节点 svg 用在图纸里。</div>
+</main>
+</body>
+</html>

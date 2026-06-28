@@ -1,0 +1,20 @@
+2026-06-28T05:18:27.221Z browserType.launch: Executable doesn't exist at C:\Users\35045\AppData\Local\ms-playwright\chromium_headless_shell-1223\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+browserType.launch: Executable doesn't exist at C:\Users\35045\AppData\Local\ms-playwright\chromium_headless_shell-1223\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at BrowserManager.launch (C:\Users\35045\.claude\skills\gstack\browse\dist\server-node.mjs:15195:35)
+    at async start (C:\Users\35045\.claude\skills\gstack\browse\dist\server-node.mjs:22222:7)
