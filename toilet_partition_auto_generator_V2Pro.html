@@ -6414,10 +6414,6 @@ function drawFrontDatumCanvas(L) {
   ctx.lineTo(L.ox + L.sW + 28, L.floor);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.moveTo(L.ox, L.floor - L.hU);
-  ctx.lineTo(L.ox + L.sW, L.floor - L.hU);
-  ctx.stroke();
   ctx.font = planFont(56);
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
@@ -6427,7 +6423,7 @@ function drawFrontDatumCanvas(L) {
 
 function drawFrontPanelSegmentsCanvas(L) {
   ctx.save();
-  ctx.strokeStyle = '#8fb2d6';
+  ctx.strokeStyle = '#000000';
   ctx.fillStyle = '#000000';
   ctx.lineWidth = Math.max(0.25, anno(1.6));
   ctx.setLineDash([]);
@@ -6499,7 +6495,6 @@ function drawFrontBoothChainCanvas(L) {
 
 function backendDrawFrontDatum(B, model, L) {
   B.line(model, L.ox - 28, L.floor, L.ox + L.sW + 28, L.floor, {stroke:'#000', strokeWidth:0.8, dash:[7,5], className:'front-ffl-line'});
-  B.line(model, L.ox, L.floor - L.hU, L.ox + L.sW, L.floor - L.hU, {stroke:'#000', strokeWidth:0.8, className:'front-top-finish-line'});
   B.text(model, 'F.F.L. ±0.000', L.ox - 34, L.floor, {fill:'#000', fontSize:11, align:'end', baseline:'central', className:'front-ffl-label'});
 }
 
@@ -6509,10 +6504,10 @@ function backendDrawFrontPanelSegments(B, model, L) {
     const y2 = L.floor;
     const skipLeft = frontTouchesMiddlePostEdge(L, seg.x1);
     const skipRight = frontTouchesMiddlePostEdge(L, seg.x2);
-    B.line(model, seg.x1, y1, seg.x2, y1, {stroke:'#8fb2d6', strokeWidth:0.35, className:'front-fixed-panel-seam'});
-    B.line(model, seg.x1, y2, seg.x2, y2, {stroke:'#8fb2d6', strokeWidth:0.35, className:'front-fixed-panel-seam'});
-    if (!skipLeft) B.line(model, seg.x1, y1, seg.x1, y2, {stroke:'#8fb2d6', strokeWidth:0.35, className:'front-fixed-panel-seam'});
-    if (!skipRight) B.line(model, seg.x2, y1, seg.x2, y2, {stroke:'#8fb2d6', strokeWidth:0.35, className:'front-fixed-panel-seam'});
+    B.line(model, seg.x1, y1, seg.x2, y1, {stroke:'#000', strokeWidth:0.35, className:'front-fixed-panel-seam'});
+    B.line(model, seg.x1, y2, seg.x2, y2, {stroke:'#000', strokeWidth:0.35, className:'front-fixed-panel-seam'});
+    if (!skipLeft) B.line(model, seg.x1, y1, seg.x1, y2, {stroke:'#000', strokeWidth:0.35, className:'front-fixed-panel-seam'});
+    if (!skipRight) B.line(model, seg.x2, y1, seg.x2, y2, {stroke:'#000', strokeWidth:0.35, className:'front-fixed-panel-seam'});
   });
 }
 
@@ -6550,20 +6545,9 @@ function drawFront(p) {
   if (L.walls.right) { drawHatch(L.ox + L.sW, L.oy, L.swt, L.sH, anno(36)); ctx.strokeStyle = '#000000'; ctx.lineWidth = Math.max(0.25, anno(2.2)); ctx.strokeRect(L.ox + L.sW, L.oy, L.swt, L.sH); }
   drawFrontDatumCanvas(L);
 
-  ctx.strokeStyle = '#6a9bcc';
-  ctx.lineWidth = Math.max(0.25, anno(1.6));
-  L.booths.forEach(booth => {
-    ctx.strokeRect(booth.x, booth.y, booth.w, booth.h);
-    ctx.fillStyle = '#185FA5';
-    ctx.font = planFont(60);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(booth.label, booth.x + booth.w / 2, booth.y + booth.h / 2);
-  });
-
   L.posts.forEach(post => {
     const isMiddlePost = post.index > 0 && post.index < L.count;
-    ctx.strokeStyle = isMiddlePost ? '#378ADD' : '#000000';
+    ctx.strokeStyle = '#185FA5';
     ctx.lineWidth = isMiddlePost ? Math.max(0.25, anno(1.2)) : Math.max(0.25, anno(2.2));
     if (isMiddlePost) {
       ctx.setLineDash([anno(12), anno(10)]);
@@ -6585,57 +6569,18 @@ function drawFront(p) {
     ctx.lineWidth = Math.max(0.25, anno(2.4));
     ctx.strokeRect(door.x, door.y, door.w, door.h);
     ctx.save();
-    ctx.strokeStyle = '#000000';
+    ctx.strokeStyle = '#185FA5';
     ctx.lineWidth = Math.max(0.25, anno(1.5));
+    ctx.setLineDash([anno(84), anno(18)]);
     ctx.beginPath();
     frontDoorSwingSegments(door, 7).forEach(seg => {
       ctx.moveTo(seg.x1, seg.y1);
       ctx.lineTo(seg.x2, seg.y2);
     });
     ctx.stroke();
-    ctx.restore();
-  });
-  drawFrontDoorAnnotationsCanvas(L);
-
-  L.booths.filter(booth => !booth.hasDoor).forEach(booth => {
-    ctx.save();
-    ctx.strokeStyle = '#d64242';
-    ctx.lineWidth = Math.max(0.25, anno(2));
-    ctx.setLineDash([anno(18), anno(14)]);
-    ctx.strokeRect(booth.x + 4, L.floor - L.hDoor, Math.max(1, booth.w - 8), L.hDoor);
     ctx.setLineDash([]);
-    ctx.fillStyle = '#d64242';
-    ctx.font = planFont(62);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('无门', booth.x + booth.w / 2, L.floor - L.hDoor / 2);
     ctx.restore();
   });
-
-  if (p.rebate && L.boardModel?.panels?.length) {
-    ctx.save();
-    ctx.strokeStyle = '#000000';
-    ctx.fillStyle = '#000000';
-    ctx.font = planFont(56);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    L.boardModel.panels.forEach((panel, index) => {
-      if (!(panel.bigX2 > panel.bigX1)) return;
-      const x = panel.bigX1;
-      const w = panel.bigX2 - panel.bigX1;
-      ctx.lineWidth = Math.max(0.25, anno(1.5));
-      ctx.strokeStyle = '#8fb2d6';
-      ctx.setLineDash([]);
-      ctx.strokeRect(x, L.floor - L.vis, w, L.vis);
-      ctx.setLineDash([]);
-      ctx.fillText(`P${index + 1}`, x + w / 2, L.floor - L.vis / 2);
-    });
-    ctx.restore();
-  }
-
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = Math.max(0.25, anno(2.6));
-  ctx.strokeRect(L.ox, L.oy, L.sW, L.sH);
   const topDimY = L.oy - 46;
   const leftHeightDimX = L.ox - 44;
   const doorHeightDimX = L.ox + L.sW + 44;
@@ -7875,12 +7820,15 @@ function requireDrawingBackendV1() {
   return B;
 }
 
-function backendDrawDim(B, model, x1, y1, x2, y2, label, side, fontSize = 38, textClass = 'dimension') {
+function backendDrawDim(B, model, x1, y1, x2, y2, label, side, fontSize = 38, textClass = 'dimension', options = {}) {
   const isH = Math.abs(x2 - x1) > Math.abs(y2 - y1);
-  const off = side || 45;
+  const off = Number.isFinite(Number(side)) ? Number(side) : 45;
   const productionWeight = textClass === 'booth-width-dimension';
-  const tick = productionWeight ? 28 : 14;
-  const lineStyle = {stroke:'#000', strokeWidth:productionWeight ? 4 : 1.1, className:`${textClass}-line`};
+  const tick = Number(options.tick || 0) || (productionWeight ? 28 : 14);
+  const strokeWidth = Number(options.strokeWidth || 0) || (productionWeight ? 4 : 1.1);
+  const textGap = Number(options.textGap || 0) || 18;
+  const sideTextGap = Number(options.sideTextGap || 0) || 70;
+  const lineStyle = {stroke:'#000', strokeWidth, className:`${textClass}-line`};
   if (isH) {
     const dy = (y1 + y2) / 2 - off;
     B.line(model, x1, y1, x1, dy + off, lineStyle);
@@ -7888,10 +7836,10 @@ function backendDrawDim(B, model, x1, y1, x2, y2, label, side, fontSize = 38, te
     B.line(model, x1, dy, x2, dy, lineStyle);
     B.line(model, x1, dy - tick, x1, dy + tick, lineStyle);
     B.line(model, x2, dy - tick, x2, dy + tick, lineStyle);
-    B.text(model, String(label), (x1 + x2) / 2, dy - 18, {fill:'#000', fontSize, align:'middle', baseline:'alphabetic', className:textClass, maxWidth:Math.max(1, Math.abs(x2 - x1) - 12), fitMode:'shrink'});
+    B.text(model, String(label), (x1 + x2) / 2, dy - textGap, {fill:'#000', fontSize, align:'middle', baseline:'alphabetic', className:textClass, maxWidth:Math.max(1, Math.abs(x2 - x1) - 12), fitMode:'shrink'});
   } else {
     const dx = (x1 + x2) / 2 + off;
-    const tx = dx + (side < 0 ? -70 : 70) + (textClass === 'depth-dimension' ? 12 : 0);
+    const tx = dx + (side < 0 ? -sideTextGap : sideTextGap) + (textClass === 'depth-dimension' ? 12 : 0);
     B.line(model, x1, y1, dx - off, y1, lineStyle);
     B.line(model, x2, y2, dx - off, y2, lineStyle);
     B.line(model, dx, y1, dx, y2, lineStyle);
@@ -7899,6 +7847,10 @@ function backendDrawDim(B, model, x1, y1, x2, y2, label, side, fontSize = 38, te
     B.line(model, dx - tick, y2, dx + tick, y2, lineStyle);
     B.text(model, String(label), tx, (y1 + y2) / 2, {fill:'#000', fontSize, align:'middle', baseline:'central', rotate:90, className:textClass, maxWidth:Math.max(1, Math.abs(y2 - y1) - 12), fitMode:'shrink'});
   }
+}
+
+function frontBackendDimStyle() {
+  return {strokeWidth:0.35, tick:9, textGap:6, sideTextGap:22};
 }
 
 function backendDrawChainDim(B, model, y, segments, fontSize = 34, textClass = 'chain-dimension') {
@@ -8519,15 +8471,11 @@ function buildFrontPageDrawingModel(p = lastParams || getParams()) {
   }
   backendDrawFrontDatum(B, model, L);
 
-  L.booths.forEach(booth => {
-    B.rect(model, booth.x, booth.y, booth.w, booth.h, {fill:'none', stroke:'#6a9bcc', strokeWidth:0.6, className:'front-visible-panel'});
-    B.text(model, booth.label, booth.x + booth.w / 2, booth.y + booth.h / 2, {fill:'#185FA5', fontSize:12, align:'middle', baseline:'central', className:'front-booth-label'});
-  });
   L.posts.forEach(post => {
     const isMiddlePost = post.index > 0 && post.index < L.count;
     if (isMiddlePost) {
-      B.line(model, post.x, post.y, post.x, post.y + post.h, {stroke:'#378ADD', strokeWidth:0.35, dash:[4,4], className:'front-middle-upright-panel'});
-      B.line(model, post.x + post.w, post.y, post.x + post.w, post.y + post.h, {stroke:'#378ADD', strokeWidth:0.35, dash:[4,4], className:'front-middle-upright-panel'});
+      B.line(model, post.x, post.y, post.x, post.y + post.h, {stroke:'#000', strokeWidth:0.35, dash:[4,4], className:'front-middle-upright-panel'});
+      B.line(model, post.x + post.w, post.y, post.x + post.w, post.y + post.h, {stroke:'#000', strokeWidth:0.35, dash:[4,4], className:'front-middle-upright-panel'});
     } else {
       B.rect(model, post.x, post.y, post.w, post.h, {fill:'none', stroke:'#000', strokeWidth:0.8, className:'front-upright-panel'});
     }
@@ -8536,32 +8484,21 @@ function buildFrontPageDrawingModel(p = lastParams || getParams()) {
   L.doors.forEach(door => {
     B.rect(model, door.x, door.y, door.w, door.h, {fill:'none', stroke:'#185FA5', strokeWidth:1, className:'front-door-panel'});
     frontDoorSwingSegments(door, 7).forEach(seg => {
-      B.line(model, seg.x1, seg.y1, seg.x2, seg.y2, {stroke:'#000', strokeWidth:0.6, className:'front-door-swing-segment'});
+      B.line(model, seg.x1, seg.y1, seg.x2, seg.y2, {stroke:'#185FA5', strokeWidth:0.6, dash:[30,7], className:'front-door-swing-segment'});
     });
   });
-  backendDrawFrontDoorAnnotations(B, model, L);
-  L.booths.filter(booth => !booth.hasDoor).forEach(booth => {
-    B.rect(model, booth.x + 4, L.floor - L.hDoor, Math.max(1, booth.w - 8), L.hDoor, {fill:'none', stroke:'#d64242', strokeWidth:0.8, dash:[8,6], className:'front-no-door-outline'});
-    B.text(model, '无门', booth.x + booth.w / 2, L.floor - L.hDoor / 2, {fill:'#d64242', fontSize:13, align:'middle', baseline:'central', className:'front-no-door-label'});
-  });
-
-  if (p.rebate && L.boardModel?.panels?.length) {
-    L.boardModel.panels.forEach((panel, index) => {
-      if (!(panel.bigX2 > panel.bigX1)) return;
-      const x = panel.bigX1;
-      const w = panel.bigX2 - panel.bigX1;
-      B.rect(model, x, L.floor - L.vis, w, L.vis, {fill:'none', stroke:'#8fb2d6', strokeWidth:0.35, className:'front-rebate-panel'});
-      B.text(model, `P${index + 1}`, x + w / 2, L.floor - L.vis / 2, {fill:'#000', fontSize:11, align:'middle', baseline:'central', className:'front-panel-label'});
-    });
-  }
-
-  B.rect(model, L.ox, L.oy, L.sW, L.sH, {fill:'none', stroke:'#000', strokeWidth:1.2, className:'front-outline'});
-  backendDrawDim(B, model, L.ox, L.oy - 42, L.ox + L.sW, L.oy - 42, `${c.adjustedLength ? '展开总长' : '总长'} ${Math.round(L.W)}mm`, 14, 14, 'front-total-dimension');
-  backendDrawDim(B, model, L.ox - 34, L.floor - L.hU, L.ox - 34, L.floor, `立板高 ${p.hUpright}mm`, -14, 14, 'front-upright-dimension');
-  backendDrawDim(B, model, L.ox + L.sW + 34, L.floor - L.hDoor, L.ox + L.sW + 34, L.floor, `门高 ${p.hDoor || 1750}mm`, 14, 14, 'front-door-height-dimension');
-  backendDrawDim(B, model, L.ox + L.sW + 78, L.floor - L.vis, L.ox + L.sW + 78, L.floor, `见光板 ${p.hVis}mm`, 14, 14, 'front-visible-dimension');
+  const frontDimStyle = frontBackendDimStyle();
+  const topDimY = L.oy - 46;
+  const leftHeightDimX = L.ox - 44;
+  const doorHeightDimX = L.ox + L.sW + 44;
+  const visibleHeightDimX = L.ox + L.sW + 74;
+  const doorWidthDimY = L.floor + 32;
+  backendDrawDim(B, model, L.ox, topDimY, L.ox + L.sW, topDimY, `${c.adjustedLength ? '展开总长' : '总长'} ${Math.round(L.W)}mm`, 0, 14, 'front-total-dimension', frontDimStyle);
+  backendDrawDim(B, model, leftHeightDimX, L.floor - L.hU, leftHeightDimX, L.floor, `立板高 ${p.hUpright}mm`, 0, 14, 'front-upright-dimension', frontDimStyle);
+  backendDrawDim(B, model, doorHeightDimX, L.floor - L.hDoor, doorHeightDimX, L.floor, `门高 ${p.hDoor || 1750}mm`, 0, 14, 'front-door-height-dimension', frontDimStyle);
+  backendDrawDim(B, model, visibleHeightDimX, L.floor - L.vis, visibleHeightDimX, L.floor, `见光板 ${p.hVis}mm`, 0, 14, 'front-visible-dimension', frontDimStyle);
   L.doors.forEach(door => {
-    backendDrawDim(B, model, door.x, L.floor + 28, door.x + door.w, L.floor + 28, `${Math.round(door.bigMm)}mm`, -10, 12, 'front-door-width-dimension');
+    backendDrawDim(B, model, door.x, doorWidthDimY, door.x + door.w, doorWidthDimY, `${Math.round(door.bigMm)}mm`, 0, 12, 'front-door-width-dimension', frontDimStyle);
   });
   backendDrawFrontBoothChain(B, model, L);
   return model;
@@ -10481,10 +10418,10 @@ const ro = new ResizeObserver(()=>{
 });
 ro.observe(document.getElementById('carea'));
 
-document.getElementById('h-upright').addEventListener('change', function() {
-  document.getElementById('h-vis').value = this.value;
-  refreshDrawingAfterManualEdit(false);
-});
+function commitHeightFieldOnEnter(fieldId) {
+  if (fieldId === 'h-upright') document.getElementById('h-vis').value = document.getElementById('h-upright').value;
+  commitFieldChange(fieldId);
+}
 
 document.getElementById('p-count').addEventListener('input', () => {
   syncTotalByCount();
@@ -10648,6 +10585,7 @@ document.getElementById('p-rebate').addEventListener('change', () => {
 document.querySelectorAll('.field input[type=number], .field select').forEach(el => {
   if (el.id === 'p-count' || el.id === 'p-total' || el.id === 'p-gap') return;
   el.addEventListener('change', () => {
+    if (['h-upright','h-door','h-mid','h-vis'].includes(el.id)) return;
     commitFieldChange(el.id);
   });
   el.addEventListener('keydown', e => {
@@ -10656,6 +10594,10 @@ document.querySelectorAll('.field input[type=number], .field select').forEach(el
     if (el.id === 'p-door' && selectionScope === 'booth' && selectedBoothRef) {
       applySelectedBoothDoorWidth(el.value);
       updateGroupListState();
+      return;
+    }
+    if (['h-upright','h-door','h-mid','h-vis'].includes(el.id)) {
+      commitHeightFieldOnEnter(el.id);
       return;
     }
     if (['p-depth','p-door','p-rebate-depth','t-panel'].includes(el.id)) commitFieldAndAdvance(el.id);
