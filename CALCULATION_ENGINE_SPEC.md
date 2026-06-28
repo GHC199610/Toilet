@@ -1,148 +1,90 @@
-# 卫生间隔断尺寸计算引擎规范
+﻿# Calculation Engine Spec
 
-版本：V1.0
+Version: 1.1
 
----
+## Responsibility
 
-# 引擎职责
+The calculation engine converts validated row/project inputs into deterministic geometry. It owns numeric layout facts, not drawing or UI.
 
-只负责：
+## Inputs
 
-尺寸计算
+Minimum row inputs:
 
-结构计算
+- Booth count.
+- Total run length.
+- Depth.
+- Door width or per-booth door widths.
+- Door gap.
+- Panel thickness.
+- Wall condition.
+- Rebate state and rebate depth.
+- Per-booth no-door and swing overrides.
+- Locked dimensions when present.
 
-几何计算
+Inputs must be normalized before calculation. Invalid or missing numeric values must become explicit validation failures or documented defaults.
 
----
+## Outputs
 
-禁止：
+The output geometry must include:
 
-绘图
+- Total run used for drawings.
+- Booth widths in display/order sequence.
+- Door install widths and finished door widths.
+- Gap pairs per booth.
+- Side/front panel dimensions.
+- Wall thickness and wall presence flags.
+- Rebate-derived big/small face dimensions when enabled.
+- Validation status, error code, message, and actionable suggestion when invalid.
 
-布局优化
+## Calculation Priorities
 
-材料统计
+Resolve dimensions in this order:
 
-UI逻辑
+1. Honor explicit valid locks and per-booth overrides.
+2. Preserve minimum usable booth width.
+3. Preserve requested or allowed door width.
+4. Preserve required gaps and edge reserves.
+5. Distribute remaining space deterministically.
 
----
+Do not use simple equal distribution if it violates usability, installation, or explicit locks.
 
-# 输入数据
+## Business Constraints
 
-Space：
+- Door gaps participate in both net-width and total-width closure.
+- Minimum usable booth clear width is 700 mm unless a stricter project rule overrides it.
+- Depth below 800 mm is a warning or invalid state according to the active rule mode.
+- Door width must not consume the minimum usable clear width.
+- Rebate small-face dimensions drive installation gaps; rebate big-face dimensions drive panel/door body representation and cut-list dimensions.
 
-按现有设计
----
+## Determinism
 
-Partition：
+The same normalized input must always produce the same output. Do not use randomness, DOM measurement, current zoom, canvas size, or rendering side effects.
 
-按现有设计
----
+## Validation Errors
 
-Door：
+Use explicit failure objects with:
 
-按现有设计
----
+```js
+{
+  error_code: 'NET_WIDTH_TOO_SMALL',
+  error_message: 'Booth clear width is below the minimum allowed value.',
+  affected_module: 'calculation',
+  suggestion: 'Reduce booth count or increase total length.'
+}
+```
 
-Structure：
+Expected error categories:
 
-按现有设计
----
+- Net width too small.
+- Door width impossible.
+- Locked dimensions exceed available length.
+- Depth below minimum.
+- Door/wall/structure collision.
+- Missing required input.
 
-# 核心计算规则
+## Prohibited
 
-## 规则1：按现有计算规则
-
----
-
-## 规则2：门宽约束
-
-门宽不能影响最小净宽
-
----
-
-## 规则3：最小净宽限制
-
-600mm为硬限制
-
----
-
-低于则返回：
-
-invalid layout
-
----
-
-## 规则4：空间分配算法
-
-优先级：
-
-净宽满足
-
-↓
-
-门空间满足
-
-↓
-
-结构避让
-
-↓
-
-剩余平均分配
-
----
-
-# 输出数据结构
-
-GeometryModel：
-
-按现有设计
----
-
-# 计算规则细节
-
-## 单间计算
-
-公式：
-
-总长-门板-门缝-净宽=均分
-
----
-
-# 错误处理
-
-返回类型：
-
-error_code
-
-error_message
-
-suggestion
-
----
-
-# 示例错误
-
-净宽不足
-
-门冲突
-
-结构冲突
-
----
-
-# 性能要求
-
-100个隔间计算：
-
-≤1秒
-
----
-
-# 输出必须稳定
-
-相同输入必须输出相同结果
-
-禁止随机性
+- Drawing from calculation functions.
+- Reading DOM, Canvas, SVG, or export output.
+- Recomputing a separate geometry path for one view.
+- Returning a visually plausible geometry when validation failed.

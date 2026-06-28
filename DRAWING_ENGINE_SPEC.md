@@ -1,159 +1,68 @@
-# 卫生间隔断绘图引擎规范
+﻿# Drawing Engine Spec
 
-版本：V1.0
+Version: 1.1
 
----
+## Responsibility
 
-# 引擎职责
+The drawing engine converts geometry and layout models into drawing commands or Canvas drawing operations. It must not calculate business dimensions or modify rules.
 
-输入：
+## Inputs
 
-GeometryModel
+- `GeometryModel`
+- `LayoutModel`
+- `HardwareProfile` or hardware placement data when a view displays hardware
+- Drawing configuration such as paper size, scale, title block, and page index
 
----
+## Outputs
 
-输出：
+- `DrawingModel` command list for backend SVG/Canvas routes.
+- Canvas drawing for production preview/export routes where still used.
 
-DrawingModel
+Supported backend command types:
 
----
+- `line`
+- `rect`
+- `text`
+- `arc`
+- `path`
+- `hatch`
 
-禁止：
+## Drawing Rules
 
-计算尺寸
+- Draw from model dimensions in millimeters converted through a single scale per view/page.
+- Keep view-specific code isolated: plan, front elevation, side elevation, and detail/node drawings may share utilities but not duplicate business calculations.
+- Use class names/roles on text and important commands so export typography and regression checks can target them.
+- Constrained text must carry a `maxWidth` and, where supported, `fitMode: 'shrink'`.
+- Dimensions must avoid duplicate labels and avoid covering hardware, door tags, and primary geometry.
 
-修改规则
+## Physical Baselines
 
-材料统计
+- Plan depth dimensions stop at the depth panel outer end.
+- Front-edge panels sit outside the depth dimension.
+- Door panel thickness aligns with the front-edge panel outside baseline.
+- Wall extents follow the depth panel plus front-edge panel outer edge.
+- Rebate doors preserve both big-face body coordinates and small-face installation coordinates.
 
----
+## Layers
 
-# 绘图原则
+Use consistent logical layers/classes across views:
 
-必须参数化绘图
+- `Wall_Layer`
+- `Panel_Layer`
+- `Door_Layer`
+- `Hardware_Layer`
+- `Dimension_Layer`
+- `Text_Layer`
+- `Title_Layer`
+- `Structure_Layer`
 
----
+## Error Handling
 
-物理绘图基准：
+If required geometry is missing, fail the drawing request and surface the missing field. Do not generate a production-looking wrong drawing.
 
-深度标尺只到深度板外端。
+## Prohibited
 
-前沿板不得插入深度尺寸内部。
-
-前沿板必须被深度板顶到外侧绘制。
-
-门板厚度位置必须与前沿板水平对齐。
-
-墙体延伸必须以深度板加前沿板外边缘为绘图边界。
-
-启口门板绘图必须同时保留大面实体坐标与小面安装坐标。
-
-门板实体轮廓和门板本体标尺按大面绘制，小面坐标用于门缝、门洞占位和开合安装基准。
-
-启口门板尺寸标尺必须同时标注大面尺寸与小面安装尺寸。
-
-启口门板尺寸标尺的大面/小面上下位置必须跟随实际开门方向。
-
----
-
-禁止：
-
-固定坐标绘图
-
----
-
-# 图形对象
-
-WallLine
-
-PartitionPanel
-
-DoorArc
-
-DimensionLine
-
-TextLabel
-
-StructureMarker
-
----
-
-# 图层系统
-
-间组
-
-板
-
-墙体
-
-尺寸标注
-
-文本
-
-标题
-
----
-
-# 标注规则
-
-自动生成：
-
-按现有分配逻辑
-
----
-
-禁止重叠
-
-禁止覆盖
-
----
-
-# 缩放规则
-
-支持：
-
-1:10
-
-1:20
-
-1:50
-
-目前按现有规则
-
----
-
-自动适配A4
-
----
-
-# A4输出规则
-
-按现有规则
-
----
-
-# 图形生成规则
-
-所有图形必须：
-
-基于模型
-
-禁止手绘坐标
-
----
-
-# 错误处理
-
-缺失数据：
-
-必须返回错误
-
-禁止生成错误图纸
-
----
-
-# 性能要求
-
-生成图纸：
-
-≤2秒
+- Hardcoded business coordinates that should come from models.
+- View-specific recalculation of booth widths, door widths, gaps, or wall conditions.
+- Fixing export bugs by changing business geometry.
+- Replacing one rendering route with another without following the relevant export spec.

@@ -1,303 +1,67 @@
-# 卫生间隔断自动设计系统开发规范
+﻿# Project Rules
 
-版本：V1.0
+Version: 1.1
 
----
+## Purpose
 
-# 项目定位
+This project is a parameter-driven bathroom partition design and production drawing system. It turns user-entered dimensions and options into validated layouts, drawings, exports, and cut lists.
 
-本项目不是简单绘图软件。
+This file defines project-wide development rules. Domain, drawing, export, UI, and regression details live in their own specs.
 
-本项目是：
+## Source Of Truth
 
-卫生间隔断设计规则引擎
-+
-自动计算系统
-+
-自动绘图系统
-+
-材料统计系统
-+
-工程出图系统
+- Business dimensions come from the active project/group/row model, not from rendered DOM, Canvas pixels, SVG output, or temporary UI state.
+- Computed geometry is produced once and reused by drawing, export, and cut-list code.
+- A view may read shared models, but must not mutate the source data while rendering.
 
----
+## Change Boundary Rules
 
-# 核心目标
+- Start every change by identifying the exact user-visible behavior being changed.
+- Prefer the smallest function or branch that owns that behavior.
+- Do not modify public chains such as initialization, calculation, drawing dispatch, sheet layout, export, print, state restore, or cut-list generation unless the request requires it.
+- If a public chain must change, document the reason, expected affected entrances, and regression checks.
 
-用户输入参数后：
+## Cross-Module Impact Checklist
 
-自动分析
+Before changing behavior, check whether the change can affect:
 
-自动优化
+- Input/state collection
+- Rule validation
+- Dimension calculation
+- Layout/pagination
+- Drawing preview
+- PNG/PDF/SVG export
+- Direct print
+- Cut list
+- Mobile input behavior
 
-自动计算
+If an item is unaffected, keep it untouched.
 
-自动绘图
+## Implementation Rules
 
-自动统计材料
+- No hardcoded business dimensions when a project option, rule, or model field exists.
+- No duplicate rule implementations across calculation, drawing, cut list, or export.
+- No silent fallbacks that generate production-looking but incorrect output.
+- Functions should stay focused. Split only when it reduces real coupling or matches an existing local pattern.
+- Keep existing UI style and workflows unless the user explicitly requests a UI redesign.
 
-自动生成工程图
+## Verification Minimum
 
-最终达到专业设计师水平。
+For any code change, run the most relevant available checks. At minimum:
 
----
+- JavaScript syntax check for touched scripts or inline scripts.
+- `git diff --check` for whitespace/conflict markers.
+- One target-path verification matching the user's request.
+- One non-target regression check when a shared function changed.
 
-# 开发总原则
+For export, print, drawing text editing, mobile input, pagination, or cut-list changes, follow `REGRESSION_PREVENTION_RULES.md`.
 
-## 原则1
+## Delivery Notes
 
-禁止功能孤立开发。
+Every completed change should state:
 
-任何功能开发必须分析：
-
-* 计算影响
-* 绘图影响
-* 材料影响
-* 导出影响
-* UI影响
-
----
-
-## 原则2
-
-禁止修复一个问题制造多个问题。
-
-修改任何代码前：
-
-必须分析影响范围。
-
-必须锁定变更边界：
-
-* 用户要求修改哪个行为，就优先只检查和修改该行为的直接代码。
-* 不得为了实现局部效果，擅自修改公共链路。
-* 公共链路包括但不限于：初始化、自动适配、自动布局、计算主流程、绘图主流程、材料统计主流程、导出主流程、状态保存恢复。
-* 如必须触碰公共链路，必须先说明原因、影响范围和风险，并等待用户确认。
-* 修改完成后必须说明实际改动范围，并确认哪些原有逻辑没有被改动。
-
-示例：
-
-用户要求修改鼠标滚轮缩放时，只能优先修改滚轮事件、滚轮倍率和滚轮上下限。
-
-不得擅自修改自动适配、重置视图、A4多页预览、绘图主入口。
-
----
-
-## 原则3
-
-禁止硬编码。
-
-所有业务参数必须配置化。
-
-例如：
-
-板厚
-
-门缝
-
-立柱尺寸
-
-最小净宽
-
-最小深度
-
-全部配置化。
-
----
-
-## 原则4
-
-禁止重复代码。
-
-遵守：
-
-DRY
-
-KISS
-
-SOLID
-
-原则。
-
----
-
-# UI要求
-
-保持现有UI设计与交互风格。
-
-在新增功能、优化功能或修复问题时：
-
-* 不得随意修改现有页面布局
-* 不得改变现有操作流程
-* 不得更换现有视觉风格
-* 不得影响用户已有使用习惯
-
-如确需调整UI：
-
-* 必须保证向下兼容
-* 必须保持整体风格一致
-* 必须经过充分评估后实施
-
----
-
-统一：
-
-字体
-
-颜色
-
-按钮
-
-间距
-
-圆角
-
-图标
-
----
-
-新增界面元素必须遵循现有设计规范。
-
-禁止出现风格不统一的组件。
-
----
-
-# 用户体验要求
-
-三步完成设计：
-
-步骤1
-
-输入参数
-
-↓
-
-步骤2
-
-自动计算
-
-↓
-
-步骤3
-
-生成图纸
-
----
-
-禁止复杂操作流程。
-
----
-
-# 功能联动原则
-
-所有模块必须联动：
-
-输入
-
-↓
-
-规则
-
-↓
-
-计算
-
-↓
-
-布局
-
-↓
-
-绘图
-
-↓
-
-统计
-
-↓
-
-导出
-
----
-
-禁止单模块独立运行。
-
----
-
-# 代码规范
-
-函数：
-
-≤80行
-
----
-
-文件：
-
-≤500行
-
----
-
-模块职责单一。
-
----
-
-# 测试要求
-
-必须包含：
-
-单元测试
-
-集成测试
-
-E2E测试
-
----
-
-关键模块覆盖率：
-
-≥95%
-
----
-
-# 提交规范
-
-每次提交必须包含：
-
-修改内容
-
-影响范围
-
-测试结果
-
-风险分析
-
----
-
-# 最终交付标准
-
-架构清晰
-
-代码干净
-
-功能完整
-
-逻辑正确
-
-工程可用
-
-商业级质量
-
----
-
-# 特别说明
-
-当前项目已有UI基础。
-
-开发过程中应优先保证：
-
-* 功能完整性
-* 业务逻辑正确性
-* 系统稳定性
-* 现有UI一致性
-
-除非明确要求重构UI，否则默认保持现有UI不变，仅在现有界面基础上扩展和完善功能。
+- Modified files and major functions.
+- Behavior changed.
+- Behavior intentionally left unchanged.
+- Verification performed.
+- Known unverified paths or residual risk.

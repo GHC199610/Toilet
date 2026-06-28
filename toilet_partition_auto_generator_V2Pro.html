@@ -199,14 +199,15 @@ body.theme-dark .sheet-actions{background:#202734}
 body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141a22}
 .sheet-action-btn.expand::after{content:"";width:0.42rem;height:0.42rem;border:0.11rem solid currentColor;border-left:0;border-top:0;transform:rotate(45deg);margin-left:0.125rem;margin-top:-0.125rem;opacity:.82}
 .sheet-page-info{margin-left:auto;font-size:0.75rem;color:var(--color-text-secondary)}
-.urinal-panel{position:absolute;top:7.15rem;left:17rem;z-index:30;width:24rem;padding:0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);box-shadow:0 12px 30px rgba(31,35,40,.18);display:none;grid-template-columns:repeat(3,1fr);gap:0.5rem;align-items:end}
-.urinal-panel.open{display:grid}
-.urinal-panel label{display:grid;gap:0.25rem;font-size:var(--sidebar-content-font);color:var(--color-text-secondary)}
-.urinal-panel input,.urinal-panel select{height:1.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:var(--sidebar-content-font);padding:0.25rem 0.5rem;min-width:0}
-.urinal-panel .wide{grid-column:1 / -1}
-.urinal-panel-actions{grid-column:1 / -1;display:flex;gap:0.5rem;justify-content:flex-end}
-.urinal-panel-actions button{height:1.875rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:var(--sidebar-content-font);cursor:pointer}
-.urinal-panel-actions .primary{background:#185FA5;border-color:#185FA5;color:#fff;font-weight:600}
+.urinal-panel,.hardware-panel{position:absolute;top:7.15rem;left:17rem;z-index:30;width:24rem;padding:0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);box-shadow:0 12px 30px rgba(31,35,40,.18);display:none;grid-template-columns:repeat(3,1fr);gap:0.5rem;align-items:end}
+.hardware-panel{left:23.25rem;width:28rem;grid-template-columns:repeat(2,minmax(0,1fr))}
+.urinal-panel.open,.hardware-panel.open{display:grid}
+.urinal-panel label,.hardware-panel .field label{display:grid;gap:0.25rem;font-size:var(--sidebar-content-font);color:var(--color-text-secondary)}
+.urinal-panel input,.urinal-panel select,.hardware-panel select{height:1.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:var(--sidebar-content-font);padding:0.25rem 0.5rem;min-width:0}
+.urinal-panel .wide,.hardware-panel .wide{grid-column:1 / -1}
+.urinal-panel-actions,.hardware-panel-actions{grid-column:1 / -1;display:flex;gap:0.5rem;justify-content:flex-end}
+.urinal-panel-actions button,.hardware-panel-actions button{height:1.875rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:var(--sidebar-content-font);cursor:pointer}
+.urinal-panel-actions .primary,.hardware-panel-actions .primary{background:#185FA5;border-color:#185FA5;color:#fff;font-weight:600}
 .canvas-area{flex:1;position:relative;background:#eef1f4;overflow:hidden;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none}
 body.theme-dark .canvas-area{background:#202734}
 canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-user-select:none;user-select:none}
@@ -412,7 +413,7 @@ body.theme-dark .bom-mobile-group-title{color:#b9dcff}
   .bom-line::before{width:0.375rem;height:0.375rem;margin-top:0.6rem}
   .export-row{order:3;position:relative;top:auto;z-index:auto;flex:0 0 auto;flex-wrap:wrap;overflow:visible;padding:0.5rem 0.625rem;white-space:normal}
   .ex-btn{height:2.25rem;flex:0 0 auto;font-size:0.875rem;font-weight:700}
-  .urinal-panel{position:fixed;top:auto;left:0.625rem;right:0.625rem;bottom:0.625rem;width:auto;grid-template-columns:1fr 1fr;max-height:70dvh;overflow:auto;z-index:50}
+  .urinal-panel,.hardware-panel{position:fixed;top:auto;left:0.625rem;right:0.625rem;bottom:0.625rem;width:auto;grid-template-columns:1fr 1fr;max-height:70dvh;overflow:auto;z-index:50}
 }
 @media (max-width:430px){
   html{font-size:14px}
@@ -653,6 +654,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <div class="vtab active" id="tab-plan" onclick="switchTab('plan')">平面图</div>
       <div class="vtab" id="tab-front" onclick="switchTab('front')">正立面图</div>
       <div class="vtab" id="tab-side" onclick="switchTab('side')">侧立面图</div>
+      <div class="vtab" id="tab-detail" onclick="switchTab('detail')">节点图</div>
       <button class="save-drawing-btn" type="button" onclick="saveProjectOrPrompt()">保存</button>
       <button class="save-drawing-btn" type="button" onclick="openSaveDrawingDialog('saveAs')">另存为</button>
       <button class="save-drawing-btn" type="button" onclick="saveCurrentProjectToLocalFile()">保存本地</button>
@@ -668,6 +670,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <button class="sheet-action-btn" type="button" onclick="autoCompactSheetLayout()">自动排版</button>
       <button class="sheet-action-btn" type="button" onclick="insertManualA4PageBreak()">A4换页</button>
       <button class="sheet-action-btn expand" type="button" onclick="toggleUrinalPanel()">小便板</button>
+      <button class="sheet-action-btn expand" type="button" onclick="toggleHardwarePanel()">五金方案</button>
       <span class="sheet-page-info" id="sheet-page-info">第 1/1 页</span>
     </div>
     <div class="export-row">
@@ -694,6 +697,17 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <label>开孔<select id="u-hole"><option value="无开孔">无</option><option value="有开孔">有</option></select></label>
       <label class="wide">备注<input type="text" id="u-note" placeholder="选填"></label>
       <div class="urinal-panel-actions"><button type="button" onclick="deleteUrinalSpec()">删除</button><button type="button" onclick="toggleUrinalPanel(false)">取消</button><button class="primary" type="button" onclick="saveUrinalSpec()">保存</button></div>
+    </div>
+    <div class="hardware-panel" id="hardware-section">
+      <div class="field wide"><label>五金系列<select id="hw-series"></select></label></div>
+      <div class="field"><label>合页<select id="hw-hinge"></select></label></div>
+      <div class="field"><label>门锁<select id="hw-lock"></select></label></div>
+      <div class="field"><label>拉手<select id="hw-handle"></select></label></div>
+      <div class="field"><label>挂钩<select id="hw-hook"></select></label></div>
+      <div class="field"><label>支脚<select id="hw-leg"></select></label></div>
+      <div class="field"><label>顶拉杆<select id="hw-topRail"></select></label></div>
+      <div class="field wide"><label>角码/连接件<select id="hw-bracket"></select></label></div>
+      <div class="hardware-panel-actions"><button type="button" onclick="toggleHardwarePanel(false)">关闭</button></div>
     </div>
     <div class="canvas-area" id="carea">
       <canvas id="cv"></canvas>
@@ -861,7 +875,7 @@ const swingDefs = {
   'out-right': {label:'右外开', hinge:'right', opensUp:false, vx:40, y1:30, y2:6, arcEndX:16, arcEndY:6, arcSweep:1},
 };
 const swingOrder = ['in-left', 'in-right', 'out-left', 'out-right'];
-const defaultRow = {id:1, layoutType:'cell', layoutRow:1, layoutCol:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], noDoorBooths:[], depthPanelSpecials:[], dimensionLocks:null, hUpright:1830, hDoor:1750, hMid:1800, hVis:1830, tPanel:12, wall:'three'};
+const defaultRow = {id:1, layoutType:'cell', layoutRow:1, layoutCol:1, enabled:true, count:3, widthsText:'', total:3000, depth:1220, doorW:600, doorGap:10, rebate:false, rebateDepth:10, swing:'in-right', boothSwings:['in-right','in-right','in-right'], noDoorBooths:[], depthPanelSpecials:[], dimensionLocks:null, hUpright:1830, hDoor:1750, hMid:1800, hVis:1830, tPanel:12, wall:'three', hardwareProfile:{series:'catalog-023', hinge:'zinc-023-heavy-hinge', lock:'zinc-023-door-lock', handle:'zinc-023-handle', hook:'zinc-standard-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener', bumper:'none'}};
 const blankRow = {...defaultRow, enabled:false};
 let groups = [
   {id:1, name:'', rows:[{...blankRow}]},
@@ -1942,6 +1956,7 @@ function loadGroupToForm(group, row = activeRow()) {
   document.getElementById('h-mid').value = row.hMid;
   document.getElementById('h-vis').value = row.hVis;
   document.getElementById('t-panel').value = row.tPanel;
+  syncHardwareForm(row.hardwareProfile);
   swingMode = row.swing || 'in-right';
   row.boothSwings = normalizeBoothSwings(row.boothSwings, row.count, swingMode);
   row.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, row.count);
@@ -3028,6 +3043,19 @@ function toggleUrinalPanel(force = null) {
   const open = force === null ? !panel.classList.contains('open') : !!force;
   if (open) loadUrinalPanel();
   panel.classList.toggle('open', open);
+  if (open) toggleHardwarePanel(false);
+}
+
+function toggleHardwarePanel(force = null) {
+  const panel = document.getElementById('hardware-section');
+  if (!panel) return;
+  const open = force === null ? !panel.classList.contains('open') : !!force;
+  if (open) {
+    populateHardwareSelectOptions();
+    syncHardwareForm(activeRow()?.hardwareProfile);
+    toggleUrinalPanel(false);
+  }
+  panel.classList.toggle('open', open);
 }
 
 function loadUrinalPanel() {
@@ -3609,6 +3637,7 @@ function getParams() {
     hMid: parseInt(document.getElementById('h-mid').value)||1800,
     hVis: parseInt(document.getElementById('h-vis').value)||1830,
     tPanel: parseInt(document.getElementById('t-panel').value)||12,
+    hardwareProfile: hardwareProfileFromForm(),
     wall: wallMode
   };
 }
@@ -3914,6 +3943,16 @@ function generate() {
   notifyGuardWarnings(p);
 }
 
+function drawingTitleForTab(tab) {
+  return {plan:'卫生间隔断平面图', front:'卫生间隔断正立面图', side:'卫生间隔断侧立面图', detail:'卫生间隔断节点图'}[tab] || '卫生间隔断图纸';
+}
+
+function drawTabContent(tab, p) {
+  if (tab === 'plan') drawPlan(p);
+  else if (tab === 'front') drawFront(p);
+  else if (tab === 'side') drawSide(p);
+  else if (tab === 'detail') drawDetail(p);
+}
 function drawView(p, tab) {
   planHitAreas = [];
   ctx.setTransform(1,0,0,1,0,0);
@@ -3925,10 +3964,8 @@ function drawView(p, tab) {
   if (tab==='plan' && canvasMode === 'sheets' && !drawingForExport) {
     drawPlanSheetsPreview(p);
   } else {
-    drawSheet(tab === 'plan' ? '卫生间隔断平面图' : tab === 'front' ? '卫生间隔断正立面图' : '卫生间隔断侧立面图', p, 0, 0, currentTab === 'plan' ? currentPlanPage : 0);
-    if (tab==='plan') drawPlan(p);
-    else if (tab==='front') drawFront(p);
-    else drawSide(p);
+    drawSheet(drawingTitleForTab(tab), p, 0, 0, currentTab === 'plan' ? currentPlanPage : 0);
+    drawTabContent(tab, p);
   }
   ctx.restore();
   updateZoomInfo();
@@ -3976,10 +4013,8 @@ function renderSheetCanvas(tab = currentTab, p = lastParams || getParams(), opti
   if (Number.isFinite(options.planPage)) currentPlanPage = options.planPage;
   ctx.clearRect(0, 0, out.width, out.height);
   ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
-  drawSheet(tab === 'plan' ? '卫生间隔断平面图' : tab === 'front' ? '卫生间隔断正立面图' : '卫生间隔断侧立面图', p, 0, 0, tab === 'plan' ? currentPlanPage : 0, layout);
-  if (tab === 'plan') drawPlan(p);
-  else if (tab === 'front') drawFront(p);
-  else drawSide(p);
+  drawSheet(drawingTitleForTab(tab), p, 0, 0, tab === 'plan' ? currentPlanPage : 0, layout);
+  drawTabContent(tab, p);
   ctx = oldCtx;
   planHitAreas = oldPlanHitAreas;
   drawingForExport = oldDrawingForExport;
@@ -4181,10 +4216,8 @@ function renderSheetSvg(tab = currentTab, p = lastParams || getParams(), options
   planHitAreas = [];
   drawingForExport = true;
   if (Number.isFinite(options.planPage)) currentPlanPage = options.planPage;
-  drawSheet(tab === 'plan' ? '卫生间隔断平面图' : tab === 'front' ? '卫生间隔断正立面图' : '卫生间隔断侧立面图', p, 0, 0, tab === 'plan' ? currentPlanPage : 0, layout);
-  if (tab === 'plan') drawPlan(p);
-  else if (tab === 'front') drawFront(p);
-  else drawSide(p);
+  drawSheet(drawingTitleForTab(tab), p, 0, 0, tab === 'plan' ? currentPlanPage : 0, layout);
+  drawTabContent(tab, p);
   ctx = oldCtx;
   planHitAreas = oldPlanHitAreas;
   drawingForExport = oldDrawingForExport;
@@ -5194,6 +5227,47 @@ function drawDim(x1,y1,x2,y2,label,side, meta = null) {
     if (dimensionEditActive(meta) && Math.floor(Date.now() / 530) % 2 === 0) drawDimensionCaret(textW / 2 + anno(8), 0, 'middle', '#000000', displayLabel);
     ctx.restore();
     registerDimensionHit(meta, tx, ty - Math.max(anno(155), textW / 2 + anno(35)), anno(130), Math.max(anno(310), textW + anno(110)));
+  }
+  ctx.restore();
+}
+function drawElevationDim(x1, y1, x2, y2, label, side, meta = null, options = {}) {
+  ctx.save();
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.lineWidth = options.lineWidth || 0.8;
+  ctx.font = `${options.fontWeight || '400'} ${options.fontSize || 14}px 'Microsoft YaHei', Arial, sans-serif`;
+  const displayLabel = dimensionDisplayLabel(label, meta);
+  const isH = Math.abs(x2 - x1) > Math.abs(y2 - y1);
+  const off = Number(side || 36);
+  const tick = options.tick || 10;
+  if (isH) {
+    const dy = (y1 + y2) / 2 - off;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1); ctx.lineTo(x1, dy + off);
+    ctx.moveTo(x2, y2); ctx.lineTo(x2, dy + off);
+    ctx.moveTo(x1, dy); ctx.lineTo(x2, dy);
+    ctx.moveTo(x1, dy - tick); ctx.lineTo(x1, dy + tick);
+    ctx.moveTo(x2, dy - tick); ctx.lineTo(x2, dy + tick);
+    ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(displayLabel, (x1 + x2) / 2, dy - 6);
+  } else {
+    const dx = (x1 + x2) / 2 + off;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1); ctx.lineTo(dx - off, y1);
+    ctx.moveTo(x2, y2); ctx.lineTo(dx - off, y2);
+    ctx.moveTo(dx, y1); ctx.lineTo(dx, y2);
+    ctx.moveTo(dx - tick, y1); ctx.lineTo(dx + tick, y1);
+    ctx.moveTo(dx - tick, y2); ctx.lineTo(dx + tick, y2);
+    ctx.stroke();
+    const tx = dx + (off < 0 ? -18 : 18);
+    const ty = (y1 + y2) / 2;
+    ctx.translate(tx, ty);
+    ctx.rotate(Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(displayLabel, 0, 0);
   }
   ctx.restore();
 }
@@ -6232,56 +6306,1067 @@ function drawPlan(p) {
   drawSheetDragOverlay();
   ctx.restore();
 }
+
+const DEFAULT_HARDWARE_PROFILE = Object.freeze({
+  series:'catalog-023',
+  hinge:'standard-hinge',
+  lock:'indicator-lock',
+  handle:'none',
+  hook:'standard-hook',
+  leg:'adjustable-leg',
+  topRail:'aluminum-tie-rod',
+  bracket:'angle-bracket',
+  bumper:'none'
+});
+
+const HARDWARE_SERIES_PRESETS = Object.freeze({
+  custom:{id:'custom', name:'自定义单项配置', profile:{}},
+  'catalog-023':{id:'catalog-023', name:'023 锌合金套装', profile:{hinge:'zinc-023-heavy-hinge', lock:'zinc-023-door-lock', handle:'zinc-023-handle', hook:'zinc-standard-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener'}},
+  'catalog-26':{id:'catalog-26', name:'26 锌合金套装', profile:{hinge:'zinc-26-hinge', lock:'zinc-26-door-lock', handle:'none', hook:'zinc-standard-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener'}},
+  'catalog-k29':{id:'catalog-k29', name:'K29 锌合金套装', profile:{hinge:'zinc-k29-hinge', lock:'zinc-k29-door-lock', handle:'zinc-k29-handle', hook:'zinc-standard-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener'}},
+  'catalog-770':{id:'catalog-770', name:'770 锌合金套装', profile:{hinge:'zinc-770-hinge', lock:'zinc-770-door-lock', handle:'zinc-770-handle', hook:'zinc-770-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener'}},
+  'catalog-820':{id:'catalog-820', name:'820 锌合金套装', profile:{hinge:'zinc-820-hinge', lock:'zinc-820-door-lock', handle:'zinc-820-cylinder-handle', hook:'zinc-standard-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener'}},
+  'catalog-820b':{id:'catalog-820b', name:'820B 锌合金套装', profile:{hinge:'zinc-820b-hinge', lock:'zinc-820b-door-lock', handle:'zinc-820b-bar-handle', hook:'zinc-standard-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener'}},
+  'catalog-830':{id:'catalog-830', name:'830 钢轴心套装', profile:{hinge:'zinc-830-steel-core-hinge', lock:'zinc-830-door-lock', handle:'zinc-830-cylinder-handle', hook:'zinc-standard-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener'}},
+  'catalog-02':{id:'catalog-02', name:'02 双面套装', profile:{hinge:'zinc-02-spring-hinge', lock:'zinc-02-door-lock', handle:'zinc-02-cylinder-handle', hook:'zinc-standard-hook', leg:'zinc-adjustable-leg', topRail:'aluminum-tie-rod', bracket:'zinc-corner-fastener'}},
+  'catalog-304':{id:'catalog-304', name:'304 散件系列', profile:{hinge:'ss304-017-spring-hinge', lock:'ss304-890-lock', handle:'bar-handle', hook:'ss304-hook', leg:'ss304-016-leg', topRail:'ss304-top-rail', bracket:'ss304-corner-fastener'}}
+});
+
+const HARDWARE_TEMPLATES = Object.freeze({
+  hinge:{
+    'standard-hinge':{id:'standard-hinge', name:'S.S. Hinge', category:'hinge', defaultQtyRule:'three-per-door', elevationSymbol:'hinge-rect', detailNode:true, bom:true, install:{ratios:[0.22,0.5,0.78]}},
+    'zinc-023-heavy-hinge':{id:'zinc-023-heavy-hinge', name:'023 加厚承重合页', category:'hinge', series:'023 锌合金系列', source:'PDF p54', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'zinc-26-hinge':{id:'zinc-26-hinge', name:'26 合页', category:'hinge', series:'26 锌合金系列', source:'PDF p55', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'zinc-k29-hinge':{id:'zinc-k29-hinge', name:'K29 合页', category:'hinge', series:'K29 锌合金系列', source:'PDF p56', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'zinc-770-hinge':{id:'zinc-770-hinge', name:'770 合页', category:'hinge', series:'770 锌合金系列', source:'PDF p57', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'zinc-820-hinge':{id:'zinc-820-hinge', name:'820 合页', category:'hinge', series:'820 锌合金系列', source:'PDF p58', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'zinc-820b-hinge':{id:'zinc-820b-hinge', name:'820B 合页', category:'hinge', series:'820B 锌合金系列', source:'PDF p59', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'zinc-830-steel-core-hinge':{id:'zinc-830-steel-core-hinge', name:'830 钢轴心合页', category:'hinge', series:'830 锌合金系列', source:'PDF p60', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'zinc-02-spring-hinge':{id:'zinc-02-spring-hinge', name:'02 弹簧不分左右合页', category:'hinge', series:'02 双面系列', source:'PDF p62', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'ss304-h08-door-hinge':{id:'ss304-h08-door-hinge', name:'H08 304套门合页', category:'hinge', series:'304系列', source:'PDF p73', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'ss304-door-hinge':{id:'ss304-door-hinge', name:'304套门合页', category:'hinge', series:'304系列', source:'PDF p73', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'ss304-06-universal-hinge':{id:'ss304-06-universal-hinge', name:'304-06 不分左右合页', category:'hinge', series:'304系列', source:'PDF p73', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'ss304-017-spring-hinge':{id:'ss304-017-spring-hinge', name:'304-017 弹簧合页', category:'hinge', series:'304系列', source:'PDF p74', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'ss304-hidden-floor-hinge':{id:'ss304-hidden-floor-hinge', name:'304隐藏天地合页', category:'hinge', series:'304系列', source:'PDF p75', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'ss304-h09-covered-hinge':{id:'ss304-h09-covered-hinge', name:'304-H09 有盖合页', category:'hinge', series:'304系列', source:'PDF p75', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    'ss304-long-hinge':{id:'ss304-long-hinge', name:'304 长合页', category:'hinge', series:'304系列', source:'PDF p74', defaultQtyRule:'three-per-door', detailNode:true, bom:true},
+    none:{id:'none', name:'No hinge', category:'hinge', detailNode:false, bom:false}
+  },
+  lock:{
+    'indicator-lock':{id:'indicator-lock', name:'S.S. Lock', category:'lock', defaultQtyRule:'per-door', elevationSymbol:'lock-rect', detailNode:true, bom:true, install:{heightRatio:0.52, offsetFromDoorEdge:0.22}},
+    'zinc-023-door-lock':{id:'zinc-023-door-lock', name:'023 门锁', category:'lock', series:'023 锌合金系列', source:'PDF p54', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-26-door-lock':{id:'zinc-26-door-lock', name:'26 锁', category:'lock', series:'26 锌合金系列', source:'PDF p55 / p71', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-k29-door-lock':{id:'zinc-k29-door-lock', name:'K29 锁', category:'lock', series:'K29 锌合金系列', source:'PDF p56 / p70', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-770-door-lock':{id:'zinc-770-door-lock', name:'770 锁', category:'lock', series:'770 锌合金系列', source:'PDF p57', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-820-door-lock':{id:'zinc-820-door-lock', name:'820 锁', category:'lock', series:'820 锌合金系列', source:'PDF p58 / p71', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-820b-door-lock':{id:'zinc-820b-door-lock', name:'820B 锁', category:'lock', series:'820B 锌合金系列', source:'PDF p59', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-830-door-lock':{id:'zinc-830-door-lock', name:'830 锁', category:'lock', series:'830 锌合金系列', source:'PDF p60', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-02-door-lock':{id:'zinc-02-door-lock', name:'02 双面锁', category:'lock', series:'02 双面系列', source:'PDF p62-p63', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'ss304-870a-gold-lock':{id:'ss304-870a-gold-lock', name:'304-870A 金色锁', category:'lock', series:'304系列', source:'PDF p72', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'ss304-892-antique-lock':{id:'ss304-892-antique-lock', name:'304-892 红古锁', category:'lock', series:'304系列', source:'PDF p72', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'ss304-cast-lock':{id:'ss304-cast-lock', name:'304 精铸锁', category:'lock', series:'304系列', source:'PDF p72', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'ss304-890-lock':{id:'ss304-890-lock', name:'304-890 锁', category:'lock', series:'304系列', source:'PDF p72', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'ss304-02-heavy-engineering-lock':{id:'ss304-02-heavy-engineering-lock', name:'304-02 加厚工程锁', category:'lock', series:'304系列', source:'PDF p72', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'ss304-square-bolt-lock':{id:'ss304-square-bolt-lock', name:'304方插锁', category:'lock', series:'304系列', source:'PDF p72', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'ss304-04-large-square-lock':{id:'ss304-04-large-square-lock', name:'04 大方锁', category:'lock', series:'304系列', source:'PDF p72', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-k24-square-hole-lock':{id:'zinc-k24-square-hole-lock', name:'K24 方孔锁', category:'lock', series:'锌合金系列', source:'PDF p73', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-k20-acrylic-lock':{id:'zinc-k20-acrylic-lock', name:'K20 亚克力锁', category:'lock', series:'锌合金系列', source:'PDF p73', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-k10-acrylic-lock':{id:'zinc-k10-acrylic-lock', name:'K10 亚克力锁', category:'lock', series:'锌合金系列', source:'PDF p73', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-large-handle-lock':{id:'zinc-large-handle-lock', name:'大把手锁', category:'lock', series:'锌合金系列', source:'PDF p71', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    none:{id:'none', name:'No lock', category:'lock', detailNode:false, bom:false}
+  },
+  handle:{
+    'round-handle':{id:'round-handle', name:'Round Handle', category:'handle', defaultQtyRule:'per-door', elevationSymbol:'handle-dot', detailNode:true, bom:true, install:{heightRatio:0.52, offsetFromDoorEdge:0.22}},
+    'bar-handle':{id:'bar-handle', name:'Bar Handle', category:'handle', defaultQtyRule:'per-door', elevationSymbol:'handle-bar', detailNode:true, bom:true, install:{heightRatio:0.52, offsetFromDoorEdge:0.22}},
+    'zinc-023-handle':{id:'zinc-023-handle', name:'023 拉手', category:'handle', series:'023 锌合金系列', source:'PDF p54', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-k29-handle':{id:'zinc-k29-handle', name:'K29 拉手', category:'handle', series:'K29 锌合金系列', source:'PDF p56', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-770-handle':{id:'zinc-770-handle', name:'770 拉手', category:'handle', series:'770 锌合金系列', source:'PDF p57', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-820-cylinder-handle':{id:'zinc-820-cylinder-handle', name:'820 圆柱拉手', category:'handle', series:'820 锌合金系列', source:'PDF p58', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-820b-bar-handle':{id:'zinc-820b-bar-handle', name:'820B 横杆拉手', category:'handle', series:'820B 锌合金系列', source:'PDF p59', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-830-cylinder-handle':{id:'zinc-830-cylinder-handle', name:'830 圆柱拉手', category:'handle', series:'830 锌合金系列', source:'PDF p60', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    'zinc-02-cylinder-handle':{id:'zinc-02-cylinder-handle', name:'02 圆柱拉手', category:'handle', series:'02 双面系列', source:'PDF p62-p63', defaultQtyRule:'per-door', detailNode:true, bom:true},
+    none:{id:'none', name:'No handle', category:'handle', detailNode:false, bom:false}
+  },
+  hook:{
+    'standard-hook':{id:'standard-hook', name:'S.S. Coat Hook', category:'hook', defaultQtyRule:'per-door', elevationSymbol:'none', detailNode:true, bom:true, install:{heightRatio:0.32}},
+    'zinc-standard-hook':{id:'zinc-standard-hook', name:'锌合金衣钩', category:'hook', series:'锌合金系列', source:'PDF p54-p64', defaultQtyRule:'per-door', detailNode:true, bom:true, install:{heightRatio:0.32}},
+    'zinc-770-hook':{id:'zinc-770-hook', name:'770 衣钩', category:'hook', series:'770 锌合金系列', source:'PDF p57', defaultQtyRule:'per-door', detailNode:true, bom:true, install:{heightRatio:0.32}},
+    'ss304-hook':{id:'ss304-hook', name:'304 衣钩', category:'hook', series:'304系列', source:'PDF p64', defaultQtyRule:'per-door', detailNode:true, bom:true, install:{heightRatio:0.32}},
+    none:{id:'none', name:'No hook', category:'hook', detailNode:false, bom:false}
+  },
+  leg:{
+    'adjustable-leg':{id:'adjustable-leg', name:'S.S. Leg', category:'leg', defaultQtyRule:'per-upright', elevationSymbol:'leg-foot', detailNode:true, bom:true, install:{heightFromFFL:0}},
+    'zinc-adjustable-leg':{id:'zinc-adjustable-leg', name:'锌合金支脚 Adjustable leg', category:'leg', series:'锌合金系列', source:'PDF p54-p64', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-880-sand-black-leg':{id:'ss304-880-sand-black-leg', name:'304-880 沙黑支脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-860-sand-black-leg':{id:'ss304-860-sand-black-leg', name:'304-860 沙黑支脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-35-leg':{id:'ss304-35-leg', name:'304-35 支脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-25-plate-leg':{id:'ss304-25-plate-leg', name:'304-25 压板脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-016-leg':{id:'ss304-016-leg', name:'304-016 支脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-018-leg':{id:'ss304-018-leg', name:'304-018 支脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-019-leg':{id:'ss304-019-leg', name:'304-019 支脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-870-leg':{id:'ss304-870-leg', name:'304-870 支脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'ss304-850-leg':{id:'ss304-850-leg', name:'304-850 支脚', category:'leg', series:'304系列', source:'PDF p66', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'zinc-016-antique-red-leg':{id:'zinc-016-antique-red-leg', name:'016 红古支脚', category:'leg', series:'锌合金系列', source:'PDF p67', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'zinc-720-antique-green-leg':{id:'zinc-720-antique-green-leg', name:'720 青古支脚', category:'leg', series:'锌合金系列', source:'PDF p67', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    'zinc-601-iron-gray-leg':{id:'zinc-601-iron-gray-leg', name:'601 铁灰支脚', category:'leg', series:'锌合金系列', source:'PDF p67', defaultQtyRule:'per-upright', detailNode:true, bom:true},
+    none:{id:'none', name:'No leg', category:'leg', detailNode:false, bom:false}
+  },
+  topRail:{
+    'aluminum-tie-rod':{id:'aluminum-tie-rod', name:'S.S. Aluminum tie rod', category:'topRail', defaultQtyRule:'by-length', elevationSymbol:'top-line', detailNode:true, bom:true, install:{atTop:true}},
+    'ss304-top-rail':{id:'ss304-top-rail', name:'304 顶拉杆系列', category:'topRail', series:'304系列', source:'PDF 型材/拉杆页 p78-p83', defaultQtyRule:'by-length', detailNode:true, bom:true, install:{atTop:true}},
+    'aluminum-profile-top-rail':{id:'aluminum-profile-top-rail', name:'铝型材顶拉杆系列', category:'topRail', series:'型材系列', source:'PDF p78-p83', defaultQtyRule:'by-length', detailNode:true, bom:true, install:{atTop:true}},
+    none:{id:'none', name:'No top rail', category:'topRail', detailNode:false, bom:false}
+  },
+  bracket:{
+    'angle-bracket':{id:'angle-bracket', name:'S.S. Angle Bracket', category:'bracket', defaultQtyRule:'per-wall-connection', elevationSymbol:'bracket', detailNode:true, bom:true, install:{wallConnection:true}},
+    'zinc-corner-fastener':{id:'zinc-corner-fastener', name:'锌合金角码 Corner Fastener', category:'bracket', series:'锌合金系列', source:'PDF p54-p64', defaultQtyRule:'per-wall-connection', detailNode:true, bom:true},
+    'ss304-corner-fastener':{id:'ss304-corner-fastener', name:'304角码', category:'bracket', series:'304系列', source:'PDF p64', defaultQtyRule:'per-wall-connection', detailNode:true, bom:true},
+    none:{id:'none', name:'No bracket', category:'bracket', detailNode:false, bom:false}
+  },
+  bumper:{
+    none:{id:'none', name:'No bumper', category:'bumper', detailNode:false, bom:false}
+  }
+});
+
+const HARDWARE_NODE_ORDER = Object.freeze([
+  ['lock', 'D1'],
+  ['hook', 'D2'],
+  ['bracket', 'D3'],
+  ['leg', 'D4'],
+  ['hinge', 'D5'],
+  ['topRail', 'D6'],
+  ['handle', 'D7'],
+  ['bumper', 'D8']
+]);
+
+function getHardwareProfile(project = null, group = null, row = null, boothIndex = 0) {
+  const sources = [project?.hardwareProfile, group?.hardwareProfile, row?.hardwareProfile, row?.boothHardwareProfiles?.[boothIndex]];
+  return sources.reduce((profile, source) => source && typeof source === 'object' ? {...profile, ...source} : profile, {...DEFAULT_HARDWARE_PROFILE});
+}
+
+function getHardwareTemplate(category, id) {
+  const templates = HARDWARE_TEMPLATES[category] || {};
+  return templates[id] || templates.none || {id:String(id || 'none'), name:'五金模板缺失', category, detailNode:false, bom:false, missing:true};
+}
+
+function hardwareOptionLabel(template) {
+  if (!template) return '';
+  const meta = [template.series, template.source].filter(Boolean).join(' / ');
+  return meta ? `${template.name}（${meta}）` : template.name;
+}
+
+function populateHardwareSelectOptions() {
+  const seriesEl = document.getElementById('hw-series');
+  if (seriesEl && !seriesEl.options.length) {
+    Object.values(HARDWARE_SERIES_PRESETS).forEach(preset => {
+      const option = document.createElement('option');
+      option.value = preset.id;
+      option.textContent = preset.name;
+      seriesEl.appendChild(option);
+    });
+  }
+  Object.entries({hinge:'hw-hinge', lock:'hw-lock', handle:'hw-handle', hook:'hw-hook', leg:'hw-leg', topRail:'hw-topRail', bracket:'hw-bracket'}).forEach(([category, id]) => {
+    const el = document.getElementById(id);
+    if (!el || el.options.length) return;
+    Object.values(HARDWARE_TEMPLATES[category] || {}).forEach(template => {
+      const option = document.createElement('option');
+      option.value = template.id;
+      option.textContent = hardwareOptionLabel(template);
+      el.appendChild(option);
+    });
+  });
+}
+
+function applyHardwareSeriesPreset(seriesId, options = {}) {
+  const preset = HARDWARE_SERIES_PRESETS[seriesId];
+  if (!preset || seriesId === 'custom') return;
+  Object.entries({hinge:'hw-hinge', lock:'hw-lock', handle:'hw-handle', hook:'hw-hook', leg:'hw-leg', topRail:'hw-topRail', bracket:'hw-bracket'}).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el && preset.profile[key]) el.value = preset.profile[key];
+  });
+  if (!options.silent) commitFieldChange('hw-series');
+}
+
+function hardwareProfileFromForm() {
+  const read = (id, fallback) => document.getElementById(id)?.value || fallback;
+  return {
+    series:read('hw-series', DEFAULT_HARDWARE_PROFILE.series),
+    hinge:read('hw-hinge', DEFAULT_HARDWARE_PROFILE.hinge),
+    lock:read('hw-lock', DEFAULT_HARDWARE_PROFILE.lock),
+    handle:read('hw-handle', DEFAULT_HARDWARE_PROFILE.handle),
+    hook:read('hw-hook', DEFAULT_HARDWARE_PROFILE.hook),
+    leg:read('hw-leg', DEFAULT_HARDWARE_PROFILE.leg),
+    topRail:read('hw-topRail', DEFAULT_HARDWARE_PROFILE.topRail),
+    bracket:read('hw-bracket', DEFAULT_HARDWARE_PROFILE.bracket),
+    bumper:DEFAULT_HARDWARE_PROFILE.bumper
+  };
+}
+
+function syncHardwareForm(profile = DEFAULT_HARDWARE_PROFILE) {
+  populateHardwareSelectOptions();
+  const merged = {...DEFAULT_HARDWARE_PROFILE, ...(profile || {})};
+  const seriesEl = document.getElementById('hw-series');
+  if (seriesEl) seriesEl.value = merged.series || DEFAULT_HARDWARE_PROFILE.series;
+  Object.entries({hinge:'hw-hinge', lock:'hw-lock', handle:'hw-handle', hook:'hw-hook', leg:'hw-leg', topRail:'hw-topRail', bracket:'hw-bracket'}).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = merged[key] || DEFAULT_HARDWARE_PROFILE[key];
+  });
+}
+
+function hardwareSideForDoor(door) {
+  const swing = swingDefs[door?.swing] || swingDefs['in-right'];
+  const hingeSide = swing.hinge === 'right' ? 'right' : 'left';
+  return {hingeSide, lockSide:hingeSide === 'right' ? 'left' : 'right'};
+}
+
+function buildHardwarePlacement(door, profile = DEFAULT_HARDWARE_PROFILE) {
+  const sides = hardwareSideForDoor(door);
+  const hingeX = sides.hingeSide === 'right' ? door.x + door.w : door.x;
+  const lockX = sides.lockSide === 'right' ? door.x + door.w * 0.78 : door.x + door.w * 0.22;
+  return {
+    hinge:{template:getHardwareTemplate('hinge', profile.hinge), side:sides.hingeSide, x:hingeX, ys:[0.22,0.5,0.78].map(r => door.y + door.h * r)},
+    lock:{template:getHardwareTemplate('lock', profile.lock), side:sides.lockSide, x:lockX, y:door.y + door.h * 0.52},
+    handle:{template:getHardwareTemplate('handle', profile.handle), side:sides.lockSide, x:lockX, y:door.y + door.h * 0.52},
+    hook:{template:getHardwareTemplate('hook', profile.hook), side:sides.lockSide, x:lockX, y:door.y + door.h * 0.32},
+    leg:{template:getHardwareTemplate('leg', profile.leg), x:door.x + door.w / 2, y:door.y + door.h},
+    topRail:{template:getHardwareTemplate('topRail', profile.topRail), x1:door.x, x2:door.x + door.w, y:door.y},
+    bracket:{template:getHardwareTemplate('bracket', profile.bracket), x:door.x, y:door.y + door.h * 0.18},
+    bumper:{template:getHardwareTemplate('bumper', profile.bumper), side:sides.lockSide, x:lockX, y:door.y + door.h * 0.14}
+  };
+}
+
+function canvasHardwareScrew(x, y, r = 1.8) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.moveTo(x - r * 0.65, y);
+  ctx.lineTo(x + r * 0.65, y);
+  ctx.moveTo(x, y - r * 0.65);
+  ctx.lineTo(x, y + r * 0.65);
+  ctx.stroke();
+}
+
+function backendHardwareScrew(B, model, x, y, r = 1.8, className = 'hardware-screw', stroke = '#185FA5') {
+  B.arc(model, x, y, r, 0, Math.PI * 2, {stroke, strokeWidth:0.55, className});
+  B.line(model, x - r * 0.65, y, x + r * 0.65, y, {stroke, strokeWidth:0.45, className});
+  B.line(model, x, y - r * 0.65, x, y + r * 0.65, {stroke, strokeWidth:0.45, className});
+}
+
+function hardwareVariant(template = {}) {
+  const text = `${template.id || ''} ${template.series || ''} ${template.name || ''}`.toLowerCase();
+  if (text.includes('304') || text.includes('ss304')) return 'ss304';
+  if (text.includes('830')) return '830';
+  if (text.includes('820b')) return '820b';
+  if (text.includes('820')) return '820';
+  if (text.includes('770')) return '770';
+  if (text.includes('k29')) return 'k29';
+  if (text.includes('26')) return '26';
+  if (text.includes('023')) return '023';
+  if (text.includes('02')) return '02';
+  return 'standard';
+}
+
+function hardwareVariantClass(template = {}) {
+  return `hardware-variant-${hardwareVariant(template)}`;
+}
+
+function drawCanvasHingeSymbol(x, y, size, side = 'left', template = null) {
+  const variant = hardwareVariant(template);
+  const dir = side === 'right' ? -1 : 1;
+  const isLong = variant === 'ss304';
+  const isSpring = variant === '02';
+  const isHeavy = ['023','830'].includes(variant);
+  const h = Math.max(16, size * (isLong ? 2.5 : isHeavy ? 2.05 : 1.8));
+  const postW = Math.max(4, size * (isHeavy ? 0.44 : 0.34));
+  const doorLeafW = Math.max(7, size * (variant === '820b' ? 0.82 : isLong ? 0.72 : 0.58));
+  const gap = Math.max(1.2, size * 0.1);
+  ctx.strokeRect(x - postW / 2, y - h / 2, postW, h);
+  ctx.strokeRect(x + dir * gap, y - h * 0.38, dir * doorLeafW, h * 0.76);
+  ctx.beginPath();
+  ctx.moveTo(x, y - h * 0.56);
+  ctx.lineTo(x, y + h * 0.56);
+  ctx.moveTo(x - postW * 0.65, y - h * 0.2);
+  ctx.lineTo(x + postW * 0.65, y - h * 0.2);
+  ctx.moveTo(x - postW * 0.65, y + h * 0.2);
+  ctx.lineTo(x + postW * 0.65, y + h * 0.2);
+  ctx.moveTo(x + dir * gap, y - h * 0.38);
+  ctx.lineTo(x + dir * (gap + doorLeafW * 0.28), y - h * 0.5);
+  ctx.lineTo(x + dir * (gap + doorLeafW), y - h * 0.38);
+  if (isSpring) {
+    ctx.arc(x, y - h * 0.24, size * 0.22, 0, Math.PI * 2);
+    ctx.arc(x, y + h * 0.24, size * 0.22, 0, Math.PI * 2);
+  }
+  if (variant === 'k29' || variant === '770') {
+    ctx.moveTo(x + dir * (gap + doorLeafW * 0.18), y);
+    ctx.lineTo(x + dir * (gap + doorLeafW * 0.88), y);
+  }
+  if (variant === '830') {
+    ctx.moveTo(x - postW, y - h * 0.34);
+    ctx.lineTo(x + postW, y - h * 0.34);
+    ctx.moveTo(x - postW, y + h * 0.34);
+    ctx.lineTo(x + postW, y + h * 0.34);
+  }
+  ctx.stroke();
+  canvasHardwareScrew(x + dir * (gap + doorLeafW * 0.55), y - h * 0.18, Math.max(1.1, size * 0.09));
+  canvasHardwareScrew(x + dir * (gap + doorLeafW * 0.55), y + h * 0.18, Math.max(1.1, size * 0.09));
+}
+
+function backendHingeSymbol(B, model, x, y, size, side = 'left', prefix = 'front', template = null) {
+  const variant = hardwareVariant(template);
+  const variantClass = hardwareVariantClass(template);
+  const dir = side === 'right' ? -1 : 1;
+  const isLong = variant === 'ss304';
+  const isSpring = variant === '02';
+  const isHeavy = ['023','830'].includes(variant);
+  const h = Math.max(16, size * (isLong ? 2.5 : isHeavy ? 2.05 : 1.8));
+  const postW = Math.max(4, size * (isHeavy ? 0.44 : 0.34));
+  const doorLeafW = Math.max(7, size * (variant === '820b' ? 0.82 : isLong ? 0.72 : 0.58));
+  const gap = Math.max(1.2, size * 0.1);
+  const leafClass = `${prefix === 'front' ? 'front-cubicle-hinge-leaf' : `${prefix}-hinge-leaf`} ${variantClass}`;
+  const pinClass = `${prefix === 'front' ? 'front-cubicle-hinge-pin' : prefix === 'detail-door' ? 'detail-door-hinge-pin' : `${prefix}-hinge-pin`} ${variantClass}`;
+  const camClass = `${prefix === 'front' ? 'front-cubicle-hinge-lift-cam' : `${prefix}-hinge-lift-cam`} ${variantClass}`;
+  const screwClass = `${prefix === 'front' ? 'front-hinge-screw' : `${prefix}-hinge-screw`} ${variantClass}`;
+  const doorLeafX = dir > 0 ? x + gap : x - gap - doorLeafW;
+  B.rect(model, x - postW / 2, y - h / 2, postW, h, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:leafClass});
+  B.rect(model, doorLeafX, y - h * 0.38, doorLeafW, h * 0.76, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:leafClass});
+  B.line(model, x, y - h * 0.56, x, y + h * 0.56, {stroke:'#185FA5', strokeWidth:0.9, className:pinClass});
+  B.line(model, x - postW * 0.65, y - h * 0.2, x + postW * 0.65, y - h * 0.2, {stroke:'#185FA5', strokeWidth:0.7, className:pinClass});
+  B.line(model, x - postW * 0.65, y + h * 0.2, x + postW * 0.65, y + h * 0.2, {stroke:'#185FA5', strokeWidth:0.7, className:pinClass});
+  B.line(model, x + dir * gap, y - h * 0.38, x + dir * (gap + doorLeafW * 0.28), y - h * 0.5, {stroke:'#185FA5', strokeWidth:0.75, className:camClass});
+  B.line(model, x + dir * (gap + doorLeafW * 0.28), y - h * 0.5, x + dir * (gap + doorLeafW), y - h * 0.38, {stroke:'#185FA5', strokeWidth:0.75, className:camClass});
+  if (isSpring) {
+    B.arc(model, x, y - h * 0.24, size * 0.22, 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.7, className:`front-hinge-spring ${variantClass}`});
+    B.arc(model, x, y + h * 0.24, size * 0.22, 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.7, className:`front-hinge-spring ${variantClass}`});
+  }
+  if (variant === 'k29' || variant === '770') B.line(model, x + dir * (gap + doorLeafW * 0.18), y, x + dir * (gap + doorLeafW * 0.88), y, {stroke:'#185FA5', strokeWidth:0.7, className:`front-hinge-center-rib ${variantClass}`});
+  if (variant === '830') {
+    B.line(model, x - postW, y - h * 0.34, x + postW, y - h * 0.34, {stroke:'#185FA5', strokeWidth:0.7, className:`front-hinge-steel-core ${variantClass}`});
+    B.line(model, x - postW, y + h * 0.34, x + postW, y + h * 0.34, {stroke:'#185FA5', strokeWidth:0.7, className:`front-hinge-steel-core ${variantClass}`});
+  }
+  backendHardwareScrew(B, model, x + dir * (gap + doorLeafW * 0.55), y - h * 0.18, Math.max(1.1, size * 0.09), screwClass);
+  backendHardwareScrew(B, model, x + dir * (gap + doorLeafW * 0.55), y + h * 0.18, Math.max(1.1, size * 0.09), screwClass);
+}
+
+function drawCanvasLockSymbol(placement, door) {
+  const variant = hardwareVariant(placement.lock.template);
+  const side = placement.lock.side || placement.handle.side || 'right';
+  const dir = side === 'right' ? 1 : -1;
+  const plateW = Math.max(10, Math.min(18, door.w * (variant === 'ss304' ? 0.062 : variant === 'k29' ? 0.05 : 0.055)));
+  const plateH = Math.max(24, Math.min(52, door.h * (variant === '820b' ? 0.15 : variant === '02' ? 0.1 : 0.12)));
+  const x = placement.lock.x;
+  const y = placement.lock.y;
+  const strikeW = Math.max(3, plateW * (variant === '770' ? 0.42 : 0.28));
+  const latchW = Math.max(6, plateW * (variant === '830' ? 0.75 : 0.55));
+  ctx.strokeRect(x - plateW / 2, y - plateH / 2, plateW, plateH);
+  if (variant === 'k29') ctx.strokeRect(x - plateW * 0.34, y - plateH * 0.34, plateW * 0.68, plateH * 0.68);
+  ctx.strokeRect(x + dir * (plateW * 0.5), y - plateH * (variant === '02' ? 0.16 : 0.1), dir * latchW, plateH * (variant === '02' ? 0.32 : 0.2));
+  ctx.strokeRect(x + dir * (plateW * 0.5 + latchW + 2), y - plateH * 0.28, dir * strikeW, plateH * 0.56);
+  ctx.beginPath();
+  if (variant === 'ss304' || variant === '820b') ctx.rect(x - plateW * 0.24, y - plateW * 0.24, plateW * 0.48, plateW * 0.48);
+  else ctx.arc(x, y, Math.max(3, plateW * 0.28), 0, Math.PI * 2);
+  ctx.moveTo(x - plateW * 0.18, y);
+  ctx.lineTo(x + plateW * 0.18, y);
+  ctx.moveTo(x, y - plateW * 0.18);
+  ctx.lineTo(x, y + plateW * 0.18);
+  ctx.arc(x, y - plateH * 0.28, Math.max(2, plateW * 0.2), 0, Math.PI * 2);
+  if (variant === '830') {
+    ctx.moveTo(x - plateW * 0.32, y + plateH * 0.28);
+    ctx.lineTo(x + plateW * 0.32, y + plateH * 0.28);
+  }
+  ctx.stroke();
+  canvasHardwareScrew(x, y - plateH * 0.38, Math.max(1, plateW * 0.11));
+  canvasHardwareScrew(x, y + plateH * 0.38, Math.max(1, plateW * 0.11));
+}
+
+function backendLockSymbol(B, model, placement, door) {
+  const variant = hardwareVariant(placement.lock.template);
+  const variantClass = hardwareVariantClass(placement.lock.template);
+  const side = placement.lock.side || placement.handle.side || 'right';
+  const dir = side === 'right' ? 1 : -1;
+  const plateW = Math.max(10, Math.min(18, door.w * (variant === 'ss304' ? 0.062 : variant === 'k29' ? 0.05 : 0.055)));
+  const plateH = Math.max(24, Math.min(52, door.h * (variant === '820b' ? 0.15 : variant === '02' ? 0.1 : 0.12)));
+  const x = placement.lock.x;
+  const y = placement.lock.y;
+  B.rect(model, x - plateW / 2, y - plateH / 2, plateW, plateH, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-lock-faceplate ${variantClass}`});
+  if (variant === 'k29') B.rect(model, x - plateW * 0.34, y - plateH * 0.34, plateW * 0.68, plateH * 0.68, {fill:'none', stroke:'#185FA5', strokeWidth:0.65, className:`front-lock-inner-plate ${variantClass}`});
+  const latchW = Math.max(6, plateW * (variant === '830' ? 0.75 : 0.55));
+  const strikeW = Math.max(3, plateW * (variant === '770' ? 0.42 : 0.28));
+  B.rect(model, dir > 0 ? x + plateW * 0.5 : x - plateW * 0.5 - latchW, y - plateH * (variant === '02' ? 0.16 : 0.1), latchW, plateH * (variant === '02' ? 0.32 : 0.2), {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-lock-latch ${variantClass}`});
+  B.rect(model, dir > 0 ? x + plateW * 0.5 + latchW + 2 : x - plateW * 0.5 - latchW - 2 - strikeW, y - plateH * 0.28, strikeW, plateH * 0.56, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-lock-strike-keeper ${variantClass}`});
+  if (variant === 'ss304' || variant === '820b') B.rect(model, x - plateW * 0.24, y - plateW * 0.24, plateW * 0.48, plateW * 0.48, {fill:'none', stroke:'#185FA5', strokeWidth:0.8, className:`front-lock-thumbturn ${variantClass}`});
+  else B.arc(model, x, y, Math.max(3, plateW * 0.28), 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.8, className:`front-lock-thumbturn ${variantClass}`});
+  B.line(model, x - plateW * 0.18, y, x + plateW * 0.18, y, {stroke:'#185FA5', strokeWidth:0.65, className:`front-lock-thumbturn ${variantClass}`});
+  B.line(model, x, y - plateW * 0.18, x, y + plateW * 0.18, {stroke:'#185FA5', strokeWidth:0.65, className:`front-lock-thumbturn ${variantClass}`});
+  B.arc(model, x, y - plateH * 0.28, Math.max(2, plateW * 0.2), 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.8, className:`front-lock-indicator ${variantClass}`});
+  if (variant === '830') B.line(model, x - plateW * 0.32, y + plateH * 0.28, x + plateW * 0.32, y + plateH * 0.28, {stroke:'#185FA5', strokeWidth:0.65, className:`front-lock-steel-core-mark ${variantClass}`});
+  backendHardwareScrew(B, model, x, y - plateH * 0.38, Math.max(1, plateW * 0.11), `front-lock-screw ${variantClass}`);
+  backendHardwareScrew(B, model, x, y + plateH * 0.38, Math.max(1, plateW * 0.11), `front-lock-screw ${variantClass}`);
+}
+
+function drawCanvasHandleSymbol(placement, door) {
+  if (placement.handle.template.id === 'none') return;
+  const variant = hardwareVariant(placement.handle.template);
+  const y = placement.handle.y;
+  const x = placement.handle.x;
+  if (placement.handle.template.id === 'bar-handle' || ['820b','ss304'].includes(variant)) {
+    const barH = Math.max(24, Math.min(62, door.h * (variant === 'ss304' ? 0.18 : 0.13)));
+    const barW = variant === '820b' ? 6 : 4;
+    ctx.strokeRect(x - barW / 2, y - barH / 2, barW, barH);
+    ctx.strokeRect(x - 6, y - barH * 0.35, 12, 4);
+    ctx.strokeRect(x - 6, y + barH * 0.35 - 4, 12, 4);
+  } else if (variant === 'k29' || variant === '770') {
+    const w = Math.max(12, Math.min(22, door.w * 0.07));
+    const h = Math.max(7, Math.min(12, door.h * 0.028));
+    ctx.strokeRect(x - w / 2, y - h / 2, w, h);
+    ctx.beginPath();
+    ctx.moveTo(x - w * 0.28, y);
+    ctx.lineTo(x + w * 0.28, y);
+    ctx.stroke();
+  } else if (variant === '02' || variant === '820' || variant === '830') {
+    const r = Math.max(4, Math.min(7, door.w * 0.027));
+    ctx.beginPath();
+    ctx.ellipse(x, y, r * 0.78, r * 1.25, 0, 0, Math.PI * 2);
+    ctx.arc(x, y, r * 0.45, 0, Math.PI * 2);
+    ctx.stroke();
+  } else {
+    const r = Math.max(3.5, Math.min(5.5, door.w * 0.023));
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.arc(x, y, r * 0.45, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+function backendHandleSymbol(B, model, placement, door) {
+  if (placement.handle.template.id === 'none') return;
+  const variant = hardwareVariant(placement.handle.template);
+  const variantClass = hardwareVariantClass(placement.handle.template);
+  const y = placement.handle.y;
+  const x = placement.handle.x;
+  if (placement.handle.template.id === 'bar-handle' || ['820b','ss304'].includes(variant)) {
+    const barH = Math.max(24, Math.min(62, door.h * (variant === 'ss304' ? 0.18 : 0.13)));
+    const barW = variant === '820b' ? 6 : 4;
+    B.rect(model, x - barW / 2, y - barH / 2, barW, barH, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-handle-bar ${variantClass}`});
+    B.rect(model, x - 6, y - barH * 0.35, 12, 4, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-handle-mount ${variantClass}`});
+    B.rect(model, x - 6, y + barH * 0.35 - 4, 12, 4, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-handle-mount ${variantClass}`});
+  } else if (variant === 'k29' || variant === '770') {
+    const w = Math.max(12, Math.min(22, door.w * 0.07));
+    const h = Math.max(7, Math.min(12, door.h * 0.028));
+    B.rect(model, x - w / 2, y - h / 2, w, h, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-handle-pull ${variantClass}`});
+    B.line(model, x - w * 0.28, y, x + w * 0.28, y, {stroke:'#185FA5', strokeWidth:0.65, className:`front-handle-grip ${variantClass}`});
+  } else if (variant === '02' || variant === '820' || variant === '830') {
+    const r = Math.max(4, Math.min(7, door.w * 0.027));
+    B.arc(model, x, y, r * 0.92, 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.8, className:`front-handle-oval ${variantClass}`});
+    B.arc(model, x, y, r * 0.42, 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.65, className:`front-handle-oval-center ${variantClass}`});
+  } else {
+    const r = Math.max(3.5, Math.min(5.5, door.w * 0.023));
+    B.arc(model, x, y, r, 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.8, className:`front-handle-round ${variantClass}`});
+    B.arc(model, x, y, r * 0.45, 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.65, className:`front-handle-round-center ${variantClass}`});
+  }
+}
+
+function buildHardwareNodes(profile = DEFAULT_HARDWARE_PROFILE, geometry = {}) {
+  return HARDWARE_NODE_ORDER.map(([category, nodeId]) => {
+    const template = getHardwareTemplate(category, profile[category]);
+    if (!template || template.id === 'none' || template.detailNode === false) return null;
+    return {id:nodeId, category, template, geometry};
+  }).filter(Boolean);
+}
+
+function collectHardwareBom(profile = DEFAULT_HARDWARE_PROFILE, layout = {}) {
+  const doorCount = Math.max(0, Number(layout.doorCount) || 0);
+  const uprightCount = Math.max(0, Number(layout.uprightCount) || 0);
+  return Object.keys(DEFAULT_HARDWARE_PROFILE).map(category => {
+    const template = getHardwareTemplate(category, profile[category]);
+    if (!template || template.id === 'none' || template.bom === false) return null;
+    const qty = template.defaultQtyRule === 'three-per-door' ? doorCount * 3 : template.defaultQtyRule === 'per-upright' ? uprightCount : doorCount || 1;
+    return {category, id:template.id, name:template.name, qty, rule:template.defaultQtyRule || 'per-project'};
+  }).filter(Boolean);
+}
+
+function frontElevationLayout(p, layoutOverride = null) {
+  const c = compute(p);
+  const layout = layoutOverride || getSheetLayout(p);
+  const P = layout.plot;
+  const count = Math.max(1, Number(p.count) || 1);
+  const W = Math.max(1, Number(c.totalRun) || Number(p.total) || 1);
+  const H = Math.max(Number(p.hUpright) || 1830, Number(p.hMid) || 1800, Number(p.hDoor) || 1750);
+  const t = Math.max(1, Number(p.tPanel) || 12);
+  const wt = Math.max(0, Number(c.wallT) || 0);
+  const leftWall = c.hasLeft ? wt : 0;
+  const rightWall = c.hasRight ? wt : 0;
+  const fit = Math.min(1, (P.w - 190) / Math.max(1, W + leftWall + rightWall), (P.h - 205) / Math.max(1, H));
+  const scale = Math.max(0.001, fit);
+  const ox = P.x + (P.w - (W + leftWall + rightWall) * scale) / 2 + leftWall * scale;
+  const floor = P.y + 126 + (P.h - 205 + H * scale) / 2;
+  const oy = floor - H * scale;
+  const sW = W * scale;
+  const sH = H * scale;
+  const st = Math.max(1.5, t * scale);
+  const swt = wt * scale;
+  const hU = (Number(p.hUpright) || 1830) * scale;
+  const hDoor = (Number(p.hDoor) || 1750) * scale;
+  const hMid = (Number(p.hMid) || 1800) * scale;
+  const vis = (Number(p.hVis) || 1830) * scale;
+  const rebate = Math.max(0, Number(p.rebateDepth) || 0) * scale;
+  const labelPrefix = groupLabelPrefix(activeGroup());
+  const boothWidths = Array.from({length:count}, (_, i) => Number(c.boothWidths?.[i]) || Number(c.boothW) || W / count);
+  const boundaries = [0];
+  boothWidths.forEach(width => boundaries.push(boundaries[boundaries.length - 1] + width));
+  const posts = [];
+  for (let i = 0; i <= count; i++) {
+    const isLeftEdge = i === 0;
+    const isRightEdge = i === count;
+    const shouldDraw = (isLeftEdge && !c.hasLeft) || (isRightEdge && !c.hasRight) || (!isLeftEdge && !isRightEdge);
+    if (!shouldDraw) continue;
+    const bx = ox + (boundaries[i] || 0) * scale;
+    const x = isLeftEdge ? bx : isRightEdge ? bx - st : bx - st / 2;
+    posts.push({index:i, x, y:floor - hU, w:st, h:hU, label:isLeftEdge ? '左立板' : isRightEdge ? '右立板' : `中立板${i}`});
+  }
+  const booths = [];
+  const doors = [];
+  for (let i = 0; i < count; i++) {
+    const boothX = ox + (boundaries[i] || 0) * scale;
+    const boothW = boothWidths[i] * scale;
+    const hasDoor = hasDoorAt(p, i);
+    const installMm = Number(c.doorInstallWidths?.[i]) || Number(c.doorWidths?.[i]) || Number(p.doorW) || 0;
+    const bigMm = Number(c.doorWidths?.[i]) || installMm;
+    const gapLeft = Number(c.gapPairs?.[i]?.[0]) || 0;
+    const gapRight = Number(c.gapPairs?.[i]?.[1]) || 0;
+    const zoneStart = boothX + (Number(c.sidePairs?.[i]?.[0]) || 0) * scale;
+    const installX = zoneStart + gapLeft * scale;
+    const installW = installMm * scale;
+    const doorX = p.rebate ? installX - rebate : installX;
+    const doorW = bigMm * scale;
+    const swing = boothSwingAt(p, i);
+    const swingDef = swingDefs[swing] || swingDefs['in-right'];
+    const hingeX = swingDef.hinge === 'right' ? doorX + doorW : doorX;
+    const lockX = swingDef.hinge === 'right' ? doorX + doorW * 0.22 : doorX + doorW * 0.78;
+    const door = {index:i, hasDoor, x:doorX, y:floor - hDoor, w:doorW, h:hDoor, installX, installW, bigMm, installMm, swing, hingeX, lockX, gapLeft, gapRight, start:installX, end:installX + installW, bigStart:doorX, bigEnd:doorX + doorW, zoneStart, zoneEnd:installX + installW + gapRight * scale, width:installW};
+    booths.push({index:i, x:boothX, y:floor - hMid, w:boothW, h:vis, boothMm:boothWidths[i], label:`${labelPrefix}${i + 1}门`, hasDoor, door});
+    if (hasDoor) doors.push(door);
+  }
+  const boardModel = buildBoardModel(p, c, doors, ox, sW, scale);
+  return {c, layout, P, count, W, H, scale, ox, oy, floor, sW, sH, st, swt, hU, hDoor, hMid, vis, leftWall, rightWall, walls:{left:c.hasLeft, right:c.hasRight}, posts, booths, doors, boardModel};
+}
+
+function frontDoorSwingSegments(door, inset = 7) {
+  const swing = swingDefs[door?.swing] || swingDefs['in-right'];
+  const hingeLeft = swing.hinge !== 'right';
+  const hingeX = hingeLeft ? door.x : door.x + door.w;
+  const lockX = hingeLeft ? door.x + door.w - inset : door.x + inset;
+  const topY = door.y + inset;
+  const midY = door.y + door.h * 0.5;
+  const bottomY = door.y + door.h - inset;
+  return [
+    {x1:hingeX, y1:midY, x2:lockX, y2:topY},
+    {x1:hingeX, y1:midY, x2:lockX, y2:bottomY}
+  ];
+}
+
+function frontSwingText(door) {
+  return (swingDefs[door?.swing] || swingDefs['in-right']).label || '右内开';
+}
+
+function frontPanelSegments(L) {
+  const segments = [];
+  const minW = Math.max(2, L.st * 1.2);
+  L.booths.forEach(booth => {
+    if (!booth.hasDoor || !booth.door) {
+      if (booth.w > minW) segments.push({x1:booth.x, x2:booth.x + booth.w, label:booth.label});
+      return;
+    }
+    const door = booth.door;
+    const leftEnd = Math.max(booth.x, door.bigStart);
+    const rightStart = Math.min(booth.x + booth.w, door.bigEnd);
+    if (leftEnd - booth.x > minW) segments.push({x1:booth.x, x2:leftEnd, label:`${booth.label}-左固定板`});
+    if (booth.x + booth.w - rightStart > minW) segments.push({x1:rightStart, x2:booth.x + booth.w, label:`${booth.label}-右固定板`});
+  });
+  return segments;
+}
+
+function drawFrontDatumCanvas(L) {
+  ctx.save();
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([7, 5]);
+  ctx.beginPath();
+  ctx.moveTo(L.ox - 28, L.floor);
+  ctx.lineTo(L.ox + L.sW + 28, L.floor);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(L.ox, L.floor - L.hU);
+  ctx.lineTo(L.ox + L.sW, L.floor - L.hU);
+  ctx.stroke();
+  ctx.font = `11px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('F.F.L. ±0.000', L.ox - 34, L.floor);
+  ctx.textAlign = 'left';
+  ctx.fillText('顶完成线', L.ox + L.sW + 8, L.floor - L.hU);
+  ctx.restore();
+}
+
+function drawFrontPanelSegmentsCanvas(L) {
+  ctx.save();
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.lineWidth = 0.55;
+  ctx.setLineDash([4, 5]);
+  frontPanelSegments(L).forEach(seg => {
+    ctx.strokeRect(seg.x1, L.floor - L.vis, seg.x2 - seg.x1, L.vis);
+  });
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawFrontDoorAnnotationsCanvas(L) {
+  ctx.save();
+  ctx.fillStyle = '#000000';
+  ctx.font = `11px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  L.doors.forEach(door => {
+    const booth = L.booths[door.index];
+    const labelY = Math.max(door.y + 18, door.y + Math.min(34, door.h * 0.18));
+    ctx.fillText(booth?.label || `D${door.index + 1}`, door.x + door.w / 2, labelY);
+    ctx.font = `10px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.fillText(frontSwingText(door), door.x + door.w / 2, Math.min(L.floor - 14, door.y + door.h * 0.82));
+    ctx.font = `11px 'Microsoft YaHei', Arial, sans-serif`;
+  });
+  ctx.restore();
+}
+
+function drawFrontBoothChainCanvas(L) {
+  const segments = L.booths.map(booth => ({x1:booth.x, x2:booth.x + booth.w, label:`${Math.round(booth.boothMm)}mm`})).filter(seg => seg.x2 > seg.x1);
+  if (!segments.length) return;
+  const y = L.floor + 70;
+  ctx.save();
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.lineWidth = 0.8;
+  ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.beginPath();
+  ctx.moveTo(segments[0].x1, y);
+  ctx.lineTo(segments[segments.length - 1].x2, y);
+  segments.forEach(seg => {
+    ctx.moveTo(seg.x1, y - 8);
+    ctx.lineTo(seg.x1, y + 8);
+    ctx.moveTo(seg.x2, y - 8);
+    ctx.lineTo(seg.x2, y + 8);
+  });
+  ctx.stroke();
+  segments.forEach(seg => ctx.fillText(seg.label, (seg.x1 + seg.x2) / 2, y - 12, Math.max(1, seg.x2 - seg.x1 - 8)));
+  ctx.restore();
+}
+
+function backendDrawFrontDatum(B, model, L) {
+  B.line(model, L.ox - 28, L.floor, L.ox + L.sW + 28, L.floor, {stroke:'#000', strokeWidth:0.8, dash:[7,5], className:'front-ffl-line'});
+  B.line(model, L.ox, L.floor - L.hU, L.ox + L.sW, L.floor - L.hU, {stroke:'#000', strokeWidth:0.8, className:'front-top-finish-line'});
+  B.text(model, 'F.F.L. ±0.000', L.ox - 34, L.floor, {fill:'#000', fontSize:11, align:'end', baseline:'central', className:'front-ffl-label'});
+  B.text(model, '顶完成线', L.ox + L.sW + 8, L.floor - L.hU, {fill:'#000', fontSize:11, align:'start', baseline:'central', className:'front-top-finish-label'});
+}
+
+function backendDrawFrontPanelSegments(B, model, L) {
+  frontPanelSegments(L).forEach(seg => {
+    B.rect(model, seg.x1, L.floor - L.vis, seg.x2 - seg.x1, L.vis, {fill:'none', stroke:'#000', strokeWidth:0.55, dash:[4,5], className:'front-fixed-panel-seam'});
+  });
+}
+
+function backendDrawFrontDoorAnnotations(B, model, L) {
+  L.doors.forEach(door => {
+    const booth = L.booths[door.index];
+    const labelY = Math.max(door.y + 18, door.y + Math.min(34, door.h * 0.18));
+    B.text(model, booth?.label || `D${door.index + 1}`, door.x + door.w / 2, labelY, {fill:'#000', fontSize:11, align:'middle', baseline:'central', className:'front-door-tag', maxWidth:Math.max(1, door.w - 10), fitMode:'shrink'});
+    B.text(model, frontSwingText(door), door.x + door.w / 2, Math.min(L.floor - 14, door.y + door.h * 0.82), {fill:'#000', fontSize:10, align:'middle', baseline:'central', className:'front-door-swing-label', maxWidth:Math.max(1, door.w - 10), fitMode:'shrink'});
+  });
+}
+
+function backendDrawFrontBoothChain(B, model, L) {
+  backendDrawChainDim(B, model, L.floor + 70, L.booths.map(booth => ({x1:booth.x, x2:booth.x + booth.w, label:`${Math.round(booth.boothMm)}mm`})), 12, 'front-booth-chain-dimension');
+}
+
+function drawCanvasAdjustableLeg(x, floorY, size, template = null) {
+  const variant = hardwareVariant(template);
+  const stemH = size * (variant === 'ss304' ? 2.45 : variant === '770' ? 1.85 : 2.1);
+  const footW = size * (variant === 'ss304' ? 1.05 : variant === '820' ? 0.95 : 0.78);
+  ctx.beginPath();
+  ctx.moveTo(x, floorY - stemH);
+  ctx.lineTo(x, floorY - size * 0.62);
+  for (let i = 0; i < 4; i++) {
+    const yy = floorY - stemH + size * 0.35 + i * size * 0.28;
+    ctx.moveTo(x - size * 0.22, yy);
+    ctx.lineTo(x + size * 0.22, yy + size * 0.12);
+  }
+  ctx.rect(x - size * 0.42, floorY - size * 0.62, size * 0.84, size * 0.22);
+  if (variant === 'ss304' || variant === '830') ctx.rect(x - footW, floorY - size * 0.42, footW * 2, size * 0.34);
+  else ctx.ellipse(x, floorY - size * 0.22, footW, size * 0.28, 0, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function backendAdjustableLeg(B, model, x, floorY, size, stemClass = 'front-upright-leg', template = null) {
+  const variant = hardwareVariant(template);
+  const variantClass = hardwareVariantClass(template);
+  const stemH = size * (variant === 'ss304' ? 2.45 : variant === '770' ? 1.85 : 2.1);
+  const footW = size * (variant === 'ss304' ? 1.05 : variant === '820' ? 0.95 : 0.78);
+  B.line(model, x, floorY - stemH, x, floorY - size * 0.62, {stroke:'#185FA5', strokeWidth:0.8, className:`${stemClass} ${variantClass}`});
+  for (let i = 0; i < 4; i++) {
+    const yy = floorY - stemH + size * 0.35 + i * size * 0.28;
+    B.line(model, x - size * 0.22, yy, x + size * 0.22, yy + size * 0.12, {stroke:'#185FA5', strokeWidth:0.55, className:`front-leg-adjuster-thread ${variantClass}`});
+  }
+  B.rect(model, x - size * 0.42, floorY - size * 0.62, size * 0.84, size * 0.22, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-leg-locknut ${variantClass}`});
+  if (variant === 'ss304' || variant === '830') B.rect(model, x - footW, floorY - size * 0.42, footW * 2, size * 0.34, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-leg-square-footplate ${variantClass}`});
+  else B.arc(model, x, floorY - size * 0.22, footW, 0, Math.PI * 2, {stroke:'#185FA5', strokeWidth:0.8, className:`front-leg-round-footplate ${variantClass}`});
+}
+
+function drawFrontHardwareCanvas(door, profile = DEFAULT_HARDWARE_PROFILE, L = null) {
+  const placement = buildHardwarePlacement(door, profile);
+  const hingeSize = Math.max(5, Math.min(16, door.w * 0.045));
+  ctx.save();
+  ctx.strokeStyle = '#185FA5';
+  ctx.fillStyle = '#ffffff';
+  ctx.lineWidth = 0.8;
+  if (L && placement.topRail.template.id !== 'none') {
+    const railVariant = hardwareVariant(placement.topRail.template);
+    const railY = L.floor - L.hU + Math.max(4, L.st * 0.6);
+    const saddle = Math.max(5, L.st * 0.9);
+    ctx.beginPath();
+    ctx.moveTo(L.ox, railY);
+    ctx.lineTo(L.ox + L.sW, railY);
+    if (railVariant === 'ss304') {
+      ctx.moveTo(L.ox, railY - saddle * 0.22);
+      ctx.lineTo(L.ox + L.sW, railY - saddle * 0.22);
+      ctx.moveTo(L.ox, railY + saddle * 0.22);
+      ctx.lineTo(L.ox + L.sW, railY + saddle * 0.22);
+    } else if (placement.topRail.template.id === 'aluminum-profile-top-rail') {
+      ctx.moveTo(L.ox, railY - saddle * 0.16);
+      ctx.lineTo(L.ox + L.sW, railY + saddle * 0.16);
+      ctx.moveTo(L.ox, railY + saddle * 0.16);
+      ctx.lineTo(L.ox + L.sW, railY - saddle * 0.16);
+    }
+    ctx.rect(L.ox - saddle * 0.45, railY - saddle * 0.45, saddle * 0.9, saddle * 0.9);
+    ctx.rect(L.ox + L.sW - saddle * 0.45, railY - saddle * 0.45, saddle * 0.9, saddle * 0.9);
+    ctx.stroke();
+  }
+  if (placement.hinge.template.id !== 'none') placement.hinge.ys.forEach(y => drawCanvasHingeSymbol(placement.hinge.x, y, hingeSize, placement.hinge.side, placement.hinge.template));
+  if (placement.lock.template.id !== 'none') {
+    drawCanvasLockSymbol(placement, door);
+    drawCanvasHandleSymbol(placement, door);
+  } else if (placement.handle.template.id !== 'none') {
+    drawCanvasHandleSymbol(placement, door);
+  }
+  if (!L && placement.leg.template.id !== 'none') {
+    const legW = Math.max(6, Math.min(12, door.w * 0.04));
+    drawCanvasAdjustableLeg(placement.leg.x, placement.leg.y, legW, placement.leg.template);
+  }
+  ctx.restore();
+}
+
+function backendDrawFrontHardware(B, model, door, profile = DEFAULT_HARDWARE_PROFILE, L = null) {
+  const placement = buildHardwarePlacement(door, profile);
+  const hingeSize = Math.max(5, Math.min(16, door.w * 0.045));
+  if (L && placement.topRail.template.id !== 'none') {
+    const railVariant = hardwareVariant(placement.topRail.template);
+    const railClass = hardwareVariantClass(placement.topRail.template);
+    const railY = L.floor - L.hU + Math.max(4, L.st * 0.6);
+    const saddle = Math.max(5, L.st * 0.9);
+    B.line(model, L.ox, railY, L.ox + L.sW, railY, {stroke:'#185FA5', strokeWidth:0.8, className:`front-top-rail ${railClass}`});
+    if (railVariant === 'ss304') {
+      B.line(model, L.ox, railY - saddle * 0.22, L.ox + L.sW, railY - saddle * 0.22, {stroke:'#185FA5', strokeWidth:0.55, className:`front-top-rail-double ${railClass}`});
+      B.line(model, L.ox, railY + saddle * 0.22, L.ox + L.sW, railY + saddle * 0.22, {stroke:'#185FA5', strokeWidth:0.55, className:`front-top-rail-double ${railClass}`});
+    } else if (placement.topRail.template.id === 'aluminum-profile-top-rail') {
+      B.line(model, L.ox, railY - saddle * 0.16, L.ox + L.sW, railY + saddle * 0.16, {stroke:'#185FA5', strokeWidth:0.55, className:`front-top-rail-profile ${railClass}`});
+      B.line(model, L.ox, railY + saddle * 0.16, L.ox + L.sW, railY - saddle * 0.16, {stroke:'#185FA5', strokeWidth:0.55, className:`front-top-rail-profile ${railClass}`});
+    }
+    B.rect(model, L.ox - saddle * 0.45, railY - saddle * 0.45, saddle * 0.9, saddle * 0.9, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-top-rail-saddle ${railClass}`});
+    B.rect(model, L.ox + L.sW - saddle * 0.45, railY - saddle * 0.45, saddle * 0.9, saddle * 0.9, {fill:'#fff', stroke:'#185FA5', strokeWidth:0.8, className:`front-top-rail-saddle ${railClass}`});
+  }
+  if (placement.hinge.template.id !== 'none') {
+    placement.hinge.ys.forEach(y => backendHingeSymbol(B, model, placement.hinge.x, y, hingeSize, placement.hinge.side, 'front', placement.hinge.template));
+  }
+  if (placement.lock.template.id !== 'none') {
+    backendLockSymbol(B, model, placement, door);
+    backendHandleSymbol(B, model, placement, door);
+  } else if (placement.handle.template.id !== 'none') {
+    backendHandleSymbol(B, model, placement, door);
+  }
+  if (!L && placement.leg.template.id !== 'none') {
+    const legW = Math.max(6, Math.min(12, door.w * 0.04));
+    backendAdjustableLeg(B, model, placement.leg.x, placement.leg.y, legW, 'front-leg-stem', placement.leg.template);
+  }
+}
+
+function drawFrontUprightLegsCanvas(L, profile = DEFAULT_HARDWARE_PROFILE) {
+  const legTemplate = getHardwareTemplate('leg', profile.leg);
+  if (legTemplate.id === 'none') return;
+  ctx.save();
+  ctx.strokeStyle = '#185FA5';
+  ctx.fillStyle = '#ffffff';
+  ctx.lineWidth = 0.8;
+  L.posts.forEach(post => {
+    const legW = Math.max(6, Math.min(12, post.w * 2.8));
+    const x = post.x + post.w / 2;
+    drawCanvasAdjustableLeg(x, L.floor, legW, legTemplate);
+  });
+  ctx.restore();
+}
+
+function backendDrawFrontUprightLegs(B, model, L, profile = DEFAULT_HARDWARE_PROFILE) {
+  const legTemplate = getHardwareTemplate('leg', profile.leg);
+  if (legTemplate.id === 'none') return;
+  L.posts.forEach(post => {
+    const legW = Math.max(6, Math.min(12, post.w * 2.8));
+    const x = post.x + post.w / 2;
+    backendAdjustableLeg(B, model, x, L.floor, legW, 'front-upright-leg', legTemplate);
+  });
+}
+
 function drawFront(p) {
   if (!hasDrawableRows() && p?.enabled !== true) return;
   const prevDimensionContext = activeDimensionContext;
   activeDimensionContext = {groupId:activeGroup()?.id, rowId:activeRow()?.id, hitScale:1, hitX:0, hitY:0};
   try {
-  const c = compute(p);
-  const P = getSheetLayout(p).plot;
-  const W = c.totalRun;
-  const H = Math.max(p.hUpright, p.hMid);
-  const t = p.tPanel, wt = c.wallT;
-  const scale = Math.min((P.w - 170) / (W + (c.hasLeft?wt:0) + (c.hasRight?wt:0)), (P.h - 180) / H);
-  const ox = P.x + (P.w - (W + (c.hasLeft?wt:0) + (c.hasRight?wt:0)) * scale) / 2 + (c.hasLeft?wt:0) * scale;
-  const floor = P.y + 118 + (P.h - 180 + H * scale) / 2;
-  const oy = floor - H * scale;
-  const sW = W * scale, sH = H * scale, st = Math.max(1.5, t * scale), swt = wt * scale;
-  const hU = p.hUpright * scale, hDp = (p.hDoor || 1750) * scale, hM = p.hMid * scale, vis = p.hVis * scale;
+  const L = frontElevationLayout(p);
+  const c = L.c;
 
-  ctx.strokeStyle='#000000'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
-  if (c.hasLeft) { drawHatch(ox-swt, oy, swt, sH, 18); ctx.strokeStyle='#000000'; ctx.strokeRect(ox-swt, oy, swt, sH); }
-  if (c.hasRight) { drawHatch(ox+sW, oy, swt, sH, 18); ctx.strokeStyle='#000000'; ctx.strokeRect(ox+sW, oy, swt, sH); }
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(L.ox, L.floor);
+  ctx.lineTo(L.ox + L.sW, L.floor);
+  ctx.stroke();
 
-  let x = ox;
-  for (let i=0; i<=p.count; i++) {
-    const isEdge = (i===0 && !c.hasLeft)||(i===p.count && !c.hasRight);
-    if (isEdge || (i>0 && i<p.count)) {
-      ctx.strokeStyle='#000000'; ctx.lineWidth=0.8; ctx.strokeRect(x, floor-hU, st, hU);
-      x += st;
-    }
-    if (i < p.count) {
-      const boothMm = c.boothWidths[i] || c.boothW;
-      const doorMm = c.doorWidths[i] || p.doorW;
-      const bw = boothMm * scale;
-      const doorOff = Math.max(0, (boothMm - doorMm) / 2) * scale;
-      const dsx = x + doorOff, dsw = doorMm * scale;
-      ctx.strokeStyle='#185FA5'; ctx.lineWidth=1; ctx.strokeRect(dsx, floor-hDp, dsw, hDp);
-      ctx.strokeStyle='#6a9bcc'; ctx.lineWidth=0.6; ctx.strokeRect(x, floor-hM, bw, vis);
-      ctx.fillStyle='#185FA5'; ctx.font=`14px 'Microsoft YaHei', Arial, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(`${p.hDoor || 1750}`, dsx+dsw/2, floor-hDp/2);
-      x += bw;
-    }
+  if (L.walls.left) { drawHatch(L.ox - L.swt, L.oy, L.swt, L.sH, 18); ctx.strokeStyle = '#000000'; ctx.strokeRect(L.ox - L.swt, L.oy, L.swt, L.sH); }
+  if (L.walls.right) { drawHatch(L.ox + L.sW, L.oy, L.swt, L.sH, 18); ctx.strokeStyle = '#000000'; ctx.strokeRect(L.ox + L.sW, L.oy, L.swt, L.sH); }
+  drawFrontDatumCanvas(L);
+
+  ctx.strokeStyle = '#6a9bcc';
+  ctx.lineWidth = 0.6;
+  L.booths.forEach(booth => {
+    ctx.strokeRect(booth.x, booth.y, booth.w, booth.h);
+    ctx.fillStyle = '#185FA5';
+    ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(booth.label, booth.x + booth.w / 2, booth.y + booth.h / 2);
+  });
+
+  L.posts.forEach(post => {
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(post.x, post.y, post.w, post.h);
+  });
+  drawFrontUprightLegsCanvas(L, getHardwareProfile(null, activeGroup(), p, 0));
+  drawFrontPanelSegmentsCanvas(L);
+
+  L.doors.forEach(door => {
+    ctx.strokeStyle = '#185FA5';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(door.x, door.y, door.w, door.h);
+    ctx.save();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    frontDoorSwingSegments(door, 7).forEach(seg => {
+      ctx.moveTo(seg.x1, seg.y1);
+      ctx.lineTo(seg.x2, seg.y2);
+    });
+    ctx.stroke();
+    ctx.restore();
+    drawFrontHardwareCanvas(door, getHardwareProfile(null, activeGroup(), p, door.index), L);
+  });
+  drawFrontDoorAnnotationsCanvas(L);
+
+  L.booths.filter(booth => !booth.hasDoor).forEach(booth => {
+    ctx.save();
+    ctx.strokeStyle = '#d64242';
+    ctx.setLineDash([8, 6]);
+    ctx.strokeRect(booth.x + 4, L.floor - L.hDoor, Math.max(1, booth.w - 8), L.hDoor);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#d64242';
+    ctx.font = `13px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('无门', booth.x + booth.w / 2, L.floor - L.hDoor / 2);
+    ctx.restore();
+  });
+
+  if (p.rebate && L.boardModel?.panels?.length) {
+    ctx.save();
+    ctx.strokeStyle = '#000000';
+    ctx.fillStyle = '#000000';
+    ctx.font = `11px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    L.boardModel.panels.forEach((panel, index) => {
+      if (!(panel.bigX2 > panel.bigX1)) return;
+      const x = panel.bigX1;
+      const w = panel.bigX2 - panel.bigX1;
+      ctx.setLineDash([5, 5]);
+      ctx.strokeRect(x, L.floor - L.vis, w, L.vis);
+      ctx.setLineDash([]);
+      ctx.fillText(`P${index + 1}`, x + w / 2, L.floor - L.vis / 2);
+    });
+    ctx.restore();
   }
-  ctx.strokeStyle='#000000'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
-  drawDim(ox, oy-58, ox+sW, oy-58, `${c.adjustedLength ? '展开总长' : '总长'} ${W}mm`, 14, {kind:'total'});
-  drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14, {kind:'h-upright'});
-  drawDim(ox+sW+58, floor-vis, ox+sW+58, floor, `见光板 ${p.hVis}mm`, 14, {kind:'h-vis'});
+
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(L.ox, L.oy, L.sW, L.sH);
+  drawElevationDim(L.ox, L.oy - 42, L.ox + L.sW, L.oy - 42, `${c.adjustedLength ? '展开总长' : '总长'} ${Math.round(L.W)}mm`, 14, {kind:'total'}, {fontSize:14});
+  drawElevationDim(L.ox - 34, L.floor - L.hU, L.ox - 34, L.floor, `立板高 ${p.hUpright}mm`, -14, {kind:'h-upright'}, {fontSize:14});
+  drawElevationDim(L.ox + L.sW + 34, L.floor - L.hDoor, L.ox + L.sW + 34, L.floor, `门高 ${p.hDoor || 1750}mm`, 14, {kind:'h-door'}, {fontSize:14});
+  drawElevationDim(L.ox + L.sW + 78, L.floor - L.vis, L.ox + L.sW + 78, L.floor, `见光板 ${p.hVis}mm`, 14, {kind:'h-vis'}, {fontSize:14});
+  L.doors.forEach(door => drawElevationDim(door.x, L.floor + 28, door.x + door.w, L.floor + 28, `${Math.round(door.bigMm)}mm`, -10, {kind:'door-width', boothIndex:door.index}, {fontSize:13, tick:8}));
+  drawFrontBoothChainCanvas(L);
   } finally {
     activeDimensionContext = prevDimensionContext;
   }
 }
 
+function drawDetailCallout(label, x, y, tx, ty, text) {
+  ctx.save();
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.arc(x, y, 13, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.font = `11px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+  ctx.beginPath();
+  ctx.moveTo(x + 10, y);
+  ctx.lineTo(tx, ty);
+  ctx.stroke();
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, tx + 4, ty);
+  ctx.restore();
+}
+
+function detailNodeAnchors(x, y, w, h, wallW = 18) {
+  return {
+    lock:{x:x + w - 36, y:y + h * 0.52, tx:x + w + 2, ty:y + h * 0.50},
+    hook:{x:x + w - 28, y:y + h * 0.30, tx:x + w + 4, ty:y + h * 0.28},
+    bracket:{x:x + wallW + 28, y:y + h * 0.18, tx:x + wallW + 52, ty:y + h * 0.16},
+    leg:{x:x + w - 18, y:y + h - 8, tx:x + w + 4, ty:y + h + 2},
+    hinge:{x:x + w - 34, y:y + h * 0.78, tx:x + w + 4, ty:y + h * 0.76},
+    topRail:{x:x + w - 30, y:y + 30, tx:x + w + 4, ty:y + 18},
+    handle:{x:x + w - 40, y:y + h * 0.58, tx:x + w + 4, ty:y + h * 0.58},
+    bumper:{x:x + w - 42, y:y + h * 0.18, tx:x + w + 4, ty:y + h * 0.18}
+  };
+}
+
+function drawDetailDoorPanel(p, x, y, w, h) {
+  const hDoor = Number(p.hDoor) || 1750;
+  const doorW = Number(p.doorW) || 600;
+  const profile = getHardwareProfile(null, activeGroup(), p, 0);
+  ctx.save();
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, w, h);
+  const hingeX = x + 8;
+  const hingeTemplate = getHardwareTemplate('hinge', profile.hinge);
+  [0.16, 0.5, 0.84].forEach(r => drawCanvasHingeSymbol(hingeX, y + h * r, 11, 'left', hingeTemplate));
+  const lockX = x + w * 0.72;
+  const lockY = y + h * 0.5;
+  if (getHardwareTemplate('lock', profile.lock).id !== 'none') {
+    ctx.strokeRect(lockX + 10, lockY - 32, 8, 64);
+    ctx.strokeRect(lockX + 22, lockY - 6, 11, 12);
+    ctx.strokeRect(lockX + 38, lockY - 18, 6, 36);
+    ctx.beginPath();
+    ctx.arc(lockX, lockY, 3, 0, Math.PI * 2);
+    ctx.arc(lockX, lockY - 14, 2, 0, Math.PI * 2);
+    ctx.moveTo(lockX - 2.2, lockY);
+    ctx.lineTo(lockX + 2.2, lockY);
+    ctx.moveTo(lockX, lockY - 2.2);
+    ctx.lineTo(lockX, lockY + 2.2);
+    ctx.stroke();
+    canvasHardwareScrew(lockX + 14, lockY - 24, 1.2);
+    canvasHardwareScrew(lockX + 14, lockY + 24, 1.2);
+  } else if (getHardwareTemplate('handle', profile.handle).id !== 'none') {
+    if (profile.handle === 'bar-handle') {
+      ctx.strokeRect(lockX + 10, lockY - 32, 6, 64);
+      ctx.strokeRect(lockX + 7, lockY - 24, 12, 4);
+      ctx.strokeRect(lockX + 7, lockY + 20, 12, 4);
+    }
+    else {
+      ctx.beginPath();
+      ctx.arc(lockX, lockY, 4, 0, Math.PI * 2);
+      ctx.arc(lockX, lockY, 2, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+  drawElevationDim(x, y - 28, x + w, y - 28, `${doorW}mm`, 10, null, {fontSize:11, tick:7});
+  drawElevationDim(x + w + 24, y, x + w + 24, y + h, `${hDoor}mm`, 10, null, {fontSize:11, tick:7});
+  ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('Door Panel', x + w / 2, y + h + 18);
+  ctx.fillText('F.F.L.', x + w / 2, y + h + 4);
+  const legTemplate = getHardwareTemplate('leg', profile.leg);
+  if (legTemplate.id !== 'none') drawCanvasAdjustableLeg(x + w * 0.5, y + h + 2, 8, legTemplate);
+  ctx.restore();
+}
+
+function drawDetailSection(p, x, y, w, h) {
+  const hDoor = Number(p.hDoor) || 1750;
+  const hU = Number(p.hUpright) || 1830;
+  const depth = Number(p.depth) || 1220;
+  ctx.save();
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.lineWidth = 1;
+  const wallW = 18;
+  drawHatch(x, y, wallW, h, 12);
+  ctx.strokeRect(x, y, wallW, h);
+  ctx.strokeRect(x + wallW, y + 28, w - wallW - 22, h - 54);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(x + wallW, y + h - 26, w - wallW - 22, 18);
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.moveTo(x + wallW + 34, y + 28);
+  ctx.lineTo(x + w - 48, y + h - 26);
+  ctx.moveTo(x + w - 48, y + 28);
+  ctx.lineTo(x + wallW + 34, y + h - 26);
+  ctx.stroke();
+  drawElevationDim(x + wallW, y - 26, x + w - 22, y - 26, `${depth}mm`, 10, null, {fontSize:11, tick:7});
+  drawElevationDim(x + w + 26, y + h - 26 - (hDoor / Math.max(1, hU)) * (h - 54), x + w + 26, y + h - 26, `门高 ${hDoor}mm`, 10, null, {fontSize:11, tick:7});
+  drawElevationDim(x + w + 58, y, x + w + 58, y + h, `总高 ${hU}mm`, 10, null, {fontSize:11, tick:7});
+  const anchors = detailNodeAnchors(x, y, w, h, wallW);
+  buildHardwareNodes(getHardwareProfile(null, activeGroup(), p, 0), {doorCount:Math.max(1, Number(p.count) || 1)}).forEach(node => {
+    const a = anchors[node.category];
+    if (a) drawDetailCallout(node.id, a.x, a.y, a.tx, a.ty, node.template.name);
+  });
+  ctx.font = `12px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('Section', x + w / 2, y + h + 18);
+  ctx.fillText('F.F.L.', x + w - 8, y + h + 4);
+  ctx.restore();
+}
+
+function drawDetail(p) {
+  if (!hasDrawableRows() && p?.enabled !== true) return;
+  const layout = getSheetLayout(p);
+  const P = layout.plot;
+  const c = compute(p);
+  const doorW = Number(c.doorWidths?.[0]) || Number(p.doorW) || 600;
+  const doorH = Number(p.hDoor) || 1750;
+  const panelH = Math.min(P.h * 0.55, 260);
+  const panelW = Math.max(70, Math.min(140, panelH * doorW / Math.max(1, doorH)));
+  const baseY = P.y + 112;
+  const doorX = P.x + P.w * 0.18;
+  const sectionX = P.x + P.w * 0.43;
+  drawDetailDoorPanel({...p, doorW}, doorX, baseY + 20, panelW, panelH);
+  drawDetailSection(p, sectionX, baseY, Math.min(300, P.w * 0.36), panelH + 42);
+}
 function drawStandardFrontModule(p, c) {
   const W = c.boothW;
   const H = Math.max(p.hUpright, p.hMid);
@@ -6316,7 +7401,7 @@ function drawSide(p) {
   const W = p.depth;
   const H = Math.max(p.hUpright, p.hMid);
   const t = p.tPanel, wt = c.wallT;
-  const scale = Math.min((P.w - 300) / (W + wt), (P.h - 180) / H);
+  const scale = Math.min(1, (P.w - 300) / (W + wt), (P.h - 180) / H);
   const ox = P.x + (P.w - W * scale) / 2;
   const floor = P.y + 118 + (P.h - 180 + H * scale) / 2;
   const oy = floor - H * scale;
@@ -6341,9 +7426,9 @@ function drawSide(p) {
   ctx.strokeStyle='#000000'; ctx.beginPath(); ctx.moveTo(ox, floor); ctx.lineTo(ox+sW, floor); ctx.stroke();
   ctx.strokeStyle='#000000'; ctx.lineWidth=1.2; ctx.strokeRect(ox, oy, sW, sH);
 
-  drawDim(ox, oy-58, ox+sW, oy-58, `深度 ${p.depth}mm`, 14, {kind:'depth'});
-  drawDim(ox-56, floor-hU, ox-56, floor, `立板高 ${p.hUpright}mm`, -14, {kind:'h-upright'});
-  drawDim(ox+sW+58, floor-hD, ox+sW+58, floor, `门高 ${p.hDoor||1750}mm`, 14, {kind:'h-door'});
+  drawElevationDim(ox, oy - 42, ox + sW, oy - 42, `深度 ${p.depth}mm`, 14, {kind:'depth'}, {fontSize:14});
+  drawElevationDim(ox - 34, floor - hU, ox - 34, floor, `立板高 ${p.hUpright}mm`, -14, {kind:'h-upright'}, {fontSize:14});
+  drawElevationDim(ox + sW + 34, floor - hD, ox + sW + 34, floor, `门高 ${p.hDoor||1750}mm`, 14, {kind:'h-door'}, {fontSize:14});
   } finally {
     activeDimensionContext = prevDimensionContext;
   }
@@ -6982,6 +8067,7 @@ function exportAll() {
   planPages.forEach((_, pageIndex) => jobs.push({tab:'plan', name:`平面图-${pageIndex + 1}`, options:{planPage:pageIndex}}));
   jobs.push({tab:'front', name:'正立面图', options:{}});
   jobs.push({tab:'side', name:'侧立面图', options:{}});
+  jobs.push({tab:'detail', name:'节点图', options:{}});
   jobs.forEach((job,i)=>{
     setTimeout(()=>{
       const sheetCanvas = renderSheetCanvas(job.tab, p, {...job.options, canvasMode:'sheets', renderScale:QUALITY_RENDER_SCALE});
@@ -6999,7 +8085,7 @@ function sanitizeExportName(name, fallback = '隔断图纸') {
 }
 
 function currentViewLabel() {
-  return {plan:'平面图', front:'正立面图', side:'侧立面图'}[currentTab] || '图纸';
+  return {plan:'平面图', front:'正立面图', side:'侧立面图', detail:'节点图'}[currentTab] || '图纸';
 }
 
 function downloadCanvasPng(canvas, filename) {
@@ -7064,6 +8150,7 @@ function exportNamedAllImages(baseName = '隔断全部视图') {
   planPages.forEach((_, pageIndex) => jobs.push({tab:'plan', name:`平面图${pageIndex + 1}`, options:{planPage:pageIndex}}));
   jobs.push({tab:'front', name:'正立面图', options:{}});
   jobs.push({tab:'side', name:'侧立面图', options:{}});
+  jobs.push({tab:'detail', name:'节点图', options:{}});
   jobs.forEach((job, i) => {
     setTimeout(() => {
       const sheetCanvas = renderSheetCanvas(job.tab, p, {...job.options, canvasMode:'sheets', renderScale:QUALITY_RENDER_SCALE});
@@ -7143,7 +8230,7 @@ function reserveMobileExportTab(title = '导出文件') {
   if (!win) return null;
   try {
     win.document.open();
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#111;background:#fff}.box{max-width:520px;margin:auto}.title{font-size:20px;font-weight:800;margin-bottom:10px}.hint{font-size:14px;color:#555;line-height:1.6}</style></head><body><div class="box"><div class="title">${escapeHtml(title)}</div><div class="hint">正在准备文件，请稍候...</div></div></body></html>`);
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#111;background:#fff}.box{max-width:560px;margin:auto}.title{font-size:20px;font-weight:800;margin-bottom:10px}.hint{font-size:14px;color:#555;line-height:1.6}.status{display:inline-flex;align-items:center;margin-top:16px;padding:8px 12px;border-radius:8px;background:#E6F1FB;color:#185FA5;font-size:14px;font-weight:800}</style></head><body><div class="box"><div class="title">${escapeHtml(title)}</div><div class="hint">正在生成文件，请保持此页面打开。</div><div class="status">正在处理...</div></div></body></html>`);
     win.document.close();
   } catch (_) {}
   preparedMobileExportTab = win;
@@ -7164,7 +8251,7 @@ function writeMobileDownloadTab(win, url, filename, title = '导出文件') {
   const safeUrl = escapeAttr(url);
   try {
     win.document.open();
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title><style>body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#111;background:#fff}.box{max-width:560px;margin:auto}.title{font-size:20px;font-weight:800;margin-bottom:10px}.hint{font-size:14px;color:#555;line-height:1.6}.btn{display:inline-flex;margin-top:18px;height:42px;align-items:center;padding:0 16px;border:1px solid #185FA5;border-radius:8px;color:#185FA5;text-decoration:none;font-weight:800}</style></head><body><div class="box"><div class="title">${safeTitle}</div><div class="hint">文件已在新标签页准备好。若浏览器没有自动下载，请点击下面按钮。</div><a id="download-link" class="btn" href="${safeUrl}" download="${safeFilename}">下载文件</a></div><script>setTimeout(function(){var a=document.getElementById('download-link'); if(a) a.click();},120);<\/script></body></html>`);
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title><style>body{margin:0;padding:24px;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#111;background:#fff}.box{max-width:560px;margin:auto}.title{font-size:20px;font-weight:800;margin-bottom:10px}.hint{font-size:14px;color:#555;line-height:1.6}.btn{display:inline-flex;margin-top:18px;height:42px;align-items:center;padding:0 16px;border:1px solid #185FA5;border-radius:8px;color:#185FA5;text-decoration:none;font-weight:800}.meta{margin-top:12px;color:#777;font-size:13px;word-break:break-all}</style></head><body><div class="box"><div class="title">${safeTitle}</div><div class="hint">文件已准备好。如果没有自动下载，请点击下面按钮。</div><a id="download-link" class="btn" href="${safeUrl}" download="${safeFilename}">下载文件</a><div class="meta">${safeFilename}</div></div><script>setTimeout(function(){var a=document.getElementById('download-link'); if(a) a.click();},120);<\/script></body></html>`);
     win.document.close();
     try { win.focus(); } catch (_) {}
     return true;
@@ -7373,6 +8460,7 @@ function printFromExternalTab(win, html) {
   try {
     win.document.open();
     win.document.write(html);
+    win.document.write(`<script>document.addEventListener('DOMContentLoaded',function(){var notice=document.createElement('div');notice.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;padding:10px 12px;border:1px solid #185FA5;border-radius:8px;background:#fff;color:#185FA5;font:700 14px system-ui,-apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 8px 24px rgba(31,35,40,.16)';notice.textContent='正在打开打印页面。如果没有弹出打印面板，请使用浏览器菜单中的打印或分享。';document.body.appendChild(notice);});<\/script>`);
     win.document.close();
     const run = () => window.setTimeout(() => {
       try {
@@ -8054,63 +9142,63 @@ function buildFrontPageDrawingModel(p = lastParams || getParams()) {
   const layout = sheetLayoutForRender('front', p, 0);
   const model = B.createDrawingModel(layout.sheetW, layout.sheetH);
   backendAddSheetFrame(B, model, layout, 'Front', 0, 1);
-  const c = compute(p);
-  const P = layout.plot;
-  const W = c.totalRun;
-  const H = Math.max(p.hUpright, p.hMid);
-  const t = p.tPanel;
-  const wt = c.wallT;
-  const leftWall = c.hasLeft ? wt : 0;
-  const rightWall = c.hasRight ? wt : 0;
-  const fit = Math.min((P.w - 170) / Math.max(1, W + leftWall + rightWall), (P.h - 180) / Math.max(1, H));
-  const ox = P.x + (P.w - (W + leftWall + rightWall) * fit) / 2 + leftWall * fit;
-  const floor = P.y + 118 + (P.h - 180 + H * fit) / 2;
-  const oy = floor - H * fit;
-  const sW = W * fit;
-  const sH = H * fit;
-  const st = Math.max(1.5, t * fit);
-  const swt = wt * fit;
-  const hU = p.hUpright * fit;
-  const hDoor = (p.hDoor || 1750) * fit;
-  const hMid = p.hMid * fit;
-  const vis = p.hVis * fit;
+  const L = frontElevationLayout(p, layout);
+  const c = L.c;
 
-  B.line(model, ox, floor, ox + sW, floor, {stroke:'#000', strokeWidth:1});
-  if (c.hasLeft) {
-    B.rect(model, ox - swt, oy, swt, sH, {fill:'#fbfbfb', stroke:'none'});
-    B.hatch(model, ox - swt, oy, swt, sH, 18, {stroke:'rgba(0,0,0,.36)', strokeWidth:1});
-    B.rect(model, ox - swt, oy, swt, sH, {fill:'none', stroke:'#000', strokeWidth:1});
+  B.line(model, L.ox, L.floor, L.ox + L.sW, L.floor, {stroke:'#000', strokeWidth:1, className:'front-floor-line'});
+  if (L.walls.left) {
+    B.rect(model, L.ox - L.swt, L.oy, L.swt, L.sH, {fill:'#fbfbfb', stroke:'none', className:'front-left-wall-fill'});
+    B.hatch(model, L.ox - L.swt, L.oy, L.swt, L.sH, 18, {stroke:'rgba(0,0,0,.36)', strokeWidth:1, className:'front-left-wall-hatch'});
+    B.rect(model, L.ox - L.swt, L.oy, L.swt, L.sH, {fill:'none', stroke:'#000', strokeWidth:1, className:'front-left-wall'});
   }
-  if (c.hasRight) {
-    B.rect(model, ox + sW, oy, swt, sH, {fill:'#fbfbfb', stroke:'none'});
-    B.hatch(model, ox + sW, oy, swt, sH, 18, {stroke:'rgba(0,0,0,.36)', strokeWidth:1});
-    B.rect(model, ox + sW, oy, swt, sH, {fill:'none', stroke:'#000', strokeWidth:1});
+  if (L.walls.right) {
+    B.rect(model, L.ox + L.sW, L.oy, L.swt, L.sH, {fill:'#fbfbfb', stroke:'none', className:'front-right-wall-fill'});
+    B.hatch(model, L.ox + L.sW, L.oy, L.swt, L.sH, 18, {stroke:'rgba(0,0,0,.36)', strokeWidth:1, className:'front-right-wall-hatch'});
+    B.rect(model, L.ox + L.sW, L.oy, L.swt, L.sH, {fill:'none', stroke:'#000', strokeWidth:1, className:'front-right-wall'});
+  }
+  backendDrawFrontDatum(B, model, L);
+
+  L.booths.forEach(booth => {
+    B.rect(model, booth.x, booth.y, booth.w, booth.h, {fill:'none', stroke:'#6a9bcc', strokeWidth:0.6, className:'front-visible-panel'});
+    B.text(model, booth.label, booth.x + booth.w / 2, booth.y + booth.h / 2, {fill:'#185FA5', fontSize:12, align:'middle', baseline:'central', className:'front-booth-label'});
+  });
+  L.posts.forEach(post => {
+    B.rect(model, post.x, post.y, post.w, post.h, {fill:'none', stroke:'#000', strokeWidth:0.8, className:'front-upright-panel'});
+  });
+  backendDrawFrontUprightLegs(B, model, L, getHardwareProfile(null, activeGroup(), p, 0));
+  backendDrawFrontPanelSegments(B, model, L);
+  L.doors.forEach(door => {
+    B.rect(model, door.x, door.y, door.w, door.h, {fill:'none', stroke:'#185FA5', strokeWidth:1, className:'front-door-panel'});
+    frontDoorSwingSegments(door, 7).forEach(seg => {
+      B.line(model, seg.x1, seg.y1, seg.x2, seg.y2, {stroke:'#000', strokeWidth:0.6, className:'front-door-swing-segment'});
+    });
+    backendDrawFrontHardware(B, model, door, getHardwareProfile(null, activeGroup(), p, door.index), L);
+  });
+  backendDrawFrontDoorAnnotations(B, model, L);
+  L.booths.filter(booth => !booth.hasDoor).forEach(booth => {
+    B.rect(model, booth.x + 4, L.floor - L.hDoor, Math.max(1, booth.w - 8), L.hDoor, {fill:'none', stroke:'#d64242', strokeWidth:0.8, dash:[8,6], className:'front-no-door-outline'});
+    B.text(model, '无门', booth.x + booth.w / 2, L.floor - L.hDoor / 2, {fill:'#d64242', fontSize:13, align:'middle', baseline:'central', className:'front-no-door-label'});
+  });
+
+  if (p.rebate && L.boardModel?.panels?.length) {
+    L.boardModel.panels.forEach((panel, index) => {
+      if (!(panel.bigX2 > panel.bigX1)) return;
+      const x = panel.bigX1;
+      const w = panel.bigX2 - panel.bigX1;
+      B.rect(model, x, L.floor - L.vis, w, L.vis, {fill:'none', stroke:'#000', strokeWidth:0.6, dash:[5,5], className:'front-rebate-panel'});
+      B.text(model, `P${index + 1}`, x + w / 2, L.floor - L.vis / 2, {fill:'#000', fontSize:11, align:'middle', baseline:'central', className:'front-panel-label'});
+    });
   }
 
-  let x = ox;
-  for (let i = 0; i <= p.count; i++) {
-    const isEdge = (i === 0 && !c.hasLeft) || (i === p.count && !c.hasRight);
-    if (isEdge || (i > 0 && i < p.count)) {
-      B.rect(model, x, floor - hU, st, hU, {fill:'none', stroke:'#000', strokeWidth:0.8});
-      x += st;
-    }
-    if (i < p.count) {
-      const boothMm = c.boothWidths[i] || c.boothW;
-      const doorMm = c.doorWidths[i] || p.doorW;
-      const bw = boothMm * fit;
-      const doorOff = Math.max(0, (boothMm - doorMm) / 2) * fit;
-      const dsx = x + doorOff;
-      const dsw = doorMm * fit;
-      B.rect(model, dsx, floor - hDoor, dsw, hDoor, {fill:'none', stroke:'#185FA5', strokeWidth:1});
-      B.rect(model, x, floor - hMid, bw, vis, {fill:'none', stroke:'#6a9bcc', strokeWidth:0.6});
-      B.text(model, `${p.hDoor || 1750}`, dsx + dsw / 2, floor - hDoor / 2, {fill:'#185FA5', fontSize:14, align:'middle', baseline:'central', className:'front-door-height'});
-      x += bw;
-    }
-  }
-  B.rect(model, ox, oy, sW, sH, {fill:'none', stroke:'#000', strokeWidth:1.2});
-  backendDrawDim(B, model, ox, oy - 58, ox + sW, oy - 58, `${c.adjustedLength ? '展开总长' : '总长'} ${W}mm`, 14, 14, 'front-total-dimension');
-  backendDrawDim(B, model, ox - 56, floor - hU, ox - 56, floor, `立板高 ${p.hUpright}mm`, -14, 14, 'front-upright-dimension');
-  backendDrawDim(B, model, ox + sW + 58, floor - vis, ox + sW + 58, floor, `见光板 ${p.hVis}mm`, 14, 14, 'front-visible-dimension');
+  B.rect(model, L.ox, L.oy, L.sW, L.sH, {fill:'none', stroke:'#000', strokeWidth:1.2, className:'front-outline'});
+  backendDrawDim(B, model, L.ox, L.oy - 42, L.ox + L.sW, L.oy - 42, `${c.adjustedLength ? '展开总长' : '总长'} ${Math.round(L.W)}mm`, 14, 14, 'front-total-dimension');
+  backendDrawDim(B, model, L.ox - 34, L.floor - L.hU, L.ox - 34, L.floor, `立板高 ${p.hUpright}mm`, -14, 14, 'front-upright-dimension');
+  backendDrawDim(B, model, L.ox + L.sW + 34, L.floor - L.hDoor, L.ox + L.sW + 34, L.floor, `门高 ${p.hDoor || 1750}mm`, 14, 14, 'front-door-height-dimension');
+  backendDrawDim(B, model, L.ox + L.sW + 78, L.floor - L.vis, L.ox + L.sW + 78, L.floor, `见光板 ${p.hVis}mm`, 14, 14, 'front-visible-dimension');
+  L.doors.forEach(door => {
+    backendDrawDim(B, model, door.x, L.floor + 28, door.x + door.w, L.floor + 28, `${Math.round(door.bigMm)}mm`, -10, 12, 'front-door-width-dimension');
+  });
+  backendDrawFrontBoothChain(B, model, L);
   return model;
 }
 
@@ -8125,7 +9213,7 @@ function buildSidePageDrawingModel(p = lastParams || getParams()) {
   const H = Math.max(p.hUpright, p.hMid);
   const t = p.tPanel;
   const wt = c.wallT;
-  const fit = Math.min((P.w - 300) / Math.max(1, W + wt), (P.h - 180) / Math.max(1, H));
+  const fit = Math.min(1, (P.w - 300) / Math.max(1, W + wt), (P.h - 180) / Math.max(1, H));
   const ox = P.x + (P.w - W * fit) / 2;
   const floor = P.y + 118 + (P.h - 180 + H * fit) / 2;
   const oy = floor - H * fit;
@@ -8153,16 +9241,101 @@ function buildSidePageDrawingModel(p = lastParams || getParams()) {
   B.rect(model, ox + sW - st, floor - hU, st, hU - doorH, {fill:'none', stroke:'#000', strokeWidth:0.8});
   B.line(model, ox, floor, ox + sW, floor, {stroke:'#000', strokeWidth:1});
   B.rect(model, ox, oy, sW, sH, {fill:'none', stroke:'#000', strokeWidth:1.2});
-  backendDrawDim(B, model, ox, oy - 58, ox + sW, oy - 58, `深度 ${p.depth}mm`, 14, 14, 'side-depth-dimension');
-  backendDrawDim(B, model, ox - 56, floor - hU, ox - 56, floor, `立板高 ${p.hUpright}mm`, -14, 14, 'side-upright-dimension');
-  backendDrawDim(B, model, ox + sW + 58, floor - hDoor, ox + sW + 58, floor, `门高 ${p.hDoor || 1750}mm`, 14, 14, 'side-door-height-dimension');
+  backendDrawDim(B, model, ox, oy - 42, ox + sW, oy - 42, `深度 ${p.depth}mm`, 14, 14, 'side-depth-dimension');
+  backendDrawDim(B, model, ox - 34, floor - hU, ox - 34, floor, `立板高 ${p.hUpright}mm`, -14, 14, 'side-upright-dimension');
+  backendDrawDim(B, model, ox + sW + 34, floor - hDoor, ox + sW + 34, floor, `门高 ${p.hDoor || 1750}mm`, 14, 14, 'side-door-height-dimension');
   return model;
 }
 
+function backendDetailCallout(B, model, label, x, y, tx, ty, text) {
+  B.arc(model, x, y, 13, 0, Math.PI * 2, {stroke:'#000', strokeWidth:1, className:'detail-callout-circle'});
+  B.text(model, label, x, y, {fill:'#000', fontSize:11, align:'middle', baseline:'central', className:'detail-callout-id'});
+  B.line(model, x + 10, y, tx, ty, {stroke:'#000', strokeWidth:0.8, className:'detail-callout-leader'});
+  B.text(model, text, tx + 4, ty, {fill:'#000', fontSize:10, align:'start', baseline:'central', className:'detail-callout-text'});
+}
+
+function buildDetailPageDrawingModel(p = lastParams || getParams()) {
+  const B = requireDrawingBackendV1();
+  const layout = sheetLayoutForRender('detail', p, 0);
+  const model = B.createDrawingModel(layout.sheetW, layout.sheetH);
+  backendAddSheetFrame(B, model, layout, 'Detail', 0, 1);
+  const P = layout.plot;
+  const c = compute(p);
+  const doorWmm = Number(c.doorWidths?.[0]) || Number(p.doorW) || 600;
+  const doorHmm = Number(p.hDoor) || 1750;
+  const hU = Number(p.hUpright) || 1830;
+  const depth = Number(p.depth) || 1220;
+  const panelH = Math.min(P.h * 0.55, 260);
+  const panelW = Math.max(70, Math.min(140, panelH * doorWmm / Math.max(1, doorHmm)));
+  const profile = getHardwareProfile(null, activeGroup(), p, 0);
+  const baseY = P.y + 112;
+  const doorX = P.x + P.w * 0.18;
+  const doorY = baseY + 20;
+  B.rect(model, doorX, doorY, panelW, panelH, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-door-panel'});
+  const hingeTemplate = getHardwareTemplate('hinge', profile.hinge);
+  [0.16, 0.5, 0.84].forEach(r => backendHingeSymbol(B, model, doorX + 8, doorY + panelH * r, 11, 'left', 'detail-door', hingeTemplate));
+  const symbolX = doorX + panelW * 0.72;
+  const symbolY = doorY + panelH * 0.5;
+  if (getHardwareTemplate('lock', profile.lock).id !== 'none') {
+    B.arc(model, symbolX, symbolY, 3, 0, Math.PI * 2, {stroke:'#000', strokeWidth:1, className:'detail-symbol-lock-cylinder'});
+    B.line(model, symbolX - 2.2, symbolY, symbolX + 2.2, symbolY, {stroke:'#000', strokeWidth:0.7, className:'detail-symbol-lock-thumbturn'});
+    B.line(model, symbolX, symbolY - 2.2, symbolX, symbolY + 2.2, {stroke:'#000', strokeWidth:0.7, className:'detail-symbol-lock-thumbturn'});
+    B.arc(model, symbolX, symbolY - 14, 2, 0, Math.PI * 2, {stroke:'#000', strokeWidth:1, className:'detail-symbol-lock-indicator'});
+    B.rect(model, symbolX + 10, symbolY - 32, 8, 64, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-symbol-lock-box'});
+    B.rect(model, symbolX + 22, symbolY - 6, 11, 12, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-symbol-lock-latch'});
+    B.rect(model, symbolX + 38, symbolY - 18, 6, 36, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-symbol-strike-keeper'});
+    backendHardwareScrew(B, model, symbolX + 14, symbolY - 24, 1.2, 'detail-symbol-lock-screw', '#000');
+    backendHardwareScrew(B, model, symbolX + 14, symbolY + 24, 1.2, 'detail-symbol-lock-screw', '#000');
+  } else if (getHardwareTemplate('handle', profile.handle).id !== 'none') {
+    if (profile.handle === 'bar-handle') {
+      B.rect(model, symbolX + 10, symbolY - 32, 6, 64, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-symbol-handle-bar'});
+      B.rect(model, symbolX + 7, symbolY - 24, 12, 4, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-symbol-handle-mount'});
+      B.rect(model, symbolX + 7, symbolY + 20, 12, 4, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-symbol-handle-mount'});
+    }
+    else {
+      B.arc(model, symbolX, symbolY, 4, 0, Math.PI * 2, {stroke:'#000', strokeWidth:1, className:'detail-symbol-handle-round'});
+      B.arc(model, symbolX, symbolY, 2, 0, Math.PI * 2, {stroke:'#000', strokeWidth:1, className:'detail-symbol-handle-round-center'});
+    }
+  }
+  const legTemplate = getHardwareTemplate('leg', profile.leg);
+  if (legTemplate.id !== 'none') {
+    const legX = doorX + panelW * 0.5;
+    const legBaseY = doorY + panelH + 2;
+    backendAdjustableLeg(B, model, legX, legBaseY, 8, 'detail-symbol-leg-thread', legTemplate);
+  }
+  backendDrawDim(B, model, doorX, doorY - 28, doorX + panelW, doorY - 28, `${doorWmm}mm`, 10, 11, 'detail-door-width-dimension');
+  backendDrawDim(B, model, doorX + panelW + 24, doorY, doorX + panelW + 24, doorY + panelH, `${doorHmm}mm`, 10, 11, 'detail-door-height-dimension');
+  B.text(model, 'F.F.L.', doorX + panelW / 2, doorY + panelH + 4, {fill:'#000', fontSize:10, align:'middle', baseline:'top', className:'detail-ffl'});
+  B.text(model, 'Door Panel', doorX + panelW / 2, doorY + panelH + 18, {fill:'#000', fontSize:12, align:'middle', baseline:'top', className:'detail-title'});
+
+  const x = P.x + P.w * 0.43;
+  const y = baseY;
+  const w = Math.min(300, P.w * 0.36);
+  const h = panelH + 42;
+  const wallW = 18;
+  B.hatch(model, x, y, wallW, h, 12, {stroke:'rgba(0,0,0,.36)', strokeWidth:1, className:'detail-wall-hatch'});
+  B.rect(model, x, y, wallW, h, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-wall'});
+  B.rect(model, x + wallW, y + 28, w - wallW - 22, h - 54, {fill:'none', stroke:'#000', strokeWidth:1, className:'detail-section-outline'});
+  B.rect(model, x + wallW, y + h - 26, w - wallW - 22, 18, {fill:'#111', stroke:'#000', strokeWidth:1, className:'detail-floor'});
+  B.path(model, [{x:x + wallW + 34, y:y + 28}, {x:x + w - 48, y:y + h - 26}], {stroke:'#000', strokeWidth:0.6, className:'detail-section-diagonal'});
+  B.path(model, [{x:x + w - 48, y:y + 28}, {x:x + wallW + 34, y:y + h - 26}], {stroke:'#000', strokeWidth:0.6, className:'detail-section-diagonal'});
+  backendDrawDim(B, model, x + wallW, y - 26, x + w - 22, y - 26, `${depth}mm`, 10, 11, 'detail-depth-dimension');
+  backendDrawDim(B, model, x + w + 26, y + h - 26 - (doorHmm / Math.max(1, hU)) * (h - 54), x + w + 26, y + h - 26, `门高 ${doorHmm}mm`, 10, 11, 'detail-door-height-dimension');
+  backendDrawDim(B, model, x + w + 58, y, x + w + 58, y + h, `总高 ${hU}mm`, 10, 11, 'detail-total-height-dimension');
+  const anchors = detailNodeAnchors(x, y, w, h, wallW);
+  buildHardwareNodes(getHardwareProfile(null, activeGroup(), p, 0), {doorCount:Math.max(1, Number(p.count) || 1)}).forEach(node => {
+    const a = anchors[node.category];
+    if (a) backendDetailCallout(B, model, node.id, a.x, a.y, a.tx, a.ty, node.template.name);
+  });
+  B.text(model, 'F.F.L.', x + w - 8, y + h + 4, {fill:'#000', fontSize:10, align:'middle', baseline:'top', className:'detail-ffl'});
+  B.text(model, 'Section', x + w / 2, y + h + 18, {fill:'#000', fontSize:12, align:'middle', baseline:'top', className:'detail-title'});
+  return model;
+}
 function buildBackendSheetDrawingModel(tab, p = lastParams || getParams(), options = {}) {
   if (tab === 'plan') return buildPlanPageDrawingModel(p, Number.isFinite(options.planPage) ? options.planPage : currentPlanPage);
   if (tab === 'front') return buildFrontPageDrawingModel(p);
   if (tab === 'side') return buildSidePageDrawingModel(p);
+  if (tab === 'detail') return buildDetailPageDrawingModel(p);
   throw new Error(`Unsupported SVG tab: ${tab}`);
 }
 
@@ -10083,6 +11256,16 @@ function commitFieldAndAdvance(fieldId) {
 function applyBatchFieldOnly(fieldId) {
   const rows = ensureRows(activeGroup()).filter(row => row.enabled === true);
   if (!rows.length) return false;
+  const hardwareFieldMap = {'hw-series':'series', 'hw-hinge':'hinge', 'hw-lock':'lock', 'hw-handle':'handle', 'hw-hook':'hook', 'hw-leg':'leg', 'hw-topRail':'topRail', 'hw-bracket':'bracket'};
+  if (hardwareFieldMap[fieldId]) {
+    const key = hardwareFieldMap[fieldId];
+    const value = document.getElementById(fieldId)?.value || DEFAULT_HARDWARE_PROFILE[key];
+    rows.forEach(row => {
+      const preset = key === 'series' ? HARDWARE_SERIES_PRESETS[value] : null;
+      row.hardwareProfile = {...DEFAULT_HARDWARE_PROFILE, ...(row.hardwareProfile || {}), ...(preset?.profile || {}), [key]:value};
+    });
+    return true;
+  }
   const valueByField = {
     'p-depth': () => ({depth: parseInt(document.getElementById('p-depth').value) || 1220}),
     'p-door': () => ({doorW: parseInt(document.getElementById('p-door').value) || 600}),
@@ -10150,7 +11333,16 @@ document.getElementById('p-rebate').addEventListener('change', () => {
 
 document.querySelectorAll('.field input[type=number], .field select').forEach(el => {
   if (el.id === 'p-count' || el.id === 'p-total' || el.id === 'p-gap') return;
-  el.addEventListener('change', () => commitFieldChange(el.id));
+  el.addEventListener('change', () => {
+    if (el.id === 'hw-series') applyHardwareSeriesPreset(el.value);
+    else {
+      if (el.id && el.id.startsWith('hw-')) {
+        const seriesEl = document.getElementById('hw-series');
+        if (seriesEl && el.id !== 'hw-series') seriesEl.value = 'custom';
+      }
+      commitFieldChange(el.id);
+    }
+  });
   el.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     e.preventDefault();
@@ -10281,5 +11473,5 @@ window.setInterval(() => {
   }
 }, 530);
 
-setTimeout(()=>{ initMobileSidebarResize(); bindTopButtonDrag(); applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); setTimeout(updateMobileStickyOffsets, 80); }, 100);
+setTimeout(()=>{ initMobileSidebarResize(); bindTopButtonDrag(); applyViewMode(); populateHardwareSelectOptions(); syncHardwareForm(activeRow()?.hardwareProfile); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); setTimeout(updateMobileStickyOffsets, 80); }, 100);
 </script>

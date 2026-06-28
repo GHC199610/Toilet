@@ -1,588 +1,121 @@
-# 卫生间隔断行业规则库
+﻿# Bathroom Partition Domain Rules
 
-版本：V1.0
+Version: 1.1
 
----
+## Scope
 
-# 文件定位
+This file defines bathroom partition business rules. It does not define UI, drawing implementation, export implementation, or storage.
 
-本文件仅负责：
+## Design Priorities
 
-卫生间隔断行业规则
+Resolve design decisions in this order:
 
-卫生间隔断设计规则
+1. Usability: each booth must remain usable.
+2. Installability: dimensions must be physically buildable with gaps, walls, and hardware.
+3. Rule compliance: minimum widths/depths and collision rules must pass.
+4. Material efficiency: reduce waste and nonstandard cuts after the layout is valid.
+5. Visual consistency: align panels and seams when it does not violate higher priorities.
 
-卫生间隔断计算规则
+Do not choose equal distribution over usability or installation constraints.
 
-卫生间隔断工程经验规则
+## Default Parameters
 
----
+| Item | Default / Rule |
+|---|---|
+| Door gap | 6 mm default, configurable |
+| Floor clearance | 6-10 mm default range, configurable |
+| Minimum usable booth clear width | 700 mm |
+| Recommended clear width | 900 mm |
+| Comfortable clear width | 1000 mm |
+| Premium clear width | 1100 mm |
+| Minimum depth warning threshold | 800 mm |
+| Standard depth | 1220 mm |
+| Comfortable depth | 1400 mm |
+| Premium depth | 1500 mm |
 
-禁止存放：
+When clear width is below 700 mm, the layout is invalid and the user should be told to reduce booth count or increase total length.
 
-UI逻辑
+## Door Rules
 
-数据库逻辑
+- Door width participates in net-width calculation, collision detection, drawing, and cut-list generation.
+- Door gaps participate in total length closure and door-opening clearance.
+- Door swing values must support at least: left-in, right-in, left-out, right-out.
+- Door collision checks must consider door-to-door, door-to-wall, door-to-column, and door-to-equipment conflicts when those structures exist in the model.
+- No-door booths must remain explicit in the model and must not be inferred from a zero door width.
 
-绘图逻辑
+## Depth Rules
 
-导出逻辑
+- Booth depth means depth-panel body depth only.
+- Front-edge panel thickness is outside the depth dimension.
+- Door panel thickness follows the front-edge panel outside baseline.
+- Depth below 800 mm must generate a warning or invalid state according to the active validation mode.
+- Side elevation depth must match plan depth exactly.
 
-框架代码
+## Rebate Rules
 
----
+- Rebate doors keep two coordinate systems: big-face body dimensions and small-face installation dimensions.
+- Door gaps and opening occupancy use small-face installation dimensions.
+- Door body outline and cut-list body size use big-face dimensions.
+- Big-face/small-face orientation follows the actual swing direction.
+- Material cut-list may report big-face dimensions but must not feed them back into gap or installation calculations.
 
-# 设计目标
+## Wall And Structure Rules
 
-系统必须模拟专业卫生间隔断设计师。
+Supported wall conditions:
 
-用户输入条件后：
+- Left wall
+- Right wall
+- Back wall
+- Two-side wall
+- Three-side wall
+- L-shaped wall
+- U-shaped wall
+- Irregular wall
 
-自动判断
+The model may later include columns, pipes, equipment, or irregular zones. If these are not present in the model, drawing and calculation code must not invent them.
 
-自动优化
+## Batch Editing Rules
 
-自动计算
+- Total length is structurally tied to booth count.
+- If a batch selection contains rows with different booth counts, total length must not be batch-applied.
+- Batch editing must use a field whitelist. One user action may only write the field being edited, or an explicitly grouped field set such as door gap plus rebate depth.
+- Batch selection alone must not save form state, rebuild layout, or refresh cut lists.
 
-自动绘图
+## Width Distribution Rules
 
-自动统计
+Dimension allocation must satisfy:
 
-自动出图
+1. Minimum clear width.
+2. Door width and door gap.
+3. Edge and middle panel reserves.
+4. Locked dimensions.
+5. Deterministic distribution of remaining space.
 
----
+## Standard Board Sizes
 
-# 设计原则
+The board size library must be configurable. Initial supported sizes:
 
-## 原则1
-
-优先保证可使用性。
-
-不是优先平均分配尺寸。
-
----
-
-## 原则2
-
-优先保证净宽。
-
-不是优先保证隔间数量。
-
----
-
-## 原则3
-
-优先保证可安装性。
-
-不是优先保证理论尺寸。
-
----
-
-## 原则4
-
-所有方案必须满足：
-
-可安装
-
-可使用
-
----
-
-门缝必须参与：
-
-净宽计算
-
-总宽计算
-
----
-
-禁止忽略门缝。
-
----
-
-# 门板规则
-
-默认门缝：
-
-6mm
-
-允许配置。
-
----
-
-默认离地高度：
-
-6~10mm
-
-允许配置。
-
----
-
-门宽必须参与：
-
-净宽计算
-
-开门碰撞检测
-
-材料统计
-
----
-
-# 单间净宽规则
-
-推荐：
-
-900mm
-
----
-
-舒适：
-
-1000mm
-
----
-
-高端：
-
-1100mm
-
----
-
-# 最小净宽
-
-700mm
-
----
-
-净宽小于700mm：
-
-系统必须提示：
-
-当前布局不可用
-
-建议减少隔间数量
-
----
-
-# 隔间深度规则
-
-物理基准：
-
-隔间总深度只表示深度板实际尺寸。
-
-总深度不得包含前沿板厚度。
-
-前沿板必须位于深度板外侧，由深度板顶出。
-
-门板厚度位置必须跟随前沿板外侧基准。
-
-启口状态下，门板必须与前沿板咬合，并保留设定门缝。
-
-启口大面/小面只改变咬合台阶，不得改变门缝计算来源。
-
-门缝和门洞占位必须以启口小面安装尺寸为准。
-
-门板本体尺寸标尺必须以门板大面下料尺寸为准。
-
-启口门板的大面/小面位置必须跟随实际开门方向，不得固定为上大下小或上小下大。
-
-材料下料清单可以记录启口大面尺寸，但不得反向影响门缝和安装标尺。
-
----
-
-批量修改规则：
-
-总长度是与隔间数量绑定的结构参数。
-
-当全选对象包含不同间数的组时，禁止批量修改总长度。
-
-系统必须显式警告用户，并阻止该操作。
-
----
-
-最小：
-
-800mm
-
----
-
-标准：
-
-1220mm
-
----
-
-舒适：
-
-1400mm
-
----
-
-高端：
-
-1500mm
-
----
-
-低于800mm：
-
-自动警告
-
----
-
-# 墙体规则
-
-支持：
-
-左墙
-
-右墙
-
-后墙
-
-双边墙
-
-三边墙
-
-L型墙
-
-U型墙
-
-异形墙
-
----
-
-自动判断：
-
-连接方式
-
-固定方式
-
-收边方式
-
----
-
-# 门系统规则
-
-支持：
-
-左内开
-
-右内开
-
-左外开
-
-右外开
-
-双开门
-
----
-
-系统必须自动检测：
-
-门碰门
-
-门碰墙
-
-门碰柱
-
-门碰设备
-
----
-
-发生冲突：
-
-自动报警
-
-自动推荐方案
-
----
-
-# 特殊结构规则
-
-支持：
-
-墙体
-
-异形区域
-
----
-
-# 异形墙规则
-
-支持：
-
-斜墙
-
-折线墙
-
-圆弧墙
-
-不规则墙
-
----
-
-系统必须自动计算：
-
-实际可用空间
-
-有效安装空间
-
----
-
-# 尺寸分配规则
-
-禁止简单平均分配。
-
----
-
-优先级：
-
-满足净宽
-
-↓
-
-满足门宽
-
-↓
-
-满足边距
-
-↓
-
-剩余尺寸均分
-
----
-
-# 布局优化规则
-
-系统必须生成：
-
-推荐方案
-
-最优方案
-
-用户方案
-
----
-
-# 最优方案判断依据
-
-净宽最大
-
-材料利用率最高
-
-安装难度最低
-
-结构最合理
-
-视觉最协调
-
----
-
-# 标准板规格库
-
-支持配置：
-
-1220x1830
-
-1220×2440
-
-1220×3050
-
-1525×3050
-
-1830×2440
-
-1830×3660
-
----
-
-自动参与：
-
-材料排版
-
-损耗计算
-
-材料统计
-
----
-
-# 材料优化规则
-
-优先减少：
-
-废料率
-
-异形切割
-
-非标准尺寸
-
-拼接数量
-
----
-
-# 绘图规则
-
-必须生成：
-
-平面图
-
-正立面图
-
-侧立面图
-
-安装图
-
-编号图
-
-加工图
-
-材料图
-
----
-
-# 尺寸标注规则
-
-优先级：
-
-总尺寸
-
-↓
-
-关键尺寸
-
-↓
-
-局部尺寸
-
-↓
-
-特殊尺寸
-
----
-
-禁止尺寸重叠。
-
-禁止文字重叠。
-
----
-
-# 材料统计规则
-
-自动统计：
-
-按现有清单内容
-
-后续可自由添加
-
----
-
-输出：
-
-数量
-
-面积(长+宽)*高=m²
-高可以自定义输入
-
-重量（预留）
-
-成本（预留）
-
----
-
-# 自动校验规则
-
-自动检测：
-
-净宽不足
-
-深度不足
-
-门冲突
-
-结构冲突
-
----
-
-# AI设计规则
-
-系统不是计算器。
-
-必须具备设计判断能力。
-
----
-
-设计流程：
-
-输入数据
-
-↓
-
-规则校验
-
-↓
-
-可行性分析
-
-↓
-
-布局优化
-
-↓
-
-尺寸计算
-
-↓
-
-碰撞检测
-
-↓
-
-绘图生成
-
-↓
-
-材料统计
-
-↓
-
-工程出图
-
----
-
-# 最终目标
-
-达到专业卫生间隔断设计师设计水平。
-
-实现：
-
-输入参数
-
-↓
-
-自动设计
-
-↓
-
-自动优化
-
-↓
-
-自动计算
-
-↓
-
-自动绘图
-
-↓
-
-自动统计
-
-↓
-
-支持出PDF
-
-↓
-
-直接进入生产环节
+- 1220 x 1830
+- 1220 x 2440
+- 1220 x 3050
+- 1525 x 3050
+- 1830 x 2440
+- 1830 x 3660
+
+Material optimization should reduce:
+
+- Waste rate.
+- Irregular cuts.
+- Nonstandard sizes.
+- Unnecessary splices.
+
+## Required Validation Categories
+
+- Net width too small.
+- Depth too small.
+- Door collision.
+- Wall/structure conflict.
+- Locked dimension conflict.
+- Missing required hardware where a drawing requires it.
+
+Validation failures must be explicit and actionable.

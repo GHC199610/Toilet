@@ -1,743 +1,118 @@
-# 卫生间隔断自动设计系统
+﻿# AI Governance And Change Discipline
 
-# AI治理与最高执行约束（20260622版）
+Version: 1.1
 
-版本：V1.0
+## Priority
 
----
+This file defines project-level behavior constraints for AI-assisted changes. If it conflicts with a quick implementation idea, this file wins unless the user explicitly approves the risk.
 
-# 🚨 系统最高原则（不可违反）
+## Non-Negotiable Rules
 
-本文件优先级：
+- Do not freely refactor architecture.
+- Do not replace engine boundaries or create parallel systems.
+- Do not change unrelated UI, style, calculation, drawing, cut-list, or export behavior.
+- Do not invent missing data. Return an explicit error or warning.
+- Do not silently repair invalid production data.
+- Do not claim completion without verification evidence.
 
-高于所有.md文件
+## Frozen Boundaries
 
-高于所有代码
+Treat these as protected unless the user requests otherwise:
 
-高于所有插件
+- Rule/domain logic.
+- Calculation engine.
+- Layout and pagination.
+- Drawing dispatch and view-specific renderers.
+- Cut-list generation.
+- Export and print routes.
+- State save/load and project persistence.
 
-高于所有优化建议
+## Required Workflow
 
----
+### 1. Freeze The Request
 
-# ⚠️ 第一条：禁止AI自由重构系统
+Identify:
 
-AI不得：
+- User's exact goal.
+- Target behavior.
+- What is out of scope.
+- Target view/export/device if applicable.
 
-重写架构
+### 2. Locate The Owner
 
-重构引擎层结构
+Before editing, identify:
 
-随意拆分模块
+- Function(s) owning the behavior.
+- Data source feeding those functions.
+- Rendering/export path consuming the result.
+- Shared helpers that would be risky to touch.
 
-随意合并模块
+### 3. Impact Matrix
 
-删除已有设计层
+Check possible impact on:
 
----
+- Input/state.
+- Calculation.
+- Layout/pagination.
+- Drawing preview.
+- PNG/PDF/SVG export.
+- Direct print.
+- Cut list.
+- Mobile interaction.
 
-任何优化必须：
+### 4. Minimal Change
 
-保持现有架构不变
+- Prefer targeted branch logic over broad rewrites.
+- Add explicit conditions for special cases.
+- Keep non-target branches on their original path.
+- Do not “clean up” unrelated code while fixing a bug.
 
----
+### 5. Verify
 
-# ⚠️ 第二条：禁止“自以为优化”
+Run checks appropriate to the touched surface. Required for most code edits:
 
-以下行为禁止：
+- Syntax check.
+- Diff check.
+- Target behavior check.
+- Non-target regression check when shared code changed.
 
-“我觉得这样更好”
+## Error Shape
 
-“可以简化结构”
-
-“我帮你重构一下”
-
-“这样性能更好”
-
----
-
-除非：
-
-明确修复BUG
-
-且经过影响分析
-
----
-
-# ⚠️ 第三条：强制架构冻结(如有)
-
-以下结构不可修改：(如有)
-
-Rule Engine
-
-Calculation Engine
-
-Layout Engine
-
-Drawing Engine
-
-Material Engine
-
-PDF Engine
-
----
-
-禁止新增“替代引擎”
-
-禁止绕过引擎流程
-
----
-
-# ⚠️ 第四条：强制数据流不变(如有)
-
-唯一合法流程：
-
-
-UI Input
-→ Validation
-→ Rule Engine
-→ Calculation Engine
-→ Layout Engine
-→ Validation
-→ Drawing Engine
-→ Material Engine
-→ PDF Engine
-
----
-
-禁止：
-
-跳过流程
-
-逆向流程
-
-并行替代流程
-
----
-
-# ⚠️ 第五条：禁止多数据源(如有)
-
-系统只能存在：
-
-ONE TRUE MODEL
-
----
-
-禁止：
-
-计算模型一套
-
-绘图模型一套
-
-材料模型一套
-
----
-
-# ⚠️ 第六条：禁止逻辑分裂
-
-同一规则必须：
-
-只存在一个实现
-
----
-
-禁止：
-
-不同模块重复实现同一规则
-
----
-
-# ⚠️ 第七条：修改必须全链路分析(如有)
-
-任何修改必须评估：
-
-计算影响
-
-布局影响
-
-绘图影响
-
-材料影响
-
-导出影响
-
-测试影响
-
----
-
-缺一不可。
-
----
-
-# ⚠️ 第八条：强制一致性原则
-
-所有输出必须：
-
-来自同一数据模型
-
-同一计算结果
-
-同一规则引擎
-
----
-
-禁止：
-
-局部结果覆盖全局结果
-
----
-
-# ⚠️ 第九条：插件必须隔离(如有)
-
-插件不得：
-
-修改核心引擎
-
-修改数据模型
-
-修改规则系统
-
----
-
-插件只能：
-
-扩展能力
-
-不能改变核心逻辑
-
----
-
-# ⚠️ 第十条：禁止AI“补逻辑”
-
-如果数据缺失：
-
-必须返回错误
-
-不得猜测
-
-不得补算
-
-不得自动脑补
-
----
-
-# ⚠️ 第十一条：错误必须显式
-
-任何错误必须：
-
-明确返回
-
-不可静默修复
-
----
-
-错误结构：
-
-error_code
-error_message
-affected_module
-suggestion
-
----
-
-# ⚠️ 第十二条：UI不可随意变化
-
-UI必须：
-
-保持现有结构
-
-保持现有交互
-
-保持现有风格
-
----
-
-任何UI改动必须：
-
-兼容旧流程
-
----
-
-禁止擅自修改请求范围外的任何内容。
-
-包括但不限于：
-
-颜色
-
-字体
-
-字号
-
-粗细
-
-间距
-
-布局
-
-交互
-
-显示文案
-
-除非该改动是实现用户指定功能或修复指定BUG的必要条件。
-
-非必要视觉优化必须先询问用户确认。
-
----
-
-UI入口删除或变更必须先做关联链路检查：
-
-* UI按钮/入口是否仍有独立业务用途
-* 对应函数是否仍被初始化、自动刷新、导出、绘图、材料清单等流程调用
-* 删除入口后，界面提示文案是否仍指向已不存在的操作
-* 是否会破坏既有自动生成、初始化渲染、数据联动或导出流程
-
-允许删除：
-
-确认无用的UI入口、专属样式、过期提示文案。
-
-禁止删除：
-
-仍被系统流程使用的核心函数、计算链路、绘图链路、材料链路、导出链路。
-
-删除UI入口时，如提示文案直接关联该入口，必须同步改为与现有流程一致的文案。
-
----
-
-# ⚠️ 第十三条：变更边界必须锁定
-
-当用户指定修改某个局部行为时，AI必须先锁定变更边界。
-
-例如：
-
-* 用户要求修改鼠标滚轮缩放，只允许优先检查和修改 wheel 事件、滚轮倍率、滚轮上下限。
-* 不得擅自修改 autoFit、drawView、分页预览、初始化适配、重置视图等公共链路。
-* 用户要求修改按钮，只允许优先检查按钮入口、绑定事件、关联提示文案。
-* 不得擅自改动无关功能区、样式系统、计算逻辑或数据模型。
-
-修改前必须完成：
-
-1. 明确用户请求的直接对象。
-2. 列出允许修改的最小代码范围。
-3. 标记高风险公共函数，默认禁止触碰。
-4. 如果必须触碰公共函数，必须先向用户说明原因和影响，得到确认后再改。
-5. 修改后必须说明实际改了哪些范围，以及哪些范围没有改。
-
-禁止行为：
-
-* 为了达到表面效果，绕开用户指定范围去改公共链路。
-* 在没有确认的情况下修改初始化、自动适配、自动布局、绘图主入口、材料主入口、导出主入口。
-* 把“体验相似”当成理由去改变原有业务逻辑。
-* 在用户只要求检查或解释时直接修改代码。
-
-回滚规则：
-
-一旦发现改动超出用户指定范围，必须立即回退超范围部分，并明确告知用户。
-
----
-
-# ⚠️ 第十四条：性能不能破坏结构
-
-禁止：
-
-为了性能重写架构
-
----
-
-性能优化必须：
-
-在现有架构内完成
-
----
-
-# ⚠️ 第十五条：测试必须覆盖全链路
-
-任何修改必须通过：
-
-Unit Test
-
-Integration Test
-
-E2E Test
-
-Regression Test
-
----
-
-测试失败：
-
-禁止提交
-
----
-
-# ⚠️ 第十六条：AI行为边界（除非请求）
-
-AI在本项目中只能做：
-
-代码生成
-
-错误修复
-
-模块实现
-
-接口实现
-
----
-
-禁止做：
-
-架构决策
-
-系统重构建议（除非请求）
-
-替换设计方案
-
----
-
-# 🧠 系统核心思想（必须理解）
-
-本系统不是“写代码系统”。
-
-而是：
-
-> 规则驱动的工程设计系统
-
----
-
-# 🧱 系统本质
-
-用户输入：
-
-按现有形式
-
-↓
-
-系统输出：
-
-可生产工程方案
-
----
-
-# 🎯 最终目标
-
-实现：
-
-输入参数
-
-↓
-
-自动工程设计
-
-↓
-
-自动校验
-
-↓
-
-自动优化(必须先提交给用户确认)
-
-↓
-
-自动绘图
-
-↓
-
-自动材料清单
-
-↓
-
-可直接生产
-
----
-
-# 🔒 终极约束总结
-
-只允许：
-
-稳定
-
-一致
-
-可预测
-
-工程级正确
-
----
-
-禁止：
-
-聪明但不稳定
-
-优化但破坏结构
-
-简化但丢失规则
-
----
-
-# 🧩 终极一句话原则
-
-> 宁可重复计算正确，也不能一次“聪明优化”导致系统崩坏。
-
----
-
-# 🧭 AI代码修改强制工作流
-
-本节为项目全局强制规范。
-
-任何AI修改代码、UI、计算、绘图、材料、导出逻辑前，必须执行本流程。
-
----
-
-## 一、需求冻结
-
-修改前必须明确：
-
-* 用户原始目标
-* 本次只解决什么问题
-* 明确不改什么范围
-* 适用条件是什么
-* 是否只针对某个特殊场景
-
-未确认条件前，不得写代码。
-
-用户明确说“只改这个BUG”“不要改其他代码”时：
-
-* 禁止顺手优化
-* 禁止扩大修改范围
-* 禁止调整无关UI
-* 禁止修改无关计算逻辑
-
----
-
-## 二、问题复现与代码定位
-
-修改前必须完成定位：
-
-* 问题在哪个状态出现
-* 触发条件是什么
-* 涉及哪个函数
-* 涉及哪些变量
-* 数据从哪里来
-* 结果在哪里渲染或输出
-
-UI问题必须确认渲染路径。
-
-计算问题必须确认数据流。
-
-绘图问题必须确认坐标、缩放、分页、图层关系。
-
-材料问题必须确认来源是统一计算结果，禁止另起数据源。
-
----
-
-## 三、影响矩阵
-
-任何修改前必须检查影响范围：
-
-* 输入影响
-* 计算影响
-* 布局影响
-* 绘图影响
-* 材料清单影响
-* 导出/PDF影响
-* UI交互影响
-* 历史功能影响
-* 已有锁定变量影响
-
-如果某项不受影响，也必须在交付说明中明确“不影响”。
-
----
-
-## 四、最小修改原则
-
-必须遵守：
-
-* 能改1行，不改3行
-* 能加条件，不改结构
-* 能局部修复，不全局重构
-* 禁止重写旧逻辑
-* 禁止替换现有架构
-* 禁止为了方便新增重复逻辑
-* 禁止修改用户未要求的功能
-
-修改必须落在目标函数、目标条件、目标数据链路内。
-
----
-
-## 五、条件隔离
-
-新增逻辑必须写成明确条件。
-
-示例：
+When adding explicit errors, use a structure compatible with:
 
 ```js
-if (isSingleBoothPage && hasVisibleTag) {
-  // only this case
+{
+  error_code: 'MISSING_GEOMETRY',
+  error_message: 'Required geometry was not available.',
+  affected_module: 'drawing',
+  suggestion: 'Recalculate the row or fix the missing input.'
 }
 ```
 
-禁止模糊判断。
+## UI Discipline
 
-禁止让特殊场景逻辑影响普通场景。
+- Keep existing structure, interaction, and style unless the user asks to change them.
+- Necessary UI changes must be limited to the behavior being implemented.
+- Deleting a UI entrance requires checking whether its function is still used by initialization, drawing, cut list, export, save/load, or automation.
 
-例如：
+## Branch And Mode Isolation
 
-* 单间逻辑不得影响多间
-* A4逻辑不得影响自由画布或导出逻辑
-* 标签逻辑不得影响无标签图纸
-* 锁定尺寸逻辑不得影响未锁定尺寸
+When changing a mode-specific path, explicitly protect other modes:
 
----
+- Landscape vs portrait.
+- A4 vs A3.
+- Plan vs front vs side vs detail view.
+- Preview vs export vs print.
+- Desktop vs mobile.
+- Normal layout vs auto-packed layout.
+- Single selection vs multi-selection.
 
-## 六、旧功能保护
+## Delivery Format
 
-修改完成后必须确认非目标场景不变：
+Finish with:
 
-* 多间不变
-* 无备注不变
-* 材料清单不变
-* 导出不变
-* 原输入流程不变
-* 原计算闭合不变
-* 原图纸缩放/分页不变
-
-如有任何可能影响，必须说明风险并验证。
-
----
-
-## 七、测试与验证要求
-
-所有修改必须至少执行：
-
-* 语法检查：`node --check`
-* 差异检查：`git diff --check`
-
-计算类修改必须增加临时断言测试，至少验证：
-
-* 总长闭合
-* 固定值不变
-* 未锁定值重新分配
-* 边界条件不崩溃
-
-UI类修改必须验证：
-
-* 条件是否真实命中
-* 目标场景是否生效
-* 非目标场景是否不变
-* 文本、标尺、标签、按钮不重叠
-
-绘图类修改必须验证：
-
-* 坐标正确
-* 缩放正确
-* 分页正确
-* 图层不遮挡
-* 导出不受影响
-
-没有测试，不得说完成。
-
----
-
-## 八、交付说明格式
-
-每次完成后必须说明：
-
-* 修改文件
-* 修改函数
-* 修改条件
-* 修改内容
-* 未影响范围
-* 测试结果
-* 是否提交/推送
-
-禁止只说“已完成”。
-
----
-
-## 九、失败处理
-
-如果修改失败或用户指出错误：
-
-* 立即停止继续猜
-* 回到触发条件
-* 检查代码是否进入目标分支
-* 检查数据是否正确
-* 检查渲染是否使用了旧数据
-* 禁止继续调参数碰运气
-
-同类问题重复出现时，必须先复盘原因，再修改。
-
----
-
-## 十、提交纪律
-
-提交前必须：
-
-* 确认工作区状态
-* 确认只包含目标文件
-* 确认测试通过
-* 确认无临时文件
-
-提交信息必须说明：
-
-* 修改内容
-* 影响范围
-* 测试结果
-* 风险说明
-
-推送失败时，必须明确：
-
-* 本地提交号
-* 失败原因
-* 后续可执行命令
-
----
-
-## 十一、最高执行纪律
-
-* 用户没要求的，不改
-* 没定位函数，不改
-* 没确认条件，不改
-* 没影响分析，不改
-* 没验证，不说完成
-* 不确定，不装确定
-* 一个BUG只修一个BUG
-* 修复不能制造新问题
-
----
-
-## 十二、分支边界与纸张方向隔离
-
-任何涉及不同显示/输出模式的修改，必须先隔离目标分支，禁止低级串改。
-
-强制规则：
-
-* 修改横向 A4 逻辑时，必须保证纵向 A4 逻辑不变。
-* 修改纵向 A4 逻辑时，必须保证横向 A4 逻辑不变。
-* 修改 A4 逻辑时，必须保证 A3 逻辑不变。
-* 修改自动排版按钮逻辑时，必须保证普通分页/普通布局不变。
-* 修改普通分页逻辑时，必须保证自动排版按钮逻辑不被污染。
-* 修改预览缩放逻辑时，必须保证导出/PDF/打印逻辑不变。
-* 修改导出/PDF/打印逻辑时，必须保证画布预览逻辑不变。
-* 修改快速布局输入逻辑时，必须保证图纸绘制、尺寸计算、材料清单不被连带修改。
-
-实施要求：
-
-1. 修改前必须写清楚目标分支条件，例如：仅 `pageNeedsLandscape(page) === true` 时生效。
-2. 非目标分支必须显式走原逻辑，不允许依赖“应该不会影响”的猜测。
-3. 如果必须触碰公共函数，必须在公共函数内部加入明确条件保护。
-4. 修改后必须至少验证目标分支和一个非目标分支。
-5. 交付说明必须写明：本次保护了哪些非目标分支。
-
-禁止行为：
-
-* 为了修横向页，改变纵向页排版。
-* 为了修自动排版，改变普通分页。
-* 为了修某个特殊场景，改变默认场景。
-* 为了让当前截图正确，扩大公共函数行为范围。
-* 在没有验证非目标分支前，说“不会影响”。
-
----
-
-# Regression Prevention Addendum
-
-All future changes touching export, print, BOM, drawing text editing, mobile keyboard behavior, canvas hit testing, or pagination must follow `REGRESSION_PREVENTION_RULES.md` before implementation and before delivery. If any rule conflicts with a quick fix, the rule wins unless the user explicitly approves the risk.
+- Modified files.
+- Modified functions or modules.
+- Scope intentionally not changed.
+- Verification results.
+- Residual risk or unverified paths.

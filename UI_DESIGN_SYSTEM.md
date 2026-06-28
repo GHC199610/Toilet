@@ -1,428 +1,95 @@
-# 卫生间隔断系统 UI 设计规范
+﻿# UI Design System
 
-版本：V1.0
+Version: 1.1
 
----
+## Design Goals
 
-# UI设计目标
+The UI should feel professional, compact, stable, and engineering-oriented. It should help users enter parameters, inspect drawings, edit key labels/dimensions, and export production output without decorative complexity.
 
-UI必须：
+## Visual Principles
 
-极简
+- Follow existing layout, colors, spacing, and typography unless a requested feature requires a change.
+- Avoid decorative animation, heavy gradients, and ornamental elements.
+- Keep operational controls dense but readable.
+- Use consistent component sizing inside the sidebar and tool panels.
 
-专业
+## Typography
 
-工程化
+Use the existing font stack:
 
-稳定
+```css
+font-family: 'Microsoft YaHei', Arial, sans-serif;
+```
 
-一致
+Current key variables:
 
----
+- `--sidebar-content-font`: sidebar labels, inputs, button text, hints, card text.
+- `--control-gap`: peer control spacing.
+- `--field-gap`: field vertical spacing.
+- `--compact-gap`: dense internal spacing.
 
-# 设计风格
+Rules:
 
-按现有风格统一
-有需要再改
+- Sidebar content text uses the shared variable unless there is a clear hierarchy reason.
+- Section titles may use independent sizing but must not create empty reserved space when hidden/removed.
+- Button text, input text, hints, and card text in the same functional area should not have visibly inconsistent sizes.
 
----
+## Layout
 
-统一规则：
+Primary areas:
 
-按现有规则
+- Sidebar parameter/input area.
+- View tabs and drawing canvas area.
+- Cut-list area.
+- Export/action area.
+- Temporary panels for focused editing.
 
----
+Layout rules:
 
-禁止：
+- Keep drawing as the primary work surface.
+- Do not add landing-page or marketing-style sections.
+- Moving a UI entrance may move its container, but must preserve original binding, data field, and submit logic.
+- Remove stale hints when removing or moving an entrance.
 
-花哨动画
+## Controls
 
-复杂渐变
+- Numeric values use inputs/steppers where already established.
+- Binary settings use checkbox/toggle patterns already present.
+- View selection uses tabs.
+- Tool actions use icon buttons where available and clear text buttons where the command is textual/export-related.
+- Dangerous or destructive actions use the established danger color.
 
-无意义装饰
+## Cut-List Display
 
----
+- User-facing term: “开料清单”.
+- Process prefix, size, height, and quantity should align as stable columns or column-like groups.
+- Do not let process labels such as single/double rebate squeeze size columns.
+- Show complete size information the first time a board/process group appears.
+- Repeated height may be omitted only for consecutive items in the same board/process group.
+- Use `1830 x 205` style spacing around the multiplication mark in display text where practical.
 
-# 布局原则
+## Quick Layout Rules
 
-一个页面只做一件事
+- “Select all” is a selection-state change only.
+- Selecting all must not rebuild layout, submit form state, redraw due to data mutation, or refresh cut list by itself.
+- Batch editing uses a field whitelist.
+- A batch operation may only update the field the user operated, or an explicitly grouped field set.
+- If selected rows have different booth counts, total length must not batch-apply and must show a warning.
 
----
+## Drawing Selection Rules
 
-页面类型：
+- Shift-click toggles multi-selection and preserves the clicked object's normal panel-opening behavior.
+- Normal click exits multi-selection and activates the clicked object.
+- Multi-select must not submit forms, rebuild layout, or recalculate materials by itself.
 
-输入页
+## Text Fit Rules
 
-方案页
+- UI text must not overflow buttons, cards, tabs, labels, or title blocks.
+- Prefer wrapping in content areas and shrink/truncate only where layout is fixed.
+- Drawing title and labels must stay inside their assigned drawing areas.
 
-图纸页
+## Responsive Rules
 
-导出页
-
----
-
-禁止混合功能页面
-
----
-
-# 操作原则
-
-所有操作必须：
-
-3步完成
-
----
-
-标准流程：
-
-输入参数
-
-↓
-
-自动计算
-
-↓
-
-生成结果
-
----
-
-禁止多层菜单操作
-
----
-
-# 输入界面规范
-
-必须结构化输入：
-
-总长度
-
-深度
-
-隔间数量
-
-门宽
-
-墙体类型
-
-特殊结构
-
----
-
-# 按钮规范
-
-按现有规范
-
----
-
-次按钮：
-
-按现有规范
-
----
-
-危险按钮：
-
-红色
-
----
-
-# 信息展示规范
-
-所有数值必须：
-
-对齐
-
-单位统一
-
-无小数统一规则
-
----
-
-材料清单显示规范：
-
-工艺前缀、尺寸高度、尺寸宽度、数量必须分列显示。
-
-当材料清单新增单启口、双启口等前缀时，禁止挤占尺寸列宽。
-
-每一种不同板类、不同工艺类别第一次出现时，必须显示完整尺寸信息，包括高度。
-
-只有同一板类、同一工艺类别下连续出现相同高度时，才允许省略重复高度。
-
-尺寸乘号 x 前后必须保留空格，例如 1830 x 205。
-
-禁止出现文字或数字重叠。
-
----
-
-快速布局操作规范：
-
-快速布局的全选功能只代表当前快速布局行集合进入批量编辑状态。
-
-全选属于选择状态切换，不得触发布局重建、重新排版或重算格子数据。
-
-全选本身不得把下方功能区输入值同步到任何组。
-
-全选必须等待用户下一次明确修改或确认输入后，才允许批量生效。
-
-点击全选的瞬间不得刷新图纸、刷新材料清单或改变当前显示结果。
-
-快速布局不得在普通图纸刷新、开门方向切换、墙体切换、选择切换时被隐式提交或重建。
-
-快速布局只能由用户编辑快速格子或明确执行快速布局相关操作时更新布局行。
-
-批量编辑允许统一修改总长度、深度、门宽、门缝、板厚等共享参数。
-
-批量编辑不得覆盖每个快速格子的间数和格子位置。
-
-全选后的下一次功能操作只能批量应用当前被操作的字段。
-
-例如点击开门方向只能批量修改开门方向，禁止同时同步总长度、门宽、深度、门缝等其它输入值。
-
-当全选对象包含不同间数的组时，总长度输入不得批量生效，必须弹出明确警告。
-
-全选批量编辑必须采用字段白名单实现，禁止调用整表单保存来批量覆盖组数据。
-
-字段白名单必须保证一次用户操作只写入一个业务字段或明确成组的业务字段。
-
----
-
-图纸多选规范：
-
-按住 Shift 点击图纸对象时，只能切换多选集合。
-
-所有可点击区域都必须支持 Shift 累加选择，包括图纸块、隔间、深度板、标签和页头输入区。
-
-Shift 多选不得触发表单保存、表单回填、布局重建或材料重算。
-
-Shift 点击必须保留普通点击的功能区展开行为，最后一次点击的对象应成为当前活动对象。
-
-普通点击必须退出多选状态并恢复单选行为。
-
----
-
-# 图纸UI规范
-
-必须支持：
-
-缩放
-
-拖动（只预览）
-
-分页切换
-
----
-
-# 提示系统
-
-必须支持：
-
-错误提示
-
-优化建议
-
-冲突警告
-
----
-
-提示必须：
-
-简洁
-
-明确
-
-可执行
-
----
-
-# 功能区排版规范
-
-功能区包括：
-
-左侧参数功能区
-
-快速布局功能区
-
-隔间布局功能区
-
-开门方向功能区
-
-墙体条件功能区
-
-特殊条件功能区
-
-临时弹出功能面板
-
----
-
-功能区内容字号规范：
-
-除功能区标题外，所有内容文字必须使用统一字号。
-
-包括：
-
-按钮文字
-
-输入框文字
-
-输入框提示词
-
-字段标签
-
-状态文字
-
-提示说明文字
-
-卡片内文字
-
-特殊条件输入文字
-
----
-
-禁止：
-
-同一功能区内出现有的文字大、有的文字小
-
-同级功能区之间内容字号不一致
-
-提示词字号明显小于输入内容字号
-
-按钮文字字号和输入文字字号不一致
-
-为了局部好看单独写死字号
-
----
-
-实现要求：
-
-功能区内容字号必须使用统一变量控制。
-
-当前统一变量：
-
-`--sidebar-content-font`
-
-如需整体调大或调小，只能修改统一变量，不得分散修改多个控件字号。
-
----
-
-功能区间距规范：
-
-功能区内部间距必须统一。
-
-同级控件之间的横向间距、纵向间距、卡片间距、按钮间距必须使用统一变量。
-
-当前统一变量：
-
-`--control-gap`
-
-`--field-gap`
-
-`--compact-gap`
-
----
-
-禁止：
-
-同一功能区内间距有的大有的小
-
-不同功能区之间同级控件间距不一致
-
-删除标题文字后保留空标题占位
-
-为了临时挪位置单独写死大间距
-
-用空白标题、空 div、隐藏文字制造视觉间距
-
----
-
-标题例外规则：
-
-功能区标题可以使用独立字号。
-
-但标题文字必须保持单行显示，禁止自动换行。
-
-如果标题文字被删除，必须同步删除标题占位元素或确保不占布局高度。
-
----
-
-功能入口移动规则：
-
-移动按钮、开关、输入框位置时，只允许移动 UI 容器。
-
-不得改动原绑定函数、原数据字段、原提交逻辑。
-
-移动后必须检查：
-
-是否仍然对齐同级卡片
-
-是否产生多余边线
-
-是否产生多余提示文字
-
-是否造成隐藏占位
-
-是否影响原有功能触发
-
----
-# UI一致性原则
-
-所有模块：
-
-必须统一组件库
-
-统一设计系统
-
-统一交互逻辑
-
----
-
-禁止：
-
-页面风格不一致
-
-组件重复实现
-
-擅自修改请求范围外的颜色、字体、字号、粗细、间距、布局或交互
-
----
-
-视觉改动边界：
-
-修复功能问题时，只允许修改实现该功能所必需的样式。
-
-非必要的颜色、字体、字号、粗细、间距、布局优化必须先经过用户确认。
-
----
-
-# UI入口删除规范
-
-删除按钮、开关、输入框或功能入口前，必须确认：
-
-* 该入口是否仍有实际使用场景
-* 该入口绑定的函数是否仍被页面初始化、自动生成、绘图、材料清单、导出等流程使用
-* 删除后是否存在过期提示文案
-* 删除后是否影响用户原有操作流程
-
-处理原则：
-
-* 无用入口可以删除
-* 入口专属样式可以同步删除
-* 与删除入口直接相关的提示文案必须同步改正
-* 仍被系统流程使用的函数必须保留
-* 不得因为删除UI入口而删除核心生成、计算、绘图、材料或导出流程
-
----
-
-# 性能要求
-
-UI操作响应：
-
-≤100ms
-
----
-
-# 最终目标
-
-让用户无需理解复杂工程逻辑：
-
-输入 → 自动生成 → 导出
+- Mobile layout must keep active inputs/editors visible when the keyboard opens.
+- Desktop behavior must not regress when mobile input behavior is fixed.
+- Export actions should provide explicit feedback when browser popup/download restrictions apply.

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>指示锁五金深化图预览</title>
+<style>
+body { font-family: 'Microsoft YaHei', sans-serif; background: #f5f7fa; margin: 0; padding: 40px; }
+.container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+h1 { font-size: 20px; margin: 0 0 12px; }
+.sub { color: #666; font-size: 14px; margin-bottom: 24px; }
+svg { width: 100%; height: auto; border: 1px solid #e0e0e0; background: #fafafa; }
+.note { margin-top: 20px; padding: 16px; background: #f0f4f8; border-left: 4px solid #1976d2; font-size: 14px; color: #333; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>节点 D1 — 指示锁（indicator-lock）深化图</h1>
+<div class="sub">五金模板样例 | CAD 单线工程图风格 | 1:1 视图 + 剖面 + 尺寸标注</div>
+
+<svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+  <!-- 定义 -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 L2,4 Z" fill="#333"/>
+    </marker>
+    <marker id="arr-open" markerWidth="8" markerHeight="8" refX="0" refY="4" orient="auto">
+      <path d="M8,0 L0,4 L8,8 L6,4 Z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- 标题块 -->
+  <rect x="620" y="20" width="260" height="110" fill="none" stroke="#333" stroke-width="1"/>
+  <line x1="620" y1="45" x2="880" y2="45" stroke="#333" stroke-width="1"/>
+  <line x1="620" y1="70" x2="880" y2="70" stroke="#333" stroke-width="1"/>
+  <line x1="620" y1="95" x2="880" y2="95" stroke="#333" stroke-width="1"/>
+  <line x1="760" y1="20" x2="760" y2="130" stroke="#333" stroke-width="1"/>
+  <text x="630" y="37" font-size="11" fill="#333">项目 / Project</text>
+  <text x="770" y="37" font-size="11" fill="#333">五金详图 / Hardware Detail</text>
+  <text x="630" y="62" font-size="11" fill="#333">节点 / Node</text>
+  <text x="770" y="62" font-size="11" fill="#333">D1 — 指示锁</text>
+  <text x="630" y="87" font-size="11" fill="#333">比例 / Scale</text>
+  <text x="770" y="87" font-size="11" fill="#333">2:1</text>
+  <text x="630" y="112" font-size="11" fill="#333">材质 / Material</text>
+  <text x="770" y="112" font-size="11" fill="#333">304 不锈钢 / 黑色饰盖</text>
+
+  <!-- 节点编号圆圈 -->
+  <circle cx="50" cy="80" r="18" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <text x="50" y="86" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">D1</text>
+
+  <!-- ===== 主视图：指示锁正面（2:1） ===== -->
+  <g transform="translate(140, 100)">
+    <text x="160" y="-50" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">正视图 FRONT VIEW</text>
+
+    <!-- 外圆盘 -->
+    <circle cx="160" cy="120" r="90" fill="none" stroke="#333" stroke-width="1.5"/>
+    <!-- 内凹台面 -->
+    <circle cx="160" cy="120" r="68" fill="none" stroke="#333" stroke-width="1"/>
+    <!-- 旋钮 -->
+    <circle cx="160" cy="120" r="22" fill="none" stroke="#333" stroke-width="1.5"/>
+    <circle cx="160" cy="120" r="8" fill="#333" stroke="none"/>
+    <!-- 绿色/红色指示片 -->
+    <path d="M160,86 A34,34 0 0,1 194,120" fill="none" stroke="#4caf50" stroke-width="6" stroke-linecap="round"/>
+    <path d="M160,154 A34,34 0 0,1 126,120" fill="none" stroke="#e53935" stroke-width="6" stroke-linecap="round" opacity="0.3"/>
+
+    <!-- 安装螺丝孔（4 个） -->
+    <circle cx="120" cy="80" r="5" fill="none" stroke="#333" stroke-width="1"/>
+    <circle cx="200" cy="80" r="5" fill="none" stroke="#333" stroke-width="1"/>
+    <circle cx="120" cy="160" r="5" fill="none" stroke="#333" stroke-width="1"/>
+    <circle cx="200" cy="160" r="5" fill="none" stroke="#333" stroke-width="1"/>
+    <circle cx="120" cy="80" r="2" fill="#333"/>
+    <circle cx="200" cy="80" r="2" fill="#333"/>
+    <circle cx="120" cy="160" r="2" fill="#333"/>
+    <circle cx="200" cy="160" r="2" fill="#333"/>
+
+    <!-- 中心线 -->
+    <line x1="160" y1="10" x2="160" y2="230" stroke="#999" stroke-width="0.5" stroke-dasharray="4 4"/>
+    <line x1="70" y1="120" x2="250" y2="120" stroke="#999" stroke-width="0.5" stroke-dasharray="4 4"/>
+
+    <!-- 尺寸标注：直径 90 -->
+    <line x1="70" y1="230" x2="250" y2="230" stroke="#333" stroke-width="0.8" marker-end="url(#arr)" marker-start="url(#arr-open)"/>
+    <line x1="70" y1="215" x2="70" y2="240" stroke="#333" stroke-width="0.8"/>
+    <line x1="250" y1="215" x2="250" y2="240" stroke="#333" stroke-width="0.8"/>
+    <text x="160" y="248" text-anchor="middle" font-size="12" fill="#333">Ø90</text>
+
+    <!-- 尺寸标注：安装孔距 80 -->
+    <line x1="120" y1="60" x2="200" y2="60" stroke="#333" stroke-width="0.8" marker-end="url(#arr)" marker-start="url(#arr-open)"/>
+    <line x1="120" y1="50" x2="120" y2="70" stroke="#333" stroke-width="0.8"/>
+    <line x1="200" y1="50" x2="200" y2="70" stroke="#333" stroke-width="0.8"/>
+    <text x="160" y="48" text-anchor="middle" font-size="11" fill="#333">80</text>
+
+    <!-- 尺寸标注：安装孔距 80（垂直） -->
+    <line x1="50" y1="80" x2="50" y2="160" stroke="#333" stroke-width="0.8" marker-end="url(#arr)" marker-start="url(#arr-open)"/>
+    <line x1="45" y1="80" x2="65" y2="80" stroke="#333" stroke-width="0.8"/>
+    <line x1="45" y1="160" x2="65" y2="160" stroke="#333" stroke-width="0.8"/>
+    <text x="38" y="124" text-anchor="middle" font-size="11" fill="#333" transform="rotate(-90 38 124)">80</text>
+  </g>
+
+  <!-- ===== 侧视图：剖面示意 ===== -->
+  <g transform="translate(520, 100)">
+    <text x="120" y="-50" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">侧视图 SIDE VIEW</text>
+
+    <!-- 门板截面 -->
+    <rect x="60" y="40" width="120" height="18" fill="#e3f2fd" stroke="#333" stroke-width="1"/>
+    <!-- 外盖板 -->
+    <rect x="40" y="30" width="20" height="38" rx="3" fill="none" stroke="#333" stroke-width="1.5"/>
+    <!-- 内盖板 -->
+    <rect x="180" y="30" width="14" height="38" rx="2" fill="none" stroke="#333" stroke-width="1.5"/>
+    <!-- 锁芯连杆 -->
+    <rect x="60" y="47" width="120" height="4" fill="none" stroke="#333" stroke-width="1"/>
+    <!-- 旋钮柄 -->
+    <rect x="35" y="38" width="10" height="22" rx="2" fill="none" stroke="#333" stroke-width="1"/>
+
+    <!-- 门板厚度标注 -->
+    <line x1="60" y1="22" x2="180" y2="22" stroke="#333" stroke-width="0.8" marker-end="url(#arr)" marker-start="url(#arr-open)"/>
+    <line x1="60" y1="15" x2="60" y2="28" stroke="#333" stroke-width="0.8"/>
+    <line x1="180" y1="15" x2="180" y2="28" stroke="#333" stroke-width="0.8"/>
+    <text x="120" y="12" text-anchor="middle" font-size="11" fill="#333">门板厚 18</text>
+
+    <!-- 盖板厚度 -->
+    <line x1="40" y1="78" x2="60" y2="78" stroke="#333" stroke-width="0.8" marker-end="url(#arr)" marker-start="url(#arr-open)"/>
+    <line x1="40" y1="72" x2="40" y2="84" stroke="#333" stroke-width="0.8"/>
+    <line x1="60" y1="72" x2="60" y2="84" stroke="#333" stroke-width="0.8"/>
+    <text x="50" y="96" text-anchor="middle" font-size="10" fill="#333">盖板</text>
+
+    <!-- 安装中心线 -->
+    <line x1="120" y1="10" x2="120" y2="90" stroke="#999" stroke-width="0.5" stroke-dasharray="4 4"/>
+  </g>
+
+  <!-- ===== 安装定位图：门扇上的位置 ===== -->
+  <g transform="translate(140, 360)">
+    <text x="100" y="-20" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">门扇安装定位 INSTALLATION</text>
+    <!-- 门扇 -->
+    <rect x="0" y="0" width="200" height="120" fill="none" stroke="#333" stroke-width="1.5"/>
+    <!-- 锁位置 -->
+    <circle cx="160" cy="60" r="18" fill="none" stroke="#d32f2f" stroke-width="1.5"/>
+    <circle cx="160" cy="60" r="3" fill="#d32f2f"/>
+    <!-- 铰链侧标识 -->
+    <line x1="0" y1="0" x2="0" y2="120" stroke="#333" stroke-width="3"/>
+    <text x="10" y="105" font-size="11" fill="#333">铰链侧</text>
+    <!-- 安装高度标注 -->
+    <line x1="220" y1="0" x2="220" y2="60" stroke="#333" stroke-width="0.8" marker-end="url(#arr)" marker-start="url(#arr-open)"/>
+    <line x1="210" y1="0" x2="230" y2="0" stroke="#333" stroke-width="0.8"/>
+    <line x1="210" y1="60" x2="230" y2="60" stroke="#333" stroke-width="0.8"/>
+    <text x="238" y="34" font-size="11" fill="#333">1000</text>
+    <text x="238" y="48" font-size="10" fill="#666">(距 F.F.L.)</text>
+
+    <!-- 距门边 -->
+    <line x1="0" y1="145" x2="160" y2="145" stroke="#333" stroke-width="0.8" marker-end="url(#arr)" marker-start="url(#arr-open)"/>
+    <line x1="0" y1="135" x2="0" y2="150" stroke="#333" stroke-width="0.8"/>
+    <line x1="160" y1="135" x2="160" y2="150" stroke="#333" stroke-width="0.8"/>
+    <text x="80" y="162" text-anchor="middle" font-size="11" fill="#333">150（距开启边）</text>
+  </g>
+
+  <!-- ===== 技术要求 / 材料说明 ===== -->
+  <g transform="translate(480, 360)">
+    <text x="0" y="-20" font-size="13" font-weight="bold" fill="#333">技术说明 NOTES</text>
+    <text x="0" y="0" font-size="11" fill="#333">1. 材质：304 不锈钢压铸面板，表面拉丝/哑光黑处理。</text>
+    <text x="0" y="20" font-size="11" fill="#333">2. 安装：面板中心距门开启边 150mm，底边距完成地面 1000mm。</text>
+    <text x="0" y="40" font-size="11" fill="#333">3. 固定：4×M5 沉头机丝，孔距 80×80mm。</text>
+    <text x="0" y="60" font-size="11" fill="#333">4. 配套：含红/绿状态指示片及反侧扣盖。</text>
+    <text x="0" y="80" font-size="11" fill="#333">5. 数量：每扇门 1 套。</text>
+  </g>
+</svg>
+
+<div class="note">
+<strong>说明：</strong>这是一张参数化 CAD 风格的指示锁深化图样例。图中尺寸为行业常用值（可替换）。如果风格对路，我可以把合页、支脚、衣钩、角码、拉手等按同样规格批量画完，并接入你项目的五金数据结构。
+</div>
+</div>
+</body>
+</html>
