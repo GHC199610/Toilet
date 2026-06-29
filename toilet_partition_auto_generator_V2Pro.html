@@ -2733,27 +2733,6 @@ function selectQuickCell(input) {
   const colIndex = Number(input.dataset.quickCol);
   lastQuickCellRef = {page:activeQuickPage, row:rowIndex, col:colIndex};
   quickEditingCellRef = {...lastQuickCellRef};
-  if (quickSelectAllActive && selectionScope === 'group') {
-    return;
-  }
-  const group = activeGroup();
-  const rows = ensureRows(group);
-  normalizeLayoutGrid(group);
-  const target = rows.find(r => r.enabled === true && (r.sheetPage || 0) === activeQuickPage && (r.layoutRow || 1) === rowIndex + 1 && (r.layoutCol || 1) === colIndex + 1);
-  if (target) {
-    saveActiveGroup();
-    activeRowId = target.id;
-    selectionScope = 'row';
-    clearSelectedBooth();
-    clearSelectedDepthPanel();
-    loadGroupToForm(group, target);
-    updateLayoutTargetLabel();
-    updateGroupListState();
-    lastParams = getParams();
-    drawView(lastParams, currentTab);
-  } else {
-    quickNavKeep = {row: rowIndex, col: colIndex};
-  }
   refreshQuickCellActiveClasses();
 }
 function focusTotalInputForQuickCell() {
