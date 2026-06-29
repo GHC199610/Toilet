@@ -39,6 +39,9 @@ assertIncludes(drawElevationDim, 'anno(', 'drawElevationDim should use anno() so
 assertIncludes(drawElevationDim, 'Number.isFinite(Number(side)) ? Number(side) : 36', 'drawElevationDim should preserve side=0 so centered door-panel dimensions stay centered.');
 assertIncludes(drawElevationDim, 'const verticalTextGap = unit(Number(options.verticalTextGap ?? 0) || 12)', 'drawElevationDim should use a small CAD-style gap between vertical dimension line and text.');
 assertIncludes(drawElevationDim, 'Number(side) === 0 ? dx + verticalTextGap : dx + (side < 0 ? -unit(44) : unit(44))', 'drawElevationDim should keep side=0 vertical text beside, not on top of, the dimension line.');
+assertIncludes(drawElevationDim, "options.endStyle === 'arrow'", 'drawElevationDim should support small arrow ends for door-panel height dimensions.');
+assertIncludes(drawElevationDim, 'drawVerticalArrowHead(y1, 1)', 'canvas door-panel height dimension should draw a top arrowhead pointing inward.');
+assertIncludes(drawElevationDim, 'drawVerticalArrowHead(y2, -1)', 'canvas door-panel height dimension should draw a bottom arrowhead pointing inward.');
 assertNotIncludes(drawElevationDim, 'Number(side || 36)', 'drawElevationDim must not treat side=0 as the default offset.');
 assertIncludes(frontHelpers, 'Math.max(0.25, anno(', 'front helper line widths should use fine plan-style scaled line widths.');
 assertIncludes(drawFront, 'const prevAnnoScale = planAnnotationScale', 'drawFront should set planAnnotationScale from front scale and restore it.');
@@ -70,10 +73,11 @@ assertIncludes(source, 'hHeader:0, hHeaderGap:0', 'door header height and header
 assertIncludes(source, "className:'front-door-header-panel'", 'front header panels should have a distinct class.');
 assertIncludes(frontHeaderCanvas, "ctx.strokeStyle = '#185FA5'", 'canvas front header panels should use the same blue stroke as door panels.');
 assertIncludes(source, "stroke:'#185FA5', strokeWidth:1, className:'front-door-header-panel'", 'front header panels should use the same blue stroke as door panels.');
-assertIncludes(frontDoorLoop, "ctx.strokeStyle = '#185FA5'", 'front door swing direction should keep the current blue color.');
+assertIncludes(source, "frontDoorSwingStrokeStyle: '#8EC5FF'", 'front door swing direction should use a pale light blue style.');
+assertIncludes(frontDoorLoop, 'ctx.strokeStyle = FRONT_DIM.frontDoorSwingStrokeStyle', 'canvas front door swing direction should use the pale light style.');
 assertIncludes(frontDoorLoop, 'ctx.setLineDash([anno(84), anno(18)])', 'front door swing direction should use long segments with short breaks like the reference.');
 assertIncludes(backendFront, "className:'front-door-swing-segment'", 'backend front door swing direction should be present.');
-assertIncludes(backendFront, "{stroke:'#185FA5', strokeWidth:0.6, dash:[30,7], className:'front-door-swing-segment'}", 'backend front door swing direction should keep blue color with long segments and short breaks like the reference.');
+assertIncludes(backendFront, "{stroke:FRONT_DIM.frontDoorSwingStrokeStyle, strokeWidth:0.6, dash:[30,7], className:'front-door-swing-segment'}", 'backend front door swing direction should use the pale light style with long segments and short breaks like the reference.');
 assertNotIncludes(drawFront, 'ctx.strokeRect(L.ox, L.oy, L.sW, L.sH)', 'front elevation should not draw a black overall body frame over real component lines.');
 assertNotIncludes(backendFront, "className:'front-outline'", 'backend front elevation should not draw a black overall body frame over real component lines.');
 assertNotIncludes(frontHelpers, 'ctx.moveTo(L.ox, L.floor - L.hU)', 'front elevation should not draw a continuous top finish line across separate boards.');
@@ -90,6 +94,7 @@ assertNotIncludes(backendFront, 'front-ffl-line', 'backend front elevation shoul
 assertNotIncludes(backendFront, 'front-ffl-label', 'backend front elevation should not output a front F.F.L. label class.');
 assertIncludes(source, 'function frontDimValue(value)', 'front elevation should have a helper for dimension values without text/mm suffixes.');
 assertIncludes(source, 'verticalTextGap: frontDimTextGapPx()', 'front elevation height dimensions should use the unified print-mm text gap.');
+assertIncludes(source, "endStyle: door ? 'arrow' : 'tick'", 'front door-panel height dimension should use small arrow ends while other front dimensions keep tick marks.');
 assertIncludes(source, 'dimOffsetMm: 10', 'front elevation dimensions should use one print-mm offset from the main body.');
 assertIncludes(source, 'textGapMm: 2', 'front elevation dimension text should use one print-mm text gap.');
 assertNotIncludes(source, 'totalGap: 46', 'front elevation should not use ad hoc pixel top dimension offsets.');
@@ -107,6 +112,10 @@ assertIncludes(drawFront, 'drawChainDim(bottomDimY, frontBottomDimSegments(L), F
 assertNotIncludes(drawFront, 'drawElevationDim(door.x, doorWidthDimY, door.x + door.w, doorWidthDimY', 'canvas front door widths should not use elevation dimensions that overlap the body.');
 assertIncludes(source, 'label:frontDimValue(panel.bigMm)', 'front panel dimensions should use each actual front edge panel size.');
 assertIncludes(source, 'label:frontDimValue(door.bigMm)', 'door panel dimensions should use each actual door panel size.');
+assertIncludes(source, "strokeStyle:'#185FA5'", 'door panel dimension segments should use the door blue color.');
+assertIncludes(source, "fillStyle:'#185FA5'", 'door panel height dimension text should use the door blue color.');
+assertIncludes(drawFront, 'const doorDim = frontDimOptions(\'door\')', 'canvas front door dimensions should use a dedicated door-colored dimension style.');
+assertIncludes(backendFront, "'front-door-height-dimension', {...frontDimStyle, strokeStyle:FRONT_DIM.doorStrokeStyle, fillStyle:FRONT_DIM.doorStrokeStyle, endStyle:'arrow'}", 'backend front door height dimension should use small arrow ends.');
 assertNotIncludes(drawFront, 'drawFrontBoothChainCanvas(L)', 'front elevation should not draw a separate booth-width chain below the plan-style bottom chain.');
 assertNotIncludes(drawFront, 'drawChainDim(frontPanelDimY', 'front elevation should not draw a separate front panel chain.');
 assertNotIncludes(drawFront, 'drawChainDim(doorWidthDimY', 'front elevation should not draw a separate door width chain.');

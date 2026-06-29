@@ -669,7 +669,6 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
         <button class="quick-icon-btn" type="button" onclick="redoLayout()" title="恢复" aria-label="恢复"><svg viewBox="0 0 24 24"><path d="m15 7 4 4-4 4"/><path d="M19 11h-8a5 5 0 0 0-5 5v1"/></svg></button>
       </div>
       <button class="sheet-action-btn" type="button" onclick="autoCompactSheetLayout()">自动排版</button>
-      <button class="sheet-action-btn" type="button" onclick="insertManualA4PageBreak()">A4换页</button>
       <button class="sheet-action-btn expand" type="button" onclick="toggleUrinalPanel()">小便板</button>
       <span class="sheet-page-info" id="sheet-page-info">第 1/1 页</span>
     </div>
@@ -837,6 +836,7 @@ let quickNavKeep = null;
 let quickCompactDisplayMode = false;
 const QUICK_COMPACT_COLS = 10;
 let lastQuickCellRef = null;
+let quickEditingCellRef = null;
 let autoOpenTotalOnQuickFocus = false;
 let quickSelectAllActive = false;
 let noteInputValue = '';
@@ -1493,7 +1493,7 @@ function escapeAttr(value) {
 
 function normalizeTwoLineText(value) {
   const parts = String(value ?? '').replace(/\r/g, '').split('\n');
-  return parts.slice(0, 2).join('\n').trim();
+  return parts.slice(0, 2).join('\n');
 }
 
 function wrapCanvasTextLines(text, maxWidth, maxLines = 2) {
@@ -1548,6 +1548,18 @@ function fitCanvasTextLines(text, maxWidth, maxLines = 2, options = {}) {
 function canvasTextCaretVisible(scope) {
   const editor = document.getElementById('canvas-text-editor');
   return !drawingForExport && editor && document.activeElement === editor && selectionScope === scope && Math.floor(Date.now() / 530) % 2 === 0;
+}
+
+function canvasTextCaretPosition() {
+  const editor = document.getElementById('canvas-text-editor');
+  const text = normalizeTwoLineText(editor?.value || '');
+  const caretIndex = Math.max(0, Math.min(Number(editor?.selectionStart ?? text.length), text.length));
+  const beforeCaret = text.slice(0, caretIndex).split('\n');
+  const lineIndex = Math.min(beforeCaret.length - 1, 1);
+  return {
+    lineIndex,
+    lineTextBeforeCaret: beforeCaret[lineIndex] || ''
+  };
 }
 
 function drawCanvasTextCaret(x, y, h, color = '#000000') {
@@ -1896,6 +1908,8 @@ function applyGroupParamsToRow(row, params, enable = false) {
     layoutType: row.layoutType,
     layoutRow: row.layoutRow,
     layoutCol: row.layoutCol,
+    sheetPage: row.sheetPage,
+    sheetOrder: row.sheetOrder,
     doorInstallWidths: row.doorInstallWidths,
     doorWidths: row.doorWidths,
     boothDoorWidths: row.boothDoorWidths,
@@ -2524,7 +2538,10 @@ function quickLayoutHasValues() {
 function renderQuickLayout(focusRef = null) {
   renderQuickTenToggle();
   normalizeQuickRows();
-  if (focusRef) lastQuickCellRef = {page:activeQuickPage, row:focusRef.row, col:focusRef.col};
+  if (focusRef) {
+    lastQuickCellRef = {page:activeQuickPage, row:focusRef.row, col:focusRef.col};
+    quickEditingCellRef = {...lastQuickCellRef};
+  }
   const box = document.getElementById('quick-layout');
   if (!box) return;
   const prevBtn = document.getElementById('quick-prev-page');
@@ -2532,7 +2549,7 @@ function renderQuickLayout(focusRef = null) {
   box.innerHTML = quickLayoutRows.map((row, rowIndex) => `
     <div class="quick-row">
       <div class="quick-cells">
-        ${row.map((value, colIndex) => `<input class="quick-cell ${isQuickCellVisuallyActive(rowIndex, colIndex, value) ? 'active' : ''}" inputmode="numeric" maxlength="${quickTenMode ? 2 : 1}" value="${value}" data-quick-row="${rowIndex}" data-quick-col="${colIndex}" onfocus="selectQuickCell(this)" oninput="handleQuickInput(this)" onkeydown="handleQuickKey(event)">`).join('')}
+        ${row.map((value, colIndex) => `<input class="quick-cell ${isQuickCellVisuallyActive(rowIndex, colIndex, value) ? 'active' : ''}" inputmode="numeric" maxlength="${quickTenMode ? 2 : 1}" value="${value}" data-quick-row="${rowIndex}" data-quick-col="${colIndex}" onfocus="selectQuickCell(this)" ondblclick="selectQuickCellValueOnDblClick(this)" oninput="handleQuickInput(this)" onkeydown="handleQuickKey(event)">`).join('')}
       </div>
     </div>`).join('');
   if (focusRef) {
@@ -2544,12 +2561,23 @@ function renderQuickLayout(focusRef = null) {
 function clearQuickSelectAllVisual() {
   if (!quickSelectAllActive) return;
   quickSelectAllActive = false;
+  quickEditingCellRef = null;
   renderQuickLayout();
+}
+
+function shouldKeepQuickSelectAllForTarget(target) {
+  return !!target?.closest?.([
+    '#quick-layout',
+    '#mobile-section-quick .quick-history-actions',
+    '#p-count', '#p-total', '#p-depth', '#p-door', '#p-gap', '#p-rebate', '#p-rebate-depth', '#t-panel',
+    '#h-upright', '#h-door', '#h-header', '#h-header-gap', '#h-mid', '#h-vis',
+    '.rebate-row', '.door-width-row', '#booth-door-width-panel'
+  ].join(','));
 }
 
 document.addEventListener('pointerdown', e => {
   if (!quickSelectAllActive) return;
-  if (e.target.closest('#quick-layout,#mobile-section-quick .quick-history-actions')) return;
+  if (shouldKeepQuickSelectAllForTarget(e.target)) return;
   clearQuickSelectAllVisual();
 }, {capture:true});
 
@@ -2686,37 +2714,56 @@ function redrawAfterActiveQuickCellChange() {
   renderBOM(p);
 }
 
+function refreshQuickCellActiveClasses() {
+  document.querySelectorAll('#quick-layout .quick-cell').forEach(input => {
+    const rowIndex = Number(input.dataset.quickRow);
+    const colIndex = Number(input.dataset.quickCol);
+    const value = quickLayoutRows[rowIndex]?.[colIndex] || '';
+    input.classList.toggle('active', isQuickCellVisuallyActive(rowIndex, colIndex, value));
+  });
+}
+
+function selectQuickCellValueOnDblClick(input) {
+  if (!input) return;
+  input.select();
+}
+
 function selectQuickCell(input) {
   const rowIndex = Number(input.dataset.quickRow);
   const colIndex = Number(input.dataset.quickCol);
   lastQuickCellRef = {page:activeQuickPage, row:rowIndex, col:colIndex};
+  quickEditingCellRef = {...lastQuickCellRef};
+  if (quickSelectAllActive && selectionScope === 'group') {
+    return;
+  }
   const group = activeGroup();
   const rows = ensureRows(group);
   normalizeLayoutGrid(group);
   const target = rows.find(r => r.enabled === true && (r.sheetPage || 0) === activeQuickPage && (r.layoutRow || 1) === rowIndex + 1 && (r.layoutCol || 1) === colIndex + 1);
-  if (!target) {
+  if (target) {
+    saveActiveGroup();
+    activeRowId = target.id;
+    selectionScope = 'row';
+    clearSelectedBooth();
+    clearSelectedDepthPanel();
+    loadGroupToForm(group, target);
+    updateLayoutTargetLabel();
+    updateGroupListState();
+    lastParams = getParams();
+    drawView(lastParams, currentTab);
+  } else {
     quickNavKeep = {row: rowIndex, col: colIndex};
-    return;
   }
-  saveActiveGroup();
-  activeRowId = target.id;
-  selectionScope = 'row';
-  clearSelectedBooth();
-  loadGroupToForm(group, target);
-  renderGroups(false);
-  renderQuickLayout({row: rowIndex, col: colIndex});
-  redrawAfterActiveQuickCellChange();
-  if (autoOpenTotalOnQuickFocus && Number(input.value) > 0) {
-    autoOpenTotalOnQuickFocus = false;
-    focusTotalInputForQuickCell();
-  }
+  refreshQuickCellActiveClasses();
 }
-
 function focusTotalInputForQuickCell() {
   const totalInput = document.getElementById('p-total');
   if (!totalInput) return;
-  const row = activeRow();
-  if (row) lastQuickCellRef = {page:Number(row.sheetPage) || 0, row:(Number(row.layoutRow) || 1) - 1, col:(Number(row.layoutCol) || 1) - 1};
+  if (quickEditingCellRef) lastQuickCellRef = {...quickEditingCellRef};
+  else {
+    const row = activeRow();
+    if (row) lastQuickCellRef = {page:Number(row.sheetPage) || 0, row:(Number(row.layoutRow) || 1) - 1, col:(Number(row.layoutCol) || 1) - 1};
+  }
   window.setTimeout(() => {
     totalInput.focus({preventScroll:true});
     totalInput.select();
@@ -2724,6 +2771,7 @@ function focusTotalInputForQuickCell() {
 }
 
 function activeQuickCellRef() {
+  if (quickEditingCellRef) return {...quickEditingCellRef};
   if (lastQuickCellRef) return {...lastQuickCellRef};
   const row = activeRow();
   if (!row) return null;
@@ -2750,6 +2798,7 @@ function focusNextQuickInputCellFromRef(currentRef = activeQuickCellRef()) {
     quickLayoutRows = quickLayoutPages[activeQuickPage];
   }
   lastQuickCellRef = {...next};
+  quickEditingCellRef = {...next};
   renderQuickLayout({row:next.row, col:next.col});
   autoOpenTotalOnQuickFocus = Number(targetRow[next.col]) > 0;
   focusQuickCell(next.row, next.col);
@@ -2772,6 +2821,7 @@ function selectNextQuickCellAndFocusField(currentRef = activeQuickCellRef(), fie
     quickLayoutRows = quickLayoutPages[activeQuickPage];
   }
   lastQuickCellRef = {...next};
+  quickEditingCellRef = {...next};
   if (!(Number(targetRow[next.col]) > 0)) {
     renderQuickLayout({row:next.row, col:next.col});
     focusQuickCell(next.row, next.col);
@@ -2816,17 +2866,18 @@ function handleQuickInput(input) {
 }
 
 function syncQuickCellToLayout(rowIndex, colIndex, value) {
-  quickSelectAllActive = false;
+  const keepSelectAll = quickSelectAllActive && selectionScope === 'group';
   const count = parseInt(value, 10);
   if (!Number.isFinite(count) || count <= 0) return false;
   lastQuickCellRef = {page:activeQuickPage, row:rowIndex, col:colIndex};
+  quickEditingCellRef = {...lastQuickCellRef};
   document.getElementById('p-count').value = count;
   document.getElementById('p-total').value = count * 1000;
   const group = activeGroup();
   const target = buildRowsFromQuickLayout(group, {page: activeQuickPage, row: rowIndex + 1, col: colIndex + 1});
   if (target) {
     activeRowId = target.id;
-    selectionScope = 'row';
+    selectionScope = keepSelectAll ? 'group' : 'row';
     clearSelectedBooth();
     loadGroupToForm(group, target);
     syncWidthCardsFromText(target.widthsText || '');
@@ -2842,6 +2893,7 @@ function syncQuickCellToLayout(rowIndex, colIndex, value) {
 function selectAllQuickLayoutRows() {
   selectionScope = 'group';
   quickSelectAllActive = true;
+  quickEditingCellRef = null;
   clearSelectedBooth();
   renderQuickLayout();
 }
@@ -3169,47 +3221,6 @@ function autoCompactSheetLayout() {
   centerCanvasViewport();
 }
 
-function insertManualA4PageBreak() {
-  if (currentTab !== 'plan') {
-    showHintToast('请先切换到平面图后再主动换页');
-    return;
-  }
-  if (paperSize !== 'a4') {
-    showHintToast('请先将纸张切换为 A4 后再主动换页');
-    return;
-  }
-  saveActiveGroup(false);
-  const blocks = collectPlanBlocks(lastParams || getParams()).filter(block => block.row.enabled === true);
-  if (blocks.length <= 1) {
-    showHintToast('当前只有一个图纸块，无需换页');
-    return;
-  }
-  const activeKey = `${activeGroupId}:${activeRowId}`;
-  let startIndex = blocks.findIndex(block => `${block.group.id}:${block.row.id}` === activeKey);
-  if (startIndex < 0) startIndex = blocks.findIndex(block => Number(block.pageIndex) === currentPlanPage);
-  if (startIndex < 0) startIndex = blocks.length - 1;
-  const targetPage = Math.max(0, Number(blocks[startIndex]?.row?.sheetPage) || 0) + 1;
-  pushHistory();
-  blocks.forEach((block, index) => {
-    if (index < startIndex) return;
-    block.row.sheetPage = Math.max(targetPage, Number(block.row.sheetPage) || 0);
-    block.row.drawSheetPage = undefined;
-    block.row.sheetOrder = block.row.sheetPage * 1000 + index;
-    delete block.row.autoCompactSheetLayout;
-  });
-  currentPlanPage = targetPage;
-  syncQuickLayoutFromGroup(activeGroup());
-  lastQuickCellRef = null;
-  renderQuickLayout();
-  lastParams = getParams();
-  resizeCanvas();
-  autoFit(lastParams);
-  drawView(lastParams, currentTab);
-  renderBOM(lastParams);
-  updateGroupListState();
-  centerCanvasViewport();
-  showHintToast(`已从当前图纸块开始换到第 ${targetPage + 1} 页`);
-}
 function updateGroupListState() {
   renderBOM(lastParams || getParams());
 }
@@ -3374,7 +3385,6 @@ function addRow(groupId = activeGroupId) {
   renderGroups(false);
   refreshDrawing(true, false, false);
 }
-
 function addColumn(groupId = activeGroupId) {
   pushHistory();
   saveActiveGroup();
@@ -3410,7 +3420,6 @@ function addColumn(groupId = activeGroupId) {
   renderGroups(false);
   refreshDrawing(true, false, false);
 }
-
 function deleteRow(groupId = activeGroupId, rowId = activeRowId) {
   pushHistory();
   activeGroupId = groupId;
@@ -4226,8 +4235,7 @@ function renderPlanSheetsStripCanvas(p = lastParams || getParams(), renderScale 
   const oldCanvasMode = canvasMode;
   canvasMode = 'sheets';
   const layout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
-  const pages = paginatePlanBlocks(blocks, layout);
+  const pages = getPlanPages(p);
   const gap = sheetPreviewPageGap(layout);
   const w = Math.max(1, pages.length * layout.sheetW + Math.max(0, pages.length - 1) * gap);
   const h = Math.max(1, layout.sheetH);
@@ -4850,7 +4858,7 @@ function minZoomScale(p = lastParams || getParams()) {
 function wheelMaxZoomScale(p = lastParams || getParams()) {
   if (!(currentTab === 'plan' && canvasMode === 'sheets')) return 5;
   const layout = getSheetLayout(p);
-  const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), layout);
+  const pages = getPlanPages(p);
   const orientationIndices = pageOrientationIndices(pages);
   const fits = pages.map((page, index) => {
     const pageLayout = sheetLayoutForPage(page, p, index);
@@ -4869,9 +4877,7 @@ function wheelMaxZoomScale(p = lastParams || getParams()) {
 }
 
 function planPageForIndex(p = lastParams || getParams(), pageIndex = currentPlanPage) {
-  const baseLayout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
-  const pages = paginatePlanBlocks(blocks, baseLayout);
+  const pages = getPlanPages(p);
   return pages[Math.max(0, Math.min(pageIndex, pages.length - 1))] || null;
 }
 
@@ -4929,7 +4935,7 @@ function sheetLayoutForPage(page = null, p = lastParams || getParams(), pageInde
   };
 }
 function sheetPreviewContentSize(p = lastParams || getParams(), layout = getSheetLayout(p)) {
-  const pages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), layout);
+  const pages = getPlanPages(p);
   const pageLayouts = pages.map((page, index) => sheetLayoutForPage(page, p, index));
   const gap = sheetPreviewPageGap(layout, pageLayouts);
   return {
@@ -5157,10 +5163,11 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
     const startY = lines.length > 1 ? y + h / 2 - lineH / 2 : y + h / 2;
     lines.forEach((line, index) => ctx.fillText(ellipsizeCanvasText(line, w - 36), x + 18, startY + index * lineH));
     if (canvasTextCaretVisible('sheet-note')) {
-      const lastLine = lines[lines.length - 1] || '';
-      const safeLastLine = ellipsizeCanvasText(lastLine, w - 36);
-      const caretX = Math.min(x + w - 18, x + 18 + ctx.measureText(safeLastLine).width + 2);
-      const caretY = startY + (lines.length - 1) * lineH - fit.fontSize / 2;
+      const caret = canvasTextCaretPosition();
+      const lineIndex = Math.max(0, Math.min(caret.lineIndex, lines.length - 1));
+      const safeCaretLine = ellipsizeCanvasText(caret.lineTextBeforeCaret, w - 36);
+      const caretX = Math.min(x + w - 18, x + 18 + ctx.measureText(safeCaretLine).width + 2);
+      const caretY = startY + lineIndex * lineH - fit.fontSize / 2;
       drawCanvasTextCaret(caretX, caretY, Math.max(12, fit.fontSize), '#000000');
     }
   }
@@ -5244,6 +5251,7 @@ function drawElevationDim(x1, y1, x2, y2, label, side, meta = null, options = {}
   const off = unit(Number.isFinite(Number(side)) ? Number(side) : 36);
   const tick = options.tick || unit(18);
   const verticalTextGap = unit(Number(options.verticalTextGap ?? 0) || 12);
+  const useArrowEnd = options.endStyle === 'arrow';
   if (isH) {
     const dy = (y1 + y2) / 2 - off;
     ctx.beginPath();
@@ -5262,8 +5270,21 @@ function drawElevationDim(x1, y1, x2, y2, label, side, meta = null, options = {}
     ctx.moveTo(x1, y1); ctx.lineTo(dx - off, y1);
     ctx.moveTo(x2, y2); ctx.lineTo(dx - off, y2);
     ctx.moveTo(dx, y1); ctx.lineTo(dx, y2);
-    ctx.moveTo(dx - tick, y1); ctx.lineTo(dx + tick, y1);
-    ctx.moveTo(dx - tick, y2); ctx.lineTo(dx + tick, y2);
+    if (useArrowEnd) {
+      const arrowLength = options.arrowLength || tick;
+      const arrowHalfWidth = options.arrowHalfWidth || Math.max(2, tick * 0.55);
+      const drawVerticalArrowHead = (y, direction) => {
+        ctx.moveTo(dx, y);
+        ctx.lineTo(dx - arrowHalfWidth, y + direction * arrowLength);
+        ctx.moveTo(dx, y);
+        ctx.lineTo(dx + arrowHalfWidth, y + direction * arrowLength);
+      };
+      drawVerticalArrowHead(y1, 1);
+      drawVerticalArrowHead(y2, -1);
+    } else {
+      ctx.moveTo(dx - tick, y1); ctx.lineTo(dx + tick, y1);
+      ctx.moveTo(dx - tick, y2); ctx.lineTo(dx + tick, y2);
+    }
     ctx.stroke();
     const tx = Number(side) === 0 ? dx + verticalTextGap : dx + (side < 0 ? -unit(44) : unit(44));
     const ty = (y1 + y2) / 2;
@@ -5279,6 +5300,8 @@ function drawElevationDim(x1, y1, x2, y2, label, side, meta = null, options = {}
 const FRONT_DIM = {
   dimOffsetMm: 10,
   textGapMm: 2,
+  doorStrokeStyle: '#185FA5',
+  frontDoorSwingStrokeStyle: '#8EC5FF',
   fontSize: 12,
   smallFontSize: 10,
   chainFontSize: 11,
@@ -5288,13 +5311,16 @@ const FRONT_DIM = {
 };
 
 function frontDimOptions(size = 'normal') {
+  const door = size === 'door';
   return {
     fixed: true,
-    fontSize: size === 'small' ? FRONT_DIM.smallFontSize : FRONT_DIM.fontSize,
-    tick: size === 'small' ? FRONT_DIM.smallTick : FRONT_DIM.tick,
+    fontSize: size === 'small' || door ? FRONT_DIM.smallFontSize : FRONT_DIM.fontSize,
+    tick: size === 'small' || door ? FRONT_DIM.smallTick : FRONT_DIM.tick,
     textGap: frontDimTextGapPx(),
     verticalTextGap: frontDimTextGapPx(),
-    strokeStyle: FRONT_DIM.strokeStyle
+    strokeStyle: door ? FRONT_DIM.doorStrokeStyle : FRONT_DIM.strokeStyle,
+    fillStyle: door ? FRONT_DIM.doorStrokeStyle : '#000000',
+    endStyle: door ? 'arrow' : 'tick'
   };
 }
 
@@ -5326,6 +5352,8 @@ function frontBottomDimSegments(L) {
       x1: door.bigX1,
       x2: door.bigX2,
       label:frontDimValue(door.bigMm),
+      strokeStyle:'#185FA5',
+      fillStyle:'#185FA5',
       meta:{kind:'door-width', boothIndex:door.index}
     }))
   ]
@@ -5364,8 +5392,12 @@ function drawChainDim(y, segments, color = '#000000') {
   ctx.textBaseline = 'bottom';
   const start = segments[0].x1;
   const end = segments[segments.length - 1].x2;
-  ctx.beginPath(); ctx.moveTo(start, y); ctx.lineTo(end, y); ctx.stroke();
   segments.forEach(seg => {
+    const segStroke = seg.strokeStyle || color;
+    const segFill = seg.fillStyle || segStroke;
+    ctx.strokeStyle = segStroke;
+    ctx.fillStyle = segFill;
+    ctx.beginPath(); ctx.moveTo(seg.x1, y); ctx.lineTo(seg.x2, y); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(seg.x1, y - anno(28)); ctx.lineTo(seg.x1, y + anno(28)); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(seg.x2, y - anno(28)); ctx.lineTo(seg.x2, y + anno(28)); ctx.stroke();
     const cx = (seg.x1 + seg.x2) / 2;
@@ -6309,8 +6341,7 @@ function drawPortraitPlanPageContent(page, layout, sheetOffsetX = 0, sheetOffset
 
 function drawPlanSheetsPreview(p) {
   const baseLayout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
-  const pages = paginatePlanBlocks(blocks, baseLayout);
+  const pages = getPlanPages(p);
   const pageLayouts = pages.map((page, index) => sheetLayoutForPage(page, p, index));
   const orientationIndices = pageOrientationIndices(pages);
   const gap = sheetPreviewPageGap(baseLayout, pageLayouts);
@@ -6318,13 +6349,7 @@ function drawPlanSheetsPreview(p) {
   pages.forEach((page, index) => {
     const layout = pageLayouts[index];
     const orientationPageIndex = orientationIndices[index] || 0;
-    const contentGaps = sheetContentGaps(orientationPageIndex, pageNeedsLandscape(page));
-    const hitX = x + layout.plot.x + contentGaps.left;
-    const hitY = layout.plot.y + contentGaps.top;
-    const hitW = Math.max(1, layout.plot.w - contentGaps.left - contentGaps.right);
-    const hitH = Math.max(1, layout.plot.h - contentGaps.top - contentGaps.bottom);
     drawSheet('卫生间隔断平面图', p, x, 0, index, layout);
-    if (!drawingForExport) planHitAreas.push({type:'sheet-page', x:hitX, y:hitY, w:hitW, h:hitH, pageIndex:index});
     drawPlanPageContent(page, layout, x, 0, orientationPageIndex, index);
     ctx.save();
     ctx.fillStyle = '#000000';
@@ -6339,8 +6364,7 @@ function drawPlanSheetsPreview(p) {
 }
 function drawPlan(p) {
   const baseLayout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
-  const pages = paginatePlanBlocks(blocks, baseLayout);
+  const pages = getPlanPages(p);
   const pageIndex = Math.max(0, Math.min(currentPlanPage, pages.length - 1));
   const page = pages[pageIndex];
   const orientationPageIndex = planPageOrientationIndex(pages, pageIndex);
@@ -6654,7 +6678,7 @@ function drawFront(p) {
     ctx.lineWidth = Math.max(0.25, anno(2.4));
     ctx.strokeRect(door.x, door.y, door.w, door.h);
     ctx.save();
-    ctx.strokeStyle = '#185FA5';
+    ctx.strokeStyle = FRONT_DIM.frontDoorSwingStrokeStyle;
     ctx.lineWidth = Math.max(0.25, anno(1.5));
     ctx.setLineDash([anno(84), anno(18)]);
     ctx.beginPath();
@@ -6670,11 +6694,12 @@ function drawFront(p) {
   const bottomDimY = L.floor + frontDimOffsetPx();
   const basicDim = frontDimOptions();
   const smallDim = frontDimOptions('small');
+  const doorDim = frontDimOptions('door');
   drawElevationDim(L.ox, topDimY, L.ox + L.sW, topDimY, `${c.adjustedLength ? '展开总长' : '总长'} ${Math.round(L.W)}mm`, 0, {kind:'total'}, basicDim);
   const uprightDimX = L.ox - (L.walls.left ? L.swt : 0) - frontDimOffsetPx();
   drawElevationDim(uprightDimX, L.floor - L.hU, uprightDimX, L.floor, frontDimValue(p.hUpright), -1, {kind:'h-upright'}, smallDim);
   const firstDoor = L.doors[0];
-  if (firstDoor) drawElevationDim(firstDoor.x + firstDoor.w / 2, firstDoor.y, firstDoor.x + firstDoor.w / 2, firstDoor.y + firstDoor.h, frontDimValue(p.hDoor || 1750), 0, {kind:'h-door', boothIndex:firstDoor.index}, smallDim);
+  if (firstDoor) drawElevationDim(firstDoor.x + firstDoor.w / 2, firstDoor.y, firstDoor.x + firstDoor.w / 2, firstDoor.y + firstDoor.h, frontDimValue(p.hDoor || 1750), 0, {kind:'h-door', boothIndex:firstDoor.index}, doorDim);
   L.headerPanels.forEach(panel => drawElevationDim(panel.x + panel.w / 2, panel.y, panel.x + panel.w / 2, panel.y + panel.h, frontDimValue(panel.heightMm), 0, {kind:'h-header', boothIndex:panel.index}, smallDim));
   drawChainDim(bottomDimY, frontBottomDimSegments(L), FRONT_DIM.strokeStyle);
   } finally {
@@ -6968,7 +6993,7 @@ function urinalBomItem() {
   if (count <= 0 || !(urinalSpec.width > 0) || !(urinalSpec.height > 0) || !(urinalSpec.thick > 0)) return null;
   const process = `${urinalSpec.shape || '矩形'}，${urinalSpec.hole || '无开孔'}`;
   const note = urinalSpec.note ? `，${urinalSpec.note}` : (urinalSpec.shape === '异形' || urinalSpec.hole === '有开孔' ? '，需现场模板/图纸确认' : '');
-  return {name:'小便板', val:`${count} 张`, sub:`${urinalSpec.width}×${urinalSpec.height}×${urinalSpec.thick}mm，${process}${note}`};
+  return {name:'小便板', val:`${count} 张`, sub:`${urinalSpec.height}×${urinalSpec.width} = ${count}，厚${urinalSpec.thick}mm，${process}${note}`};
 }
 
 function parseBomPieceLine(line, fallbackHeight = 0) {
@@ -7041,94 +7066,30 @@ function placePieceOnBoard(board, piece, allowRotate, kerf = 0) {
   return true;
 }
 
-function boardPieceTrackWidth(piece, sheet, allowRotate) {
-  const variants = [{track:piece.w, cross:piece.h}];
-  if (allowRotate && piece.w !== piece.h) variants.push({track:piece.h, cross:piece.w});
-  const valid = variants.filter(item => item.track <= sheet.w && item.cross <= sheet.h);
-  if (!valid.length) return null;
-  return valid.sort((a, b) => b.track - a.track)[0].track;
-}
-
-function canPackBoardWidths(widths, sheetWidth, kerf, targetCount, options = {}) {
-  const bins = Array.from({length:targetCount}, () => ({used:0, count:0}));
-  const memo = new Set();
-  const maxNodes = Math.max(1000, Number(options.maxNodes) || 50000);
-  const deadline = Number(options.deadline) || (performance.now() + 24);
-  let nodes = 0;
-  let aborted = false;
-  const normalizedKey = index => `${index}|${bins.map(bin => `${bin.used},${bin.count}`).sort().join(';')}`;
-  const place = index => {
-    if (++nodes > maxNodes || performance.now() > deadline) {
-      aborted = true;
-      return false;
-    }
-    if (index >= widths.length) return true;
-    const key = normalizedKey(index);
-    if (memo.has(key)) return false;
-    const width = widths[index];
-    const seenBins = new Set();
-    for (let i = 0; i < bins.length; i++) {
-      const bin = bins[i];
-      const signature = `${bin.used},${bin.count}`;
-      if (seenBins.has(signature)) continue;
-      seenBins.add(signature);
-      const nextUsed = bin.used + width + (bin.count ? kerf : 0);
-      if (nextUsed > sheetWidth) continue;
-      bin.used = nextUsed;
-      bin.count++;
-      if (place(index + 1)) return true;
-      bin.count--;
-      bin.used -= width + (bin.count ? kerf : 0);
-      if (!bin.count) break;
-    }
-    memo.add(key);
-    return false;
-  };
-  const ok = place(0);
-  return {ok, aborted};
-}
-
-function greedyPackBoardWidths(widths, sheetWidth, kerf) {
-  const bins = [];
-  widths.forEach(width => {
-    let best = -1;
-    let bestRemaining = Infinity;
-    bins.forEach((bin, index) => {
-      const nextUsed = bin.used + width + (bin.count ? kerf : 0);
-      if (nextUsed > sheetWidth) return;
-      const remaining = sheetWidth - nextUsed;
-      if (remaining < bestRemaining) {
-        best = index;
-        bestRemaining = remaining;
+function estimatePackedBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
+  const boards = [];
+  const unplaced = [];
+  const safeKerf = Math.max(0, kerf);
+  pieces.forEach(piece => {
+    let placed = boards.some(board => placePieceOnBoard(board, piece, allowRotate, safeKerf));
+    if (!placed) {
+      const fits = (piece.w <= sheet.w && piece.h <= sheet.h) || (allowRotate && piece.h <= sheet.w && piece.w <= sheet.h);
+      if (!fits) {
+        unplaced.push(piece);
+        return;
       }
-    });
-    if (best >= 0) {
-      bins[best].used += width + (bins[best].count ? kerf : 0);
-      bins[best].count++;
-    } else {
-      bins.push({used:width, count:1});
+      const board = {free:[{x:0,y:0,w:sheet.w,h:sheet.h}], usedArea:0, area:sheet.w * sheet.h};
+      placePieceOnBoard(board, piece, allowRotate, safeKerf);
+      boards.push(board);
     }
   });
-  return bins.length;
+  const usedArea = pieces.reduce((sum, piece) => sum + piece.w * piece.h, 0);
+  const sheetArea = boards.reduce((sum, board) => sum + board.area, 0);
+  return {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0};
 }
 
 function estimateSingleBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
-  const widths = [];
-  const unplaced = [];
-  pieces.forEach(piece => {
-    const width = boardPieceTrackWidth(piece, sheet, allowRotate);
-    if (width === null) unplaced.push(piece);
-    else widths.push(Math.round(width));
-  });
-  widths.sort((a, b) => b - a);
-  if (widths.length > 34) return {count:greedyPackBoardWidths(widths, sheet.w, Math.max(0, kerf)), unplacedCount:unplaced.length};
-  const minimumByWidth = Math.max(0, Math.ceil((widths.reduce((sum, width) => sum + width, 0) + Math.max(0, widths.length - 1) * kerf) / sheet.w));
-  for (let count = minimumByWidth; count <= widths.length; count++) {
-    const result = canPackBoardWidths(widths, sheet.w, Math.max(0, kerf), count, {deadline:performance.now() + 24, maxNodes:60000});
-    if (result.ok) return {count, unplacedCount:unplaced.length};
-    if (result.aborted) return {count:greedyPackBoardWidths(widths, sheet.w, Math.max(0, kerf)), unplacedCount:unplaced.length};
-  }
-  return {count:widths.length, unplacedCount:unplaced.length};
+  return estimatePackedBoardSheetCount(pieces, sheet, allowRotate, kerf);
 }
 
 function estimateBoardSheets(pieces, sheets, allowRotate, kerf = 0) {
@@ -7452,7 +7413,7 @@ function exportAll() {
   const p = lastParams || getParams();
   const oldMode = canvasMode;
   canvasMode = 'sheets';
-  const planPages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), getSheetLayout(p));
+  const planPages = getPlanPages(p);
   canvasMode = oldMode;
   const jobs = [];
   planPages.forEach((_, pageIndex) => jobs.push({tab:'plan', name:`平面图-${pageIndex + 1}`, options:{planPage:pageIndex}}));
@@ -7535,7 +7496,7 @@ function exportNamedAllImages(baseName = '隔断全部视图') {
   const safeBase = sanitizeExportName(baseName, '隔断全部视图');
   const oldMode = canvasMode;
   canvasMode = 'sheets';
-  const planPages = paginatePlanBlocks(collectPlanBlocks(p).filter(block => block.row.enabled === true), getSheetLayout(p));
+  const planPages = getPlanPages(p);
   canvasMode = oldMode;
   const jobs = [];
   planPages.forEach((_, pageIndex) => jobs.push({tab:'plan', name:`平面图${pageIndex + 1}`, options:{planPage:pageIndex}}));
@@ -7914,7 +7875,10 @@ function backendDrawDim(B, model, x1, y1, x2, y2, label, side, fontSize = 38, te
   const textGap = Number(options.textGap || 0) || 18;
   const sideTextGap = Number(options.sideTextGap || 0) || 70;
   const verticalTextGap = Number(options.verticalTextGap ?? 0) || 12;
-  const lineStyle = {stroke:'#000', strokeWidth, className:`${textClass}-line`};
+  const useArrowEnd = options.endStyle === 'arrow';
+  const stroke = options.strokeStyle || options.stroke || '#000';
+  const fill = options.fillStyle || options.fill || stroke;
+  const lineStyle = {stroke, strokeWidth, className:`${textClass}-line`};
   if (isH) {
     const dy = (y1 + y2) / 2 - off;
     B.line(model, x1, y1, x1, dy + off, lineStyle);
@@ -7922,16 +7886,27 @@ function backendDrawDim(B, model, x1, y1, x2, y2, label, side, fontSize = 38, te
     B.line(model, x1, dy, x2, dy, lineStyle);
     B.line(model, x1, dy - tick, x1, dy + tick, lineStyle);
     B.line(model, x2, dy - tick, x2, dy + tick, lineStyle);
-    B.text(model, String(label), (x1 + x2) / 2, dy - textGap, {fill:'#000', fontSize, align:'middle', baseline:'alphabetic', className:textClass, maxWidth:Math.max(1, Math.abs(x2 - x1) - 12), fitMode:'shrink'});
+    B.text(model, String(label), (x1 + x2) / 2, dy - textGap, {fill, fontSize, align:'middle', baseline:'alphabetic', className:textClass, maxWidth:Math.max(1, Math.abs(x2 - x1) - 12), fitMode:'shrink'});
   } else {
     const dx = (x1 + x2) / 2 + off;
     const tx = Number(side) === 0 ? dx + verticalTextGap : dx + (side < 0 ? -sideTextGap : sideTextGap) + (textClass === 'depth-dimension' ? 12 : 0);
     B.line(model, x1, y1, dx - off, y1, lineStyle);
     B.line(model, x2, y2, dx - off, y2, lineStyle);
     B.line(model, dx, y1, dx, y2, lineStyle);
-    B.line(model, dx - tick, y1, dx + tick, y1, lineStyle);
-    B.line(model, dx - tick, y2, dx + tick, y2, lineStyle);
-    B.text(model, String(label), tx, (y1 + y2) / 2, {fill:'#000', fontSize, align:'middle', baseline:'central', rotate:90, className:textClass, maxWidth:Math.max(1, Math.abs(y2 - y1) - 12), fitMode:'shrink'});
+    if (useArrowEnd) {
+      const arrowLength = Number(options.arrowLength || 0) || tick;
+      const arrowHalfWidth = Number(options.arrowHalfWidth || 0) || Math.max(2, tick * 0.55);
+      const drawVerticalArrowHead = (y, direction) => {
+        B.line(model, dx, y, dx - arrowHalfWidth, y + direction * arrowLength, lineStyle);
+        B.line(model, dx, y, dx + arrowHalfWidth, y + direction * arrowLength, lineStyle);
+      };
+      drawVerticalArrowHead(y1, 1);
+      drawVerticalArrowHead(y2, -1);
+    } else {
+      B.line(model, dx - tick, y1, dx + tick, y1, lineStyle);
+      B.line(model, dx - tick, y2, dx + tick, y2, lineStyle);
+    }
+    B.text(model, String(label), tx, (y1 + y2) / 2, {fill, fontSize, align:'middle', baseline:'central', rotate:90, className:textClass, maxWidth:Math.max(1, Math.abs(y2 - y1) - 12), fitMode:'shrink'});
   }
 }
 
@@ -7942,13 +7917,15 @@ function frontBackendDimStyle() {
 function backendDrawChainDim(B, model, y, segments, fontSize = 34, textClass = 'chain-dimension') {
   const safe = (segments || []).filter(seg => seg && seg.x2 > seg.x1);
   if (!safe.length) return;
-  const lineStyle = {stroke:'#000', strokeWidth:1.1, className:`${textClass}-line`};
-  B.line(model, safe[0].x1, y, safe[safe.length - 1].x2, y, lineStyle);
   safe.forEach(seg => {
     const cx = (seg.x1 + seg.x2) / 2;
+    const stroke = seg.strokeStyle || '#000';
+    const fill = seg.fillStyle || stroke;
+    const lineStyle = {stroke, strokeWidth:1.1, className:`${textClass}-line`};
+    B.line(model, seg.x1, y, seg.x2, y, lineStyle);
     B.line(model, seg.x1, y - 14, seg.x1, y + 14, lineStyle);
     B.line(model, seg.x2, y - 14, seg.x2, y + 14, lineStyle);
-    if (seg.label) B.text(model, String(seg.label), cx, y - 24, {fill:'#000', fontSize, align:'middle', baseline:'alphabetic', className:textClass, maxWidth:Math.max(1, seg.x2 - seg.x1 - 12), fitMode:'shrink'});
+    if (seg.label) B.text(model, String(seg.label), cx, y - 24, {fill, fontSize, align:'middle', baseline:'alphabetic', className:textClass, maxWidth:Math.max(1, seg.x2 - seg.x1 - 12), fitMode:'shrink'});
   });
 }
 
@@ -8507,9 +8484,7 @@ function backendPlanPagePlacement(page, layout, pageIndex = 0) {
 
 function buildPlanPageDrawingModel(p = lastParams || getParams(), pageIndex = currentPlanPage) {
   const B = requireDrawingBackendV1();
-  const baseLayout = getSheetLayout(p);
-  const blocks = collectPlanBlocks(p).filter(block => block.row.enabled === true);
-  const pages = paginatePlanBlocks(blocks, baseLayout);
+  const pages = getPlanPages(p);
   const safePageIndex = Math.max(0, Math.min(pageIndex, pages.length - 1));
   const page = pages[safePageIndex] || {blocks:[], usedW:1, usedH:1};
   const orientationPageIndex = planPageOrientationIndex(pages, safePageIndex);
@@ -8565,7 +8540,7 @@ function buildFrontPageDrawingModel(p = lastParams || getParams()) {
   L.doors.forEach(door => {
     B.rect(model, door.x, door.y, door.w, door.h, {fill:'none', stroke:'#185FA5', strokeWidth:1, className:'front-door-panel'});
     frontDoorSwingSegments(door, 7).forEach(seg => {
-      B.line(model, seg.x1, seg.y1, seg.x2, seg.y2, {stroke:'#185FA5', strokeWidth:0.6, dash:[30,7], className:'front-door-swing-segment'});
+      B.line(model, seg.x1, seg.y1, seg.x2, seg.y2, {stroke:FRONT_DIM.frontDoorSwingStrokeStyle, strokeWidth:0.6, dash:[30,7], className:'front-door-swing-segment'});
     });
   });
   const frontDimStyle = frontBackendDimStyle();
@@ -8575,7 +8550,7 @@ function buildFrontPageDrawingModel(p = lastParams || getParams()) {
   const uprightDimX = L.ox - (L.walls.left ? L.swt : 0) - frontDimOffsetPx();
   backendDrawDim(B, model, uprightDimX, L.floor - L.hU, uprightDimX, L.floor, frontDimValue(p.hUpright), -1, FRONT_DIM.smallFontSize, 'front-upright-dimension', frontDimStyle);
   const firstDoor = L.doors[0];
-  if (firstDoor) backendDrawDim(B, model, firstDoor.x + firstDoor.w / 2, firstDoor.y, firstDoor.x + firstDoor.w / 2, firstDoor.y + firstDoor.h, frontDimValue(p.hDoor || 1750), 0, FRONT_DIM.smallFontSize, 'front-door-height-dimension', frontDimStyle);
+  if (firstDoor) backendDrawDim(B, model, firstDoor.x + firstDoor.w / 2, firstDoor.y, firstDoor.x + firstDoor.w / 2, firstDoor.y + firstDoor.h, frontDimValue(p.hDoor || 1750), 0, FRONT_DIM.smallFontSize, 'front-door-height-dimension', {...frontDimStyle, strokeStyle:FRONT_DIM.doorStrokeStyle, fillStyle:FRONT_DIM.doorStrokeStyle, endStyle:'arrow'});
   L.headerPanels.forEach(panel => backendDrawDim(B, model, panel.x + panel.w / 2, panel.y, panel.x + panel.w / 2, panel.y + panel.h, frontDimValue(panel.heightMm), 0, FRONT_DIM.smallFontSize, 'front-header-height-dimension', frontDimStyle));
   backendDrawChainDim(B, model, bottomDimY, frontBottomDimSegments(L), FRONT_DIM.chainFontSize, 'front-bottom-dimension');
   return model;
@@ -9917,10 +9892,6 @@ function pageBlockSnapshot(pageIndex) {
     .map(area => ({...area}));
 }
 
-function hitSheetPage(x, y) {
-  return [...planHitAreas].reverse().find(area => area.type === 'sheet-page' && x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h) || null;
-}
-
 function applySheetOrderKeys(keys) {
   const order = new Map(keys.map((key, index) => [key, index]));
   const compactCols = QUICK_COMPACT_COLS;
@@ -10075,8 +10046,7 @@ function updateTouchSheetDrag(clientX, clientY) {
   const dy = pt.y - (sheetOrderDrag.lastMouse?.y ?? pt.y);
   if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) sheetOrderDrag.direction = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
   sheetOrderDrag.lastMouse = pt;
-  const pageHit = hitSheetPage(pt.x, pt.y);
-  const targetPageIndex = pageHit ? pageHit.pageIndex : sheetOrderDrag.pageIndex;
+  const targetPageIndex = sheetOrderDrag.pageIndex;
   previewSheetOrder = previewOrderForPointer(targetPageIndex, pt.x, pt.y);
   const hit = hitSnapshotBlock(pt.x, pt.y) || nearestBlockForPoint(targetPageIndex, pt.x, pt.y);
   if (sheetDragVisual) {
@@ -10421,8 +10391,7 @@ window.addEventListener('mousemove', e => {
     const dy = pt.y - (sheetOrderDrag.lastMouse?.y ?? pt.y);
     if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) sheetOrderDrag.direction = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
     sheetOrderDrag.lastMouse = pt;
-    const pageHit = hitSheetPage(pt.x, pt.y);
-    const targetPageIndex = pageHit ? pageHit.pageIndex : sheetOrderDrag.pageIndex;
+    const targetPageIndex = sheetOrderDrag.pageIndex;
     previewSheetOrder = previewOrderForPointer(targetPageIndex, pt.x, pt.y);
     const hit = hitSnapshotBlock(pt.x, pt.y) || nearestBlockForPoint(targetPageIndex, pt.x, pt.y);
     if (sheetDragVisual) {
@@ -10499,6 +10468,16 @@ function commitHeightFieldOnEnter(fieldId) {
   if (fieldId === 'h-upright') document.getElementById('h-vis').value = document.getElementById('h-upright').value;
   commitFieldChange(fieldId);
 }
+
+function selectInputValue(input) {
+  if (!input || typeof input.select !== 'function') return;
+  input.select();
+  if (typeof input.setSelectionRange === 'function') input.setSelectionRange(0, String(input.value || '').length);
+}
+
+document.querySelectorAll('.field input[type=number], .field input[type=text]').forEach(input => {
+  input.addEventListener('dblclick', () => selectInputValue(input));
+});
 
 document.getElementById('p-count').addEventListener('input', () => {
   syncTotalByCount();
@@ -10577,7 +10556,6 @@ function commitFieldAndAdvance(fieldId) {
     renderBOM(p);
     notifyGuardWarnings(p);
     updateGroupListState();
-    quickSelectAllActive = false;
     selectNextQuickCellAndFocusField(currentRef, fieldId);
     return;
   }
@@ -10623,7 +10601,6 @@ function commitFieldChange(fieldId) {
     renderBOM(p);
     notifyGuardWarnings(p);
     updateGroupListState();
-    quickSelectAllActive = false;
     return;
   }
   refreshDrawing(false);
@@ -10688,6 +10665,11 @@ document.getElementById('canvas-text-editor')?.addEventListener('input', e => {
   applyCanvasTextEditorValue(e.currentTarget.value);
 });
 
+function redrawCanvasTextCaretPosition() {
+  if (!activeCanvasTextEditable() || !lastParams) return;
+  drawView(lastParams, currentTab);
+}
+
 document.getElementById('canvas-text-editor')?.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     e.preventDefault();
@@ -10707,6 +10689,10 @@ document.getElementById('canvas-text-editor')?.addEventListener('keydown', e => 
     }
   }
 });
+
+document.getElementById('canvas-text-editor')?.addEventListener('keyup', redrawCanvasTextCaretPosition);
+document.getElementById('canvas-text-editor')?.addEventListener('click', redrawCanvasTextCaretPosition);
+document.getElementById('canvas-text-editor')?.addEventListener('select', redrawCanvasTextCaretPosition);
 
 document.getElementById('canvas-text-editor')?.addEventListener('blur', e => {
   e.currentTarget.classList.remove('active');
@@ -10803,3 +10789,4 @@ window.setInterval(() => {
 
 setTimeout(()=>{ initMobileSidebarResize(); bindTopButtonDrag(); applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); setTimeout(updateMobileStickyOffsets, 80); }, 100);
 </script>
+
