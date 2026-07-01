@@ -676,6 +676,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <input id="text-size-input" class="text-style-size" type="number" min="8" max="96" step="1" value="15" title="Font size" aria-label="Font size" onchange="applyTextStyleChange('fontSize', this.value)">
       <button class="sheet-action-btn text-bold" id="text-bold-toggle" type="button" onclick="toggleTextBold()" title="Bold" aria-label="Bold">B</button>
       <span class="text-color-control"><button class="sheet-action-btn text-style-color" id="text-color-button" type="button" onclick="toggleTextColorPalette()" title="Color" aria-label="Color"><span id="text-color-preview" class="text-color-preview"></span></button><div class="text-color-palette" id="text-color-palette" aria-label="Color palette"><button class="text-color-swatch" type="button" style="--swatch:#d64242" onclick="selectTextPaletteColor('#d64242')" aria-label="#d64242"></button><button class="text-color-swatch" type="button" style="--swatch:#000000" onclick="selectTextPaletteColor('#000000')" aria-label="#000000"></button><button class="text-color-swatch" type="button" style="--swatch:#185FA5" onclick="selectTextPaletteColor('#185FA5')" aria-label="#185FA5"></button><button class="text-color-swatch" type="button" style="--swatch:#2da44e" onclick="selectTextPaletteColor('#2da44e')" aria-label="#2da44e"></button><button class="text-color-swatch" type="button" style="--swatch:#bf8700" onclick="selectTextPaletteColor('#bf8700')" aria-label="#bf8700"></button><button class="text-color-swatch" type="button" style="--swatch:#8250df" onclick="selectTextPaletteColor('#8250df')" aria-label="#8250df"></button><button class="text-color-swatch" type="button" style="--swatch:#ffffff" onclick="selectTextPaletteColor('#ffffff')" aria-label="#ffffff"></button><button class="text-color-swatch" type="button" style="--swatch:#6e7781" onclick="selectTextPaletteColor('#6e7781')" aria-label="#6e7781"></button></div></span>
+      <button class="sheet-action-btn text-tool" id="selected-delete-button" type="button" onclick="deleteSelectedItemsFromToolbar()" title="删除选中" aria-label="删除选中">⌫</button>
       <span class="sheet-page-info" id="sheet-page-info">第 1/1 页</span>
     </div>
     <div class="export-row">
@@ -851,6 +852,7 @@ let quickSelectAllActive = false;
 let noteInputValue = '';
 let freePlanTexts = [];
 let selectedFreeTextId = null;
+let pendingFreeTextId = null;
 let freeTextDrag = null;
 let textToolMode = false;
 const DEFAULT_TAG_FONT_SIZE = 8;
@@ -1375,6 +1377,22 @@ function applyCanvasTextEditorValue(value) {
   positionCanvasTextEditor();
 }
 
+function cancelPendingEmptyFreeText() {
+  if (!pendingFreeTextId) return false;
+  const item = freePlanTexts.find(textItem => textItem.id === pendingFreeTextId);
+  if (!item || String(item.text || '').trim()) {
+    pendingFreeTextId = null;
+    return false;
+  }
+  freePlanTexts = freePlanTexts.filter(textItem => textItem.id !== pendingFreeTextId);
+  if (selectedFreeTextId === pendingFreeTextId) selectedFreeTextId = null;
+  if (selectionScope === 'free-text') selectionScope = 'none';
+  pendingFreeTextId = null;
+  lastCanvasTextHitArea = null;
+  if (lastParams) drawView(lastParams, currentTab);
+  return true;
+}
+
 function clearSelectedBooth() {
   selectedBoothIndex = null;
   selectedBoothRef = null;
@@ -1431,10 +1449,10 @@ function selectionDeleteTargets() {
   return [...unique.values()];
 }
 
-function deleteSelectedItems() {
+function deleteSelectedItems(options = {}) {
   const targets = selectionDeleteTargets();
   if (!targets.length) return false;
-  if (document.activeElement && ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return false;
+  if (!options.allowFocusedEditor && document.activeElement && ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return false;
   pushHistory();
   let changed = false;
   const rowsToDelete = new Map();
@@ -1526,6 +1544,10 @@ function deleteSelectedItems() {
   drawView(lastParams, currentTab);
   renderBOM(lastParams);
   return true;
+}
+
+function deleteSelectedItemsFromToolbar() {
+  return deleteSelectedItems({allowFocusedEditor:true});
 }
 
 function hitSelectionIndex(hit) {
@@ -1821,6 +1843,7 @@ function startFreePlanTextAtPoint(pt) {
   const item = {id:createFreePlanTextId(), x:Math.round(pt.x), y:Math.round(pt.y), text:'', style:{...defaultTextStyle}};
   freePlanTexts.push(item);
   selectedFreeTextId = item.id;
+  pendingFreeTextId = item.id;
   lastCanvasTextHitArea = {type:'free-text', id:item.id, x:item.x, y:item.y, w:1, h:1};
   selectionScope = 'free-text';
   clearSelectedBooth();
@@ -1832,6 +1855,7 @@ function startFreePlanTextAtPoint(pt) {
 
 function editFreePlanTextFromHit(hit) {
   if (!hit || hit.type !== 'free-text') return;
+  pendingFreeTextId = null;
   lastCanvasTextHitArea = {...hit};
   selectedFreeTextId = hit.id;
   selectionScope = 'free-text';
@@ -11539,6 +11563,7 @@ document.getElementById('canvas-text-editor')?.addEventListener('click', redrawC
 document.getElementById('canvas-text-editor')?.addEventListener('select', redrawCanvasTextCaretPosition);
 
 document.getElementById('canvas-text-editor')?.addEventListener('blur', e => {
+  cancelPendingEmptyFreeText();
   e.currentTarget.classList.remove('active');
   e.currentTarget.setAttribute('aria-hidden', 'true');
   e.currentTarget.style.left = '';
