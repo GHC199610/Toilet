@@ -3244,6 +3244,17 @@ function selectQuickCell(input) {
   const colIndex = Number(input.dataset.quickCol);
   lastQuickCellRef = {page:activeQuickPage, row:rowIndex, col:colIndex};
   quickEditingCellRef = {...lastQuickCellRef};
+  const group = activeGroup();
+  const keepSelectAll = quickSelectAllActive && selectionScope === 'group';
+  const target = ensureRows(group).find(row => (Number(row.sheetPage) || 0) === activeQuickPage && (Number(row.layoutRow) || 1) === rowIndex + 1 && (Number(row.layoutCol) || 1) === colIndex + 1);
+  if (target) {
+    saveActiveGroup();
+    activeRowId = target.id;
+    selectionScope = keepSelectAll ? 'group' : 'row';
+    loadGroupToForm(group, target);
+    lastParams = getParams();
+    drawView(lastParams, currentTab);
+  }
   refreshQuickCellActiveClasses();
 }
 function focusTotalInputForQuickCell() {

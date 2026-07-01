@@ -37,7 +37,8 @@ assertIncludes(source, 'let quickEditingCellRef = null;', 'quick layout should t
 assertIncludes(renderQuickLayout, 'ondblclick="selectQuickCellValueOnDblClick(this)"', 'quick layout cells should select their value on double click.');
 assertIncludes(selectQuickCellValueOnDblClick, 'input.select();', 'double clicking a quick layout cell should select the whole value.');
 assertIncludes(refreshQuickCellActiveClasses, "input.classList.toggle('active'", 'quick cell focus should update active styling without rebuilding inputs.');
-assertIncludes(selectQuickCell, 'if (quickSelectAllActive && selectionScope === \'group\')', 'quick cell focus should preserve select-all state while entering variables.');
+assertIncludes(selectQuickCell, "const keepSelectAll = quickSelectAllActive && selectionScope === 'group';", 'quick cell focus should preserve select-all state while entering variables.');
+assertIncludes(selectQuickCell, "selectionScope = keepSelectAll ? 'group' : 'row';", 'quick cell focus should restore group selection when select-all is active.');
 assertNotIncludes(selectQuickCell, 'renderQuickLayout({row: rowIndex, col: colIndex});', 'quick cell focus should not rebuild inputs because it breaks double-click selection.');
 assertIncludes(selectQuickCell, 'refreshQuickCellActiveClasses();', 'quick cell focus should refresh active styling in place.');
 assertIncludes(selectQuickCell, 'loadGroupToForm(group, target);', 'quick cell focus should load the selected row so elevation views match the active cell.');

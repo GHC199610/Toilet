@@ -29,7 +29,7 @@ assertNotIncludes(source, 'A4换页', 'manual A4 page-break button should be rem
 assertNotIncludes(source, 'A4鎹㈤〉', 'manual A4 page-break button should be removed.');
 
 assertIncludes(selectQuickCell, 'activeRowId = target.id;', 'focusing an existing quick-grid cell should sync the active row for elevation views.');
-assertIncludes(selectQuickCell, "selectionScope = 'row';", 'focusing an existing quick-grid cell should select that row.');
+assertIncludes(selectQuickCell, "selectionScope = keepSelectAll ? 'group' : 'row';", 'focusing an existing quick-grid cell should select that row unless preserving select-all.');
 assertIncludes(selectQuickCell, 'saveActiveGroup();', 'focusing an existing quick-grid cell should save the previous row before switching.');
 assertIncludes(selectQuickCell, 'loadGroupToForm(group, target);', 'focusing an existing quick-grid cell should load that row so elevation views use its total length.');
 assertIncludes(selectQuickCell, 'lastParams = getParams();', 'focusing an existing quick-grid cell should refresh params from the selected row.');
