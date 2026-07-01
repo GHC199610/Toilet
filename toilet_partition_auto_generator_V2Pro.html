@@ -835,8 +835,10 @@ let quickLayoutPages = [[['','','']]];
 let activeQuickPage = 0;
 let quickTenMode = false;
 let widthCards = ['', '', ''];
+const HISTORY_LIMIT = 50;
 let undoStack = [];
 let redoStack = [];
+let globalEditHistoryTarget = null;
 let pendingSelectionDraw = 0;
 let urinalSpec = {count:0, width:400, height:900, thick:12, shape:'矩形', hole:'无开孔', note:''};
 let quickNavKeep = null;
@@ -1716,6 +1718,23 @@ function boardPanelKey(panel) {
   return `${panel?.kind || ''}:${panel?.index ?? ''}:${panel?.lockIndex ?? ''}`;
 }
 
+function resolveBoardPanelForRow(panel, row) {
+  if (!panel || !row) return panel;
+  const c = compute(row);
+  const scale = 1;
+  const doors = Array.from({length:Math.max(1, Number(row.count) || 1)}, (_, i) => {
+    const start = c.boothWidths.slice(0, i).reduce((sum, width) => sum + width, 0);
+    const width = c.boothWidths[i] || c.boothW || 0;
+    const gap = c.gapPairs?.[i] || splitInteger(row.doorGap, 2);
+    const installW = c.doorInstallWidths?.[i] || c.doorWidths?.[i] || row.doorW || 0;
+    const zoneStart = start + (c.sidePairs?.[i]?.[0] || 0);
+    const zoneEnd = start + width - (c.sidePairs?.[i]?.[1] || 0);
+    return {index:i, hasDoor:hasDoorAt(row, i), start:zoneStart + (gap[0] || 0), end:zoneStart + (gap[0] || 0) + installW, bigStart:zoneStart, bigEnd:zoneEnd, zoneStart, zoneEnd, width:installW, swing:boothSwingAt(row, i)};
+  });
+  const model = buildBoardModel(row, c, doors, 0, c.totalRun || row.total || 0, scale);
+  return [...(model.panels || []), ...(model.doors || [])].find(item => boardPanelKey(item) === boardPanelKey(panel)) || panel;
+}
+
 function boardPanelName(panel) {
   if (!panel) return '板件';
   if (panel.kind === 'door') return `门板 ${Number(panel.index) + 1}`;
@@ -1765,7 +1784,7 @@ function selectedBoardPanelRow() {
   if (!selectedBoardPanelRef) return null;
   const group = groups.find(g => g.id === selectedBoardPanelRef.groupId);
   const row = group ? ensureRows(group).find(r => r.id === selectedBoardPanelRef.rowId) : null;
-  return row ? {group, row, panel:selectedBoardPanelRef.panel} : null;
+  return row ? {group, row, panel:resolveBoardPanelForRow(selectedBoardPanelRef.panel, row)} : null;
 }
 
 function refreshTextToolButton() {
@@ -2155,6 +2174,8 @@ function applySelectedBoardPanelHeight(value) {
   if (!target || selectionScope !== 'board-panel' || !(next > 0)) return;
   const key = boardPanelHeightKey(target.panel);
   if (!key) return;
+  const current = boardPanelHeightValue(target.panel, target.row);
+  if (next === current) return;
   pushHistory();
   target.row.boardPanelHeights = {...(target.row.boardPanelHeights || {}), [key]:next};
   activeGroupId = target.group.id;
@@ -2273,6 +2294,13 @@ function saveActiveGroup(enable = false) {
     return;
   }
   applyParamsToRow(row, params, enable);
+}
+
+function selectPlanRowForHit(group, row) {
+  if (!group || !row) return;
+  if (activeGroupId !== group.id || activeRowId !== row.id) saveActiveGroup();
+  activeGroupId = group.id;
+  activeRowId = row.id;
 }
 
 function applyGroupParamsToRow(row, params, enable = false) {
@@ -2514,10 +2542,21 @@ function cloneState() {
     selectedBoothIndex,
     selectedBoothRef: selectedBoothRef ? {...selectedBoothRef} : null,
     selectedDepthPanelRef: selectedDepthPanelRef ? {...selectedDepthPanelRef} : null,
+    selectedBoardPanelRef: selectedBoardPanelRef ? JSON.parse(JSON.stringify(selectedBoardPanelRef)) : null,
     multiSelections: [...multiSelections],
     quickLayoutRows: JSON.parse(JSON.stringify(quickLayoutRows)),
     quickLayoutPages: JSON.parse(JSON.stringify(quickLayoutPages)),
     activeQuickPage,
+    quickTenMode,
+    quickCompactDisplayMode,
+    paperSize,
+    canvasMode,
+    currentTab,
+    boardSheets: JSON.parse(JSON.stringify(boardSheets)),
+    activeBoardSheetIndex,
+    boardRotateEnabled,
+    urinalSpec: JSON.parse(JSON.stringify(urinalSpec)),
+    textToolMode,
     noteInputValue,
     sheetHeaderText,
     sheetHeaderStyle: JSON.parse(JSON.stringify(sheetHeaderStyle)),
@@ -2536,10 +2575,21 @@ function restoreState(state) {
   selectedBoothIndex = state.selectedBoothIndex;
   selectedBoothRef = state.selectedBoothRef ? {...state.selectedBoothRef} : null;
   selectedDepthPanelRef = state.selectedDepthPanelRef ? {...state.selectedDepthPanelRef} : null;
+  selectedBoardPanelRef = state.selectedBoardPanelRef ? JSON.parse(JSON.stringify(state.selectedBoardPanelRef)) : null;
   multiSelections = new Set(state.multiSelections || []);
   quickLayoutPages = JSON.parse(JSON.stringify(state.quickLayoutPages || [state.quickLayoutRows || [['','','']]]));
   activeQuickPage = Math.max(0, Math.min(Number(state.activeQuickPage) || 0, quickLayoutPages.length - 1));
   quickLayoutRows = quickLayoutPages[activeQuickPage] || [['','','']];
+  quickTenMode = state.quickTenMode === true;
+  quickCompactDisplayMode = state.quickCompactDisplayMode === true;
+  paperSize = PAPER_SIZES[state.paperSize] ? state.paperSize : paperSize;
+  canvasMode = state.canvasMode || canvasMode;
+  currentTab = state.currentTab || currentTab;
+  boardSheets = JSON.parse(JSON.stringify(state.boardSheets || boardSheets));
+  activeBoardSheetIndex = Math.max(0, Math.min(boardSheets.length - 1, Number(state.activeBoardSheetIndex) || 0));
+  boardRotateEnabled = state.boardRotateEnabled !== false;
+  urinalSpec = JSON.parse(JSON.stringify(state.urinalSpec || urinalSpec));
+  textToolMode = state.textToolMode === true;
   noteInputValue = state.noteInputValue || state.planNoteText || '';
   sheetHeaderText = state.sheetHeaderText || '';
   sheetHeaderStyle = normalizeTextStyle(state.sheetHeaderStyle || sheetHeaderStyle);
@@ -2552,32 +2602,95 @@ function restoreState(state) {
   const group = activeGroup();
   const row = activeRow();
   if (group && row) loadGroupToForm(group, row);
+  localStorage.setItem('partition-paper-size', paperSize);
+  localStorage.setItem('partition-board-sheets', JSON.stringify(boardSheets));
+  localStorage.setItem('partition-board-sheet-active', String(activeBoardSheetIndex));
+  localStorage.setItem('partition-board-rotate', String(boardRotateEnabled));
+  applyPaperSize();
+  applyViewMode();
+  document.querySelectorAll('.vtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+currentTab)?.classList.add('active');
+  renderQuickTenToggle();
+  refreshTextToolButton();
+  loadUrinalPanel();
   renderGroups(false);
   renderQuickLayout();
   lastParams = getParams();
   drawView(lastParams, currentTab);
   renderBOM(lastParams);
+  updateBoardSheetEstimate();
 }
 
 function pushHistory() {
-  undoStack.push(cloneState());
-  if (undoStack.length > 5) undoStack.shift();
+  const state = cloneState();
+  if (undoStack.length && historyStateSignature(undoStack[undoStack.length - 1]) === historyStateSignature(state)) return;
+  undoStack.push(state);
+  if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
   redoStack = [];
+}
+
+function historyStateSignature(state) {
+  return JSON.stringify(state);
 }
 
 function undoLayout() {
   if (!undoStack.length) return;
+  globalEditHistoryTarget = null;
   redoStack.push(cloneState());
+  if (redoStack.length > HISTORY_LIMIT) redoStack.shift();
   const state = undoStack.pop();
   restoreState(state);
 }
 
 function redoLayout() {
   if (!redoStack.length) return;
+  globalEditHistoryTarget = null;
   undoStack.push(cloneState());
-  if (undoStack.length > 5) undoStack.shift();
+  if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
   const state = redoStack.pop();
   restoreState(state);
+}
+
+function shouldTrackGlobalHistoryTarget(target) {
+  if (!target || target.closest?.('#project-modal, #export-modal')) return false;
+  if (target.closest?.('.quick-history-actions')) return false;
+  if (target.id === 'project-import-file') return false;
+  return !!target.closest?.('input, textarea, select, [contenteditable="true"]');
+}
+
+function globalHistoryTargetKey(target) {
+  if (!target) return '';
+  const el = target.closest?.('input, textarea, select, [contenteditable="true"]') || target;
+  if (el.id) return el.id;
+  if (el.dataset) {
+    const dataKey = ['quickRow','quickCol','widthIndex','projectAction'].map(k => el.dataset[k]).filter(Boolean).join(':');
+    if (dataKey) return `${el.tagName}:${dataKey}`;
+  }
+  return `${el.tagName || 'node'}:${el.className || ''}`;
+}
+
+function markGlobalEditStart(target) {
+  if (!shouldTrackGlobalHistoryTarget(target)) return;
+  const key = globalHistoryTargetKey(target);
+  if (!key || globalEditHistoryTarget === key) return;
+  globalEditHistoryTarget = key;
+  pushHistory();
+}
+
+function clearGlobalEditStart(target) {
+  if (!target || globalEditHistoryTarget === globalHistoryTargetKey(target)) globalEditHistoryTarget = null;
+}
+
+function handleGlobalHistoryShortcut(e) {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const key = String(e.key || '').toLowerCase();
+  const isUndo = key === 'z' && !e.shiftKey;
+  const isRedo = key === 'y' || (key === 'z' && e.shiftKey);
+  if (!isUndo && !isRedo) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (isUndo) undoLayout();
+  else redoLayout();
 }
 
 const PROJECT_STORAGE_KEY = 'partition-project-files-v1';
@@ -3477,6 +3590,7 @@ function loadUrinalPanel() {
 }
 
 function saveUrinalSpec() {
+  pushHistory();
   urinalSpec = {
     count: Math.max(0, parseInt(document.getElementById('u-count').value) || 0),
     width: Math.max(0, parseInt(document.getElementById('u-width').value) || 0),
@@ -7687,6 +7801,7 @@ function saveBoardSheetSettings() {
 }
 
 function setBoardSheetEstimateInput() {
+  pushHistory();
   const w = Number(document.getElementById('board-sheet-w')?.value || 0);
   const h = Number(document.getElementById('board-sheet-h')?.value || 0);
   const sheet = boardSheets[activeBoardSheetIndex] || boardSheets[0];
@@ -7701,6 +7816,7 @@ function setBoardSheetEstimateInput() {
 }
 
 function setActiveBoardSheet(index) {
+  pushHistory();
   activeBoardSheetIndex = Math.max(0, Math.min(2, Number(index) || 0));
   saveBoardSheetSettings();
   if (lastParams) renderBOM(lastParams);
@@ -7709,6 +7825,7 @@ function setActiveBoardSheet(index) {
 
 function toggleBoardSheetEnabled() {
   if (activeBoardSheetIndex <= 0) return;
+  pushHistory();
   const sheet = boardSheets[activeBoardSheetIndex];
   sheet.enabled = !sheet.enabled;
   saveBoardSheetSettings();
@@ -7717,6 +7834,7 @@ function toggleBoardSheetEnabled() {
 }
 
 function toggleBoardRotate() {
+  pushHistory();
   boardRotateEnabled = !boardRotateEnabled;
   localStorage.setItem('partition-board-rotate', String(boardRotateEnabled));
   updateBoardSheetEstimate();
@@ -10265,7 +10383,7 @@ function dimensionCurrentValue(row, meta = {}) {
   if (meta.kind === 'depth') return row.depth;
   if (meta.kind === 'booth-width') return c.boothWidths?.[meta.boothIndex] || c.boothW;
   if (meta.kind === 'door-width') return c.doorWidths?.[meta.boothIndex] || boothDoorWidthAt(row, meta.boothIndex);
-  if (meta.kind === 'front-panel') return Math.round(Number(meta.panel?.bigMm) || 0);
+  if (meta.kind === 'front-panel') return Math.round(Number(resolveBoardPanelForRow(meta.panel, row)?.bigMm) || 0);
   if (meta.kind === 'depth-panel-depth') return depthPanelActualDepth(row, meta.panelIndex || 0);
   if (meta.kind === 'h-upright') return row.hUpright;
   if (meta.kind === 'h-door') return row.hDoor;
@@ -10297,7 +10415,10 @@ function commitDimensionValue(hit, value) {
     const count = Math.max(1, Number(row.count) || 1);
     row.boothDoorWidths = rowDoorWidthOverrides(row, count);
     row.boothDoorWidths[Math.max(0, Math.min(count - 1, Number(meta.boothIndex) || 0))] = next;
-  } else if (meta.kind === 'front-panel') setRowDimensionLock(row, 'frontPanels', frontPanelLockIndex(meta.panel, row), next);
+  } else if (meta.kind === 'front-panel') {
+    const panel = resolveBoardPanelForRow(meta.panel, row);
+    setRowDimensionLock(row, 'frontPanels', frontPanelLockIndex(panel, row), next);
+  }
   else if (meta.kind === 'depth-panel-depth') {
     const count = depthPanelCount(row);
     const index = Math.max(0, Math.min(count - 1, Number(meta.panelIndex) || 0));
@@ -10821,9 +10942,7 @@ function handlePlanTapFromPoint(pt, shiftKey = false) {
   const row = group ? ensureRows(group).find(r => r.id === hit.rowId) : null;
   if (!group || !row) return;
   clearMultiSelections();
-  saveActiveGroup();
-  activeGroupId = group.id;
-  activeRowId = row.id;
+  selectPlanRowForHit(group, row);
   if (hit.type === 'booth') {
     selectionScope = 'booth';
     setSelectedBooth(group.id, row.id, hit.index);
@@ -11237,6 +11356,12 @@ document.getElementById('dimension-editor')?.addEventListener('keydown', e => {
 });
 
 document.getElementById('dimension-editor')?.addEventListener('blur', () => finishDimensionEdit(true));
+
+document.addEventListener('focusin', e => markGlobalEditStart(e.target), true);
+document.addEventListener('pointerdown', e => markGlobalEditStart(e.target), true);
+document.addEventListener('change', e => clearGlobalEditStart(e.target), true);
+document.addEventListener('blur', e => clearGlobalEditStart(e.target), true);
+document.addEventListener('keydown', handleGlobalHistoryShortcut, true);
 
 window.addEventListener('keydown', e => {
   if (e.key !== 'Delete' && e.key !== 'Backspace') return;
