@@ -6114,7 +6114,7 @@ function drawPlanWalls(ox, oy, sW, sD, swt, c, extras = {}) {
   ctx.restore();
 }
 
-function drawDoorSwing(door, baseY, st, p) {
+function drawDoorSwing(door, baseY, st, p, options = {}) {
   const swing = swingDefs[door.swing || p.swing || 'in-right'] || swingDefs['in-right'];
   const isRight = swing.hinge === 'right';
   const closedStart = Number.isFinite(door.bigStart) ? door.bigStart : door.start;
@@ -6159,6 +6159,17 @@ function drawDoorSwing(door, baseY, st, p) {
     ctx.closePath();
     ctx.stroke();
   };
+  const drawDoorBoardSelection = (x1, y1, x2, y2) => {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    if (len <= 0.5) return;
+    ctx.save();
+    ctx.translate(x1, y1);
+    ctx.rotate(Math.atan2(dy, dx));
+    drawSelectedBoardPanelMarker(0, -st / 2, len, st);
+    ctx.restore();
+  };
   ctx.save();
   ctx.lineCap = 'butt';
   ctx.lineJoin = 'miter';
@@ -6166,6 +6177,7 @@ function drawDoorSwing(door, baseY, st, p) {
   ctx.lineWidth = Math.max(0.45, anno(0.75));
   drawDoorBoard(closedStart, closedY, closedEnd, closedY, doorSmallOnTopForSwing(door.swing));
   drawDoorBoard(hingeX, closedY, hingeX, openEndY, doorSmallOnTopForSwing(door.swing));
+  if (options.selected && !drawingForExport) drawDoorBoardSelection(hingeX, closedY, hingeX, openEndY);
   ctx.strokeStyle = '#8EC5FF';
   ctx.lineWidth = Math.max(0.8, anno(5));
   ctx.setLineDash([dash, gap]);
@@ -6563,6 +6575,8 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     const rebatePx = p.rebate ? Math.max(0, Number(p.rebateDepth) || 0) * scale : 0;
     const bigStart = dsx - rebatePx;
     const bigEnd = dsx + dsw + rebatePx;
+    const doorSelected = isSelectedBooth(options.groupId ?? activeGroupId, options.rowId ?? activeRowId, i);
+    if (doorSelected && hasDoor && !drawingForExport) drawSelectedBoardPanelMarker(bigStart, oy + sD, bigEnd - bigStart, st);
     if (options.groupId && options.rowId) {
       const hitScale = options.hitScale || 1;
       const hitX = options.hitX || 0;
@@ -6582,7 +6596,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     const boothLabel = `${labelPrefix}${currentLabelNo}`;
     const labelX = bx + bw / 2;
     const labelY = oy + sD / 2;
-    if (isSelectedBooth(options.groupId ?? activeGroupId, options.rowId ?? activeRowId, i)) {
+    if (doorSelected) {
       const textW = ctx.measureText(boothLabel).width;
       const textH = annoFont(95);
       const padX = anno(28);
@@ -6619,7 +6633,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     drawDepthPanel(panelGeoms[p.count], ox + sW - st, oy, st, Math.max(1, sD - st));
   }
   doors.filter(door => door.hasDoor !== false).forEach(door => {
-    drawDoorSwing(door, oy+sD, st, p);
+    drawDoorSwing(door, oy+sD, st, p, {selected: isSelectedBooth(options.groupId ?? activeGroupId, options.rowId ?? activeRowId, door.index)});
   });
   const boardModel = buildBoardModel(p, c, doors, ox, sW, scale);
   drawPlanRebateDetails(p, ox, oy, sW, sD, st, scale, boardModel);
