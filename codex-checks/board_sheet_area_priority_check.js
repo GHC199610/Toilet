@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
@@ -18,14 +18,22 @@ const context = {};
 vm.createContext(context);
 vm.runInContext(estimatorSource, context);
 
-const pieces = Array.from({length: 12}, () => ({w: 400, h: 900}));
-const sheets = [
-  {w: 1220, h: 2440, enabled: true},
-  {w: 800, h: 2440, enabled: true},
-];
-const estimate = context.estimateBoardSheets(pieces, sheets, true);
-const summary = (estimate.sheetCounts || []).map(item => `${item.w}x${item.h}=${item.count}`).join('/');
-if (summary !== '800x2440=3') {
-  throw new Error(`Expected lower-area 800x2440 sheets for 12 pieces of 400x900, got ${summary || '(empty)'}`);
+const smallerArea = {
+  count: 24,
+  unplacedCount: 0,
+  sheetArea: 24 * 1220 * 1830,
+  utilization: 0.6,
+};
+const fewerBoardsButMoreArea = {
+  count: 23,
+  unplacedCount: 0,
+  sheetArea: 23 * 1220 * 2440,
+  utilization: 0.7,
+};
+const best = context.betterBoardEstimate(smallerArea, fewerBoardsButMoreArea);
+
+if (best !== smallerArea) {
+  throw new Error('Board estimate should prefer lower total sheet area before lower sheet count.');
 }
-console.log('multi sheet board choice contract ok');
+
+console.log('board sheet area priority contract ok');

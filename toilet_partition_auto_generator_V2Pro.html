@@ -225,7 +225,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none;-webkit-user-selec
 .bom-area{position:absolute;top:3rem;right:0.875rem;bottom:1.5rem;z-index:9;min-width:0;width:34rem;max-width:calc(100% - 1.75rem);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.875rem;background:rgba(255,255,255,.92);box-shadow:0 14px 34px rgba(31,35,40,.14);overflow:hidden;display:flex;flex-direction:column}
 body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px rgba(0,0,0,.24)}
 .bom-head{display:flex;align-items:center;justify-content:space-between;gap:0.625rem;margin-bottom:0.625rem;flex-wrap:wrap;flex:0 0 auto}
-.bom-title{font-size:1.0625rem;font-weight:800;color:#000;white-space:nowrap}
+.bom-title{font-size:1.0625rem;font-weight:800;color:#000;white-space:normal;display:inline-flex;align-items:center;gap:0.625rem;flex-wrap:wrap;min-width:0}
 .bom-toggle{display:inline-flex;align-items:center;justify-content:center;height:2.25rem;padding:0 0.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:700;cursor:pointer;white-space:nowrap}
 .bom-board-estimator{display:flex;align-items:center;gap:0.5rem;flex:1 0 100%;min-width:0;font-size:0.875rem;font-weight:700;color:var(--color-text-secondary);flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding-bottom:0.125rem;scrollbar-width:thin}
 .bom-board-estimator input,.bom-board-estimator select{height:2.25rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.875rem;font-weight:800;text-align:center;padding:0 0.5rem}
@@ -240,7 +240,7 @@ body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px r
 .bom-board-estimator .switch-track{width:2.25rem;height:1.25rem}
 .bom-board-estimator .switch-track::after{width:0.875rem;height:0.875rem}
 .bom-board-estimator .switch-toggle.active .switch-track::after{left:1.125rem}
-.bom-board-result{font-size:0.9375rem;font-weight:900;color:#185FA5;white-space:nowrap;flex:0 0 auto;margin-left:auto;text-align:right}
+.bom-board-result{font-size:0.9375rem;font-weight:900;color:#185FA5;white-space:nowrap;flex:0 0 auto;margin-left:auto;text-align:right}.bom-title .bom-board-result{margin-left:0;text-align:left;white-space:normal;overflow-wrap:anywhere;min-width:0}
 .bom-actions{display:flex;align-items:center;gap:0.5rem;flex:0 0 auto}
 .bom-export{height:2.25rem;padding:0 0.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:700;cursor:pointer;white-space:nowrap}
 .bom-export:hover{border-color:#378ADD;color:#185FA5;background:#fff}
@@ -250,7 +250,7 @@ body.theme-dark .bom-title{color:#f6f8fa}
 .bom-area.collapsed{bottom:auto;width:13rem;min-width:13rem;max-width:13rem;max-height:4rem;overflow:hidden}
 .bom-area.collapsed .bom-grid{max-height:0;opacity:0;overflow:hidden;pointer-events:none}
 .bom-area.collapsed .bom-head{margin-bottom:0;display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:0.5rem}
-.bom-area.collapsed .bom-board-estimator{display:none}
+.bom-area.collapsed .bom-board-estimator{display:none}.bom-area.collapsed .bom-title .bom-board-result{display:none}
 .bom-area.collapsed .bom-export{display:none}
 .bom-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.75rem;min-width:0}
 .bom-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:0.625rem;margin-bottom:0.5rem}
@@ -708,7 +708,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" enterkeyhint="done" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板切割估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>板件旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><div class="advanced-print" id="bom-advanced-print-menu"><button class="bom-export" type="button" onclick="toggleAdvancedPrintMenu('bom-advanced-print-menu')">高级打印</button><div class="advanced-print-menu"><button id="btn-svg-print-bom" type="button" onclick="closeAdvancedPrintMenus();printBomSvg()">SVG打印</button><button id="btn-svg-pdf-bom" type="button" onclick="closeAdvancedPrintMenus();exportBomSvgPdf()">SVG导出PDF</button></div></div><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
+        <div class="bom-head"><div class="bom-title">开料清单<span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-board-estimator" aria-label="整板切割估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>板件旋转</span><span class="switch-track" aria-hidden="true"></span></button></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><div class="advanced-print" id="bom-advanced-print-menu"><button class="bom-export" type="button" onclick="toggleAdvancedPrintMenu('bom-advanced-print-menu')">高级打印</button><div class="advanced-print-menu"><button id="btn-svg-print-bom" type="button" onclick="closeAdvancedPrintMenus();printBomSvg()">SVG打印</button><button id="btn-svg-pdf-bom" type="button" onclick="closeAdvancedPrintMenus();exportBomSvgPdf()">SVG导出PDF</button></div></div><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -7636,7 +7636,7 @@ function estimatePackedBoardSheetCount(pieces, sheet, allowRotate) {
   });
   const usedArea = pieces.reduce((sum, piece) => sum + piece.w * piece.h, 0);
   const sheetArea = boards.reduce((sum, board) => sum + board.area, 0);
-  return {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0};
+  return {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0, sheetArea};
 }
 
 function estimateSingleBoardSheetCount(pieces, sheet, allowRotate) {
@@ -7647,18 +7647,33 @@ function betterBoardEstimate(a, b) {
   if (!a) return b;
   if (!b) return a;
   if ((b.unplacedCount || 0) !== (a.unplacedCount || 0)) return (b.unplacedCount || 0) < (a.unplacedCount || 0) ? b : a;
+  const aArea = Number.isFinite(a.sheetArea) ? a.sheetArea : Number.MAX_SAFE_INTEGER;
+  const bArea = Number.isFinite(b.sheetArea) ? b.sheetArea : Number.MAX_SAFE_INTEGER;
+  if (bArea !== aArea) return bArea < aArea ? b : a;
   if ((b.count || 0) !== (a.count || 0)) return (b.count || 0) < (a.count || 0) ? b : a;
   return (b.utilization || 0) > (a.utilization || 0) ? b : a;
 }
 
+function isUrinalBoardPiece(piece) {
+  return /\u5c0f\u4fbf|urinal/i.test(String(piece?.label || ''));
+}
+
+function sortBoardPiecesWithUrinalLast(pieces, compare) {
+  return pieces.slice().sort((a, b) => {
+    const ap = isUrinalBoardPiece(a) ? 1 : 0;
+    const bp = isUrinalBoardPiece(b) ? 1 : 0;
+    return (ap - bp) || compare(a, b);
+  });
+}
+
 function estimateBoardSheetsByMode(filtered, enabledSheets, allowRotate) {
-  if (!enabledSheets.length || !filtered.length) return {count:0, unplacedCount:filtered.length, utilization:0};
+  if (!enabledSheets.length || !filtered.length) return {count:0, unplacedCount:filtered.length, utilization:0, sheetArea:0};
   const strategies = [
-    filtered.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || Math.max(b.w, b.h) - Math.max(a.w, a.h)),
-    filtered.slice().sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || (b.w * b.h - a.w * a.h)),
-    filtered.slice().sort((a, b) => Math.min(b.w, b.h) - Math.min(a.w, a.h) || (b.w * b.h - a.w * a.h)),
-    filtered.slice().sort((a, b) => (b.w - a.w) || (b.h - a.h)),
-    filtered.slice().sort((a, b) => (b.h - a.h) || (b.w - a.w)),
+    sortBoardPiecesWithUrinalLast(filtered, (a, b) => (b.w * b.h - a.w * a.h) || Math.max(b.w, b.h) - Math.max(a.w, a.h)),
+    sortBoardPiecesWithUrinalLast(filtered, (a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || (b.w * b.h - a.w * a.h)),
+    sortBoardPiecesWithUrinalLast(filtered, (a, b) => Math.min(b.w, b.h) - Math.min(a.w, a.h) || (b.w * b.h - a.w * a.h)),
+    sortBoardPiecesWithUrinalLast(filtered, (a, b) => (b.w - a.w) || (b.h - a.h)),
+    sortBoardPiecesWithUrinalLast(filtered, (a, b) => (b.h - a.h) || (b.w - a.w)),
   ];
   let best = null;
   const sheetOrders = [
@@ -7683,10 +7698,26 @@ function estimateBoardSheetsByMode(filtered, enabledSheets, allowRotate) {
     const usedArea = sorted.reduce((sum, piece) => sum + piece.w * piece.h, 0);
     const sheetArea = boards.reduce((sum, board) => sum + board.area, 0);
     const remnants = boardRemnantPiecesFromEstimate(boards);
-    const result = {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0, remnants};
+    const sheetCounts = boardSheetCountsFromBoards(boards);
+    const result = {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0, remnants, sheetCounts, sheetArea};
     best = betterBoardEstimate(best, result);
   }));
-  return best || {count:0, unplacedCount:filtered.length, utilization:0};
+  return best || {count:0, unplacedCount:filtered.length, utilization:0, sheetCounts:[], sheetArea:0};
+}
+
+function boardSheetCountsFromBoards(boards) {
+  const counts = new Map();
+  (boards || []).forEach(board => {
+    const sheet = board?.sheet || board;
+    const w = Math.round(Number(sheet?.w) || 0);
+    const h = Math.round(Number(sheet?.h) || 0);
+    if (!w || !h) return;
+    const key = `${w}x${h}`;
+    const item = counts.get(key) || {w, h, count:0};
+    item.count++;
+    counts.set(key, item);
+  });
+  return [...counts.values()].sort((a, b) => (b.w * b.h - a.w * a.h) || (b.h - a.h) || (b.w - a.w));
 }
 
 function estimateBoardSheets(pieces, sheets, allowRotate) {
@@ -7809,15 +7840,23 @@ function updateBoardSheetEstimate() {
   sheetToggle?.classList.toggle('active', activeSheet?.enabled !== false);
   if (!result) return;
   if (!boardSheets.some(sheet => sheet.enabled && sheet.w > 0 && sheet.h > 0) || !lastBomPieces.length) {
-    result.textContent = '≈ -- 张';
+    result.textContent = '\u2248 -- \u5f20';
     return;
   }
   const estimate = estimateBoardSheets(lastBomPieces, boardSheets, boardRotateEnabled);
-  const displayCount = estimate.count + (estimate.unplacedCount || 0);
-  result.textContent = displayCount ? `≈ ${displayCount} 张` : '≈ -- 张';
+  result.textContent = formatBoardSheetEstimateText(estimate);
   checkBoardFitWarnings(lastBomPieces);
 }
 
+function formatBoardSheetEstimateText(estimate) {
+  const displayCount = (estimate?.count || 0) + (estimate?.unplacedCount || 0);
+  if (!displayCount) return '\u2248 -- \u5f20';
+  const detail = (estimate?.sheetCounts || [])
+    .filter(item => item.count > 0)
+    .map(item => `${item.w}\u00d7${item.h}=${item.count}`)
+    .join(' / ');
+  return detail ? `\u2248 ${displayCount} \u5f20\uff08${detail}\uff09` : `\u2248 ${displayCount} \u5f20`;
+}
 function boardRemnantBomItem(estimate) {
   const remnants = Array.isArray(estimate?.remnants) ? estimate.remnants : [];
   if (!remnants.length) return {name:'余料', val:'0 块', sub:'无可用余料'};
