@@ -1889,18 +1889,20 @@ function drawFreePlanTexts(layout) {
     if (!visible) return;
     const x = Number(item.x) || 0;
     const y = Number(item.y) || 0;
-    const width = Math.max(24, ctx.measureText(textValue || ' ').width + 8);
-    const height = 30;
-    if (!drawingForExport) planHitAreas.push({type:'free-text', id:item.id, x, y, w:width, h:height});
     ctx.font = `${style.bold ? '700 ' : ''}${style.fontSize}px 'Microsoft YaHei', Arial, sans-serif`;
+    const lines = String(textValue || ' ').split('\n');
+    const lineH = Math.max(14, style.fontSize * 1.18);
+    const width = Math.max(24, ...lines.map(line => ctx.measureText(line || ' ').width)) + 8;
+    const height = Math.max(lineH, lines.length * lineH);
+    if (!drawingForExport) planHitAreas.push({type:'free-text', id:item.id, x, y, w:width, h:height});
     ctx.fillStyle = style.color;
-    if (textValue) ctx.fillText(textValue, x, y);
-    if (selectionScope === 'free-text' && selectedFreeTextId === item.id) drawPlanSelectionBox(x - 4, y - 4, width, height, 4, true);
+    if (textValue) lines.forEach((line, index) => ctx.fillText(line, x, y + index * lineH));
+    if (selectionScope === 'free-text' && selectedFreeTextId === item.id) drawTextSelectionMarker(x, y, width, height);
     if (canvasTextCaretVisible('free-text') && selectedFreeTextId === item.id) {
       const caret = canvasTextCaretPosition();
       const beforeCaret = String(caret.lineTextBeforeCaret || '');
       const caretX = x + ctx.measureText(beforeCaret).width + 2;
-      drawCanvasTextCaret(caretX, y, Math.max(12, style.fontSize), style.color);
+      drawCanvasTextCaret(caretX, y + caret.lineIndex * lineH, Math.max(12, style.fontSize), style.color);
     }
   });
   ctx.restore();
@@ -2521,7 +2523,7 @@ function handleWidthCardKey(e) {
     if (nextIndex !== index && !(filledCount >= currentWidthCardCount() - 1 && !widthCards[nextIndex])) renderWidthCards(nextIndex);
     return;
   }
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' && selectionScope !== 'free-text') {
     e.preventDefault();
     commitWidthCards();
     refreshDrawingAfterManualEdit(false);
@@ -5548,6 +5550,19 @@ function drawPlanSelectionBox(x, y, w, h, pad = anno(14), light = false) {
   ctx.restore();
 }
 
+function drawTextSelectionMarker(x, y, w, h) {
+  if (drawingForExport) return;
+  const pad = Math.max(2, anno(3));
+  ctx.save();
+  ctx.lineJoin = 'miter';
+  ctx.strokeStyle = '#0B6FD3';
+  ctx.lineWidth = Math.max(1, anno(1.4));
+  ctx.setLineDash([anno(12), anno(7)]);
+  ctx.strokeRect(x - pad, y - pad, w + pad * 2, h + pad * 2);
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
 const PLAN_ANCHOR = {
   labelGap: 18,
   totalDimGap: 105,
@@ -5632,7 +5647,7 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
   ctx.strokeStyle = '#c7cbd1';
   ctx.lineWidth = 1;
   ctx.strokeRect(x, y, w, h);
-  if (selectionScope === 'sheet-note' || isMultiSelected('sheet-note', 'sheet', 'header')) drawPlanSelectionBox(x, y, w, h, 6, true);
+  if (selectionScope === 'sheet-note' || isMultiSelected('sheet-note', 'sheet', 'header')) drawTextSelectionMarker(x, y, w, h);
   if (sheetHeaderText || canvasTextCaretVisible('sheet-note')) {
     const style = normalizeTextStyle(sheetHeaderStyle);
     ctx.fillStyle = style.color;
@@ -6421,19 +6436,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     (selectionScope === 'row' && options.rowId === activeRowId)
   ) || isMultiSelected('block', options.groupId, options.rowId);
   if (rowSelected && !drawingForExport) {
-    ctx.save();
-    const selPad = anno(22);
-    ctx.lineJoin = 'miter';
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = Math.max(1.2, anno(13));
-    ctx.setLineDash([]);
-    ctx.strokeRect(ox - selPad, oy - selPad, sW + selPad * 2, sD + selPad * 2);
-    ctx.strokeStyle = '#0B6FD3';
-    ctx.lineWidth = Math.max(0.8, anno(7));
-    ctx.setLineDash([anno(46), anno(26)]);
-    ctx.strokeRect(ox - selPad, oy - selPad, sW + selPad * 2, sD + selPad * 2);
-    ctx.setLineDash([]);
-    ctx.restore();
+    drawSelectedBoardPanelMarker(ox, oy, sW, sD);
   }
   if (showGroupName && !(drawingForExport && options.tagPreviewOnly)) {
     ctx.save();
@@ -6480,7 +6483,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(tagText, tagX + tagW / 2, tagY + tagH / 2);
     const tagSelected = !drawingForExport && ((selectionScope === 'tag' && options.groupId === activeGroupId && options.rowId === activeRowId) || isMultiSelected('tag', options.groupId, options.rowId));
-    if (tagSelected) drawPlanSelectionBox(tagX, tagY, tagW, tagH, anno(10));
+    if (tagSelected) drawSelectedBoardPanelMarker(tagX, tagY, tagW, tagH);
     if (canvasTextCaretVisible('tag') && options.groupId === activeGroupId && options.rowId === activeRowId) {
       const caret = canvasTextCaretPosition();
       const beforeCaret = String(caret.lineTextBeforeCaret || '');
@@ -6570,8 +6573,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
       const textH = annoFont(95);
       const padX = anno(28);
       const padY = anno(18);
-      ctx.strokeStyle = '#185FA5'; ctx.lineWidth = Math.max(0.45, anno(2));
-      ctx.strokeRect(labelX - textW / 2 - padX, labelY - textH / 2 - padY, textW + padX * 2, textH + padY * 2);
+      drawSelectedBoardPanelMarker(labelX - textW / 2 - padX, labelY - textH / 2 - padY, textW + padX * 2, textH + padY * 2);
     }
     ctx.fillText(boothLabel, labelX, labelY);
     if (!hasDoor) {
@@ -6613,19 +6615,20 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     const hitX = options.hitX || 0;
     const hitY = options.hitY || 0;
     const boardY = oy + sD;
+    const boardPanelHitPad = Math.max(anno(28), st * 1.4);
     (boardModel.panels || []).forEach(panel => {
       const x1 = Math.min(panel.bigX1, panel.bigX2);
       const w = Math.abs(panel.bigX2 - panel.bigX1);
       if (w <= 0.5) return;
       if (isSelectedBoardPanel(options.groupId, options.rowId, panel)) drawGenericBoardPanelSelection(x1, boardY, w, st);
-      planHitAreas.push({type:'board-panel', x:hitX + x1 * hitScale, y:hitY + boardY * hitScale, w:w * hitScale, h:Math.max(st, anno(44)) * hitScale, groupId:options.groupId, rowId:options.rowId, panel:{...panel}});
+      planHitAreas.push({type:'board-panel', x:hitX + x1 * hitScale, y:hitY + (boardY - boardPanelHitPad) * hitScale, w:w * hitScale, h:(st + boardPanelHitPad * 2) * hitScale, groupId:options.groupId, rowId:options.rowId, panel:{...panel}});
     });
     (boardModel.doors || []).forEach(panel => {
       const x1 = Math.min(panel.bigX1, panel.bigX2);
       const w = Math.abs(panel.bigX2 - panel.bigX1);
       if (w <= 0.5) return;
       if (isSelectedBoardPanel(options.groupId, options.rowId, panel)) drawGenericBoardPanelSelection(x1, boardY, w, st);
-      planHitAreas.push({type:'board-panel', x:hitX + x1 * hitScale, y:hitY + boardY * hitScale, w:w * hitScale, h:Math.max(st, anno(44)) * hitScale, groupId:options.groupId, rowId:options.rowId, panel:{...panel}});
+      planHitAreas.push({type:'board-panel', x:hitX + x1 * hitScale, y:hitY + (boardY - boardPanelHitPad) * hitScale, w:w * hitScale, h:(st + boardPanelHitPad * 2) * hitScale, groupId:options.groupId, rowId:options.rowId, panel:{...panel}});
     });
   }
 
