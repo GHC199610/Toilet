@@ -196,6 +196,15 @@ body.theme-dark .sheet-actions{background:#202734}
 .sheet-action-btn{height:2rem;padding:0 0.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.8125rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.375rem;transition:border-color .15s,color .15s,background .15s}
 .sheet-action-btn:hover{border-color:#378ADD;color:#185FA5;background:#fff}
 body.theme-dark .sheet-action-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141a22}
+.text-tool,.text-bold,.text-style-size,.text-style-color{--text-tool-size:2rem;width:var(--text-tool-size);height:var(--text-tool-size);min-width:var(--text-tool-size);padding:0;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.8125rem;font-weight:800;text-align:center;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;cursor:pointer}
+.text-style-size{-moz-appearance:textfield}
+.text-style-size::-webkit-outer-spin-button,.text-style-size::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.text-style-color{appearance:none;-webkit-appearance:none;overflow:hidden}
+.text-color-control{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.text-color-palette{position:absolute;top:calc(100% + 0.5rem);left:50%;transform:translateX(-50%);z-index:35;display:none;grid-template-columns:repeat(4,1.75rem);gap:0.375rem;padding:0.5rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);box-shadow:0 10px 28px rgba(31,35,40,.18)}
+.text-color-palette.open{display:grid}
+.text-color-swatch{width:1.75rem;height:1.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--swatch);cursor:pointer}
+.text-color-preview{display:block;width:1.25rem;height:1.25rem;border-radius:0.25rem;background:var(--text-current-color,#000000);border:0.5px solid rgba(0,0,0,.22)}
 .sheet-action-btn.expand::after{content:"";width:0.42rem;height:0.42rem;border:0.11rem solid currentColor;border-left:0;border-top:0;transform:rotate(45deg);margin-left:0.125rem;margin-top:-0.125rem;opacity:.82}
 .sheet-page-info{margin-left:auto;font-size:0.75rem;color:var(--color-text-secondary)}
 .urinal-panel{position:absolute;top:7.15rem;left:17rem;z-index:30;width:24rem;padding:0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);box-shadow:0 12px 30px rgba(31,35,40,.18);display:none;grid-template-columns:repeat(3,1fr);gap:0.5rem;align-items:end}
@@ -663,6 +672,10 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       </div>
       <button class="sheet-action-btn" type="button" onclick="autoCompactSheetLayout()">自动排版</button>
       <button class="sheet-action-btn expand" type="button" onclick="toggleUrinalPanel()">小便板</button>
+      <button class="sheet-action-btn text-tool" id="text-tool-toggle" type="button" onclick="toggleTextToolMode()" title="Text" aria-label="Text">T</button>
+      <input id="text-size-input" class="text-style-size" type="number" min="8" max="96" step="1" value="15" title="Font size" aria-label="Font size" onchange="applyTextStyleChange('fontSize', this.value)">
+      <button class="sheet-action-btn text-bold" id="text-bold-toggle" type="button" onclick="toggleTextBold()" title="Bold" aria-label="Bold">B</button>
+      <span class="text-color-control"><button class="sheet-action-btn text-style-color" id="text-color-button" type="button" onclick="toggleTextColorPalette()" title="Color" aria-label="Color"><span id="text-color-preview" class="text-color-preview"></span></button><div class="text-color-palette" id="text-color-palette" aria-label="Color palette"><button class="text-color-swatch" type="button" style="--swatch:#d64242" onclick="selectTextPaletteColor('#d64242')" aria-label="#d64242"></button><button class="text-color-swatch" type="button" style="--swatch:#000000" onclick="selectTextPaletteColor('#000000')" aria-label="#000000"></button><button class="text-color-swatch" type="button" style="--swatch:#185FA5" onclick="selectTextPaletteColor('#185FA5')" aria-label="#185FA5"></button><button class="text-color-swatch" type="button" style="--swatch:#2da44e" onclick="selectTextPaletteColor('#2da44e')" aria-label="#2da44e"></button><button class="text-color-swatch" type="button" style="--swatch:#bf8700" onclick="selectTextPaletteColor('#bf8700')" aria-label="#bf8700"></button><button class="text-color-swatch" type="button" style="--swatch:#8250df" onclick="selectTextPaletteColor('#8250df')" aria-label="#8250df"></button><button class="text-color-swatch" type="button" style="--swatch:#ffffff" onclick="selectTextPaletteColor('#ffffff')" aria-label="#ffffff"></button><button class="text-color-swatch" type="button" style="--swatch:#6e7781" onclick="selectTextPaletteColor('#6e7781')" aria-label="#6e7781"></button></div></span>
       <span class="sheet-page-info" id="sheet-page-info">第 1/1 页</span>
     </div>
     <div class="export-row">
@@ -695,7 +708,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" enterkeyhint="done" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><div class="advanced-print" id="bom-advanced-print-menu"><button class="bom-export" type="button" onclick="toggleAdvancedPrintMenu('bom-advanced-print-menu')">高级打印</button><div class="advanced-print-menu"><button id="btn-svg-print-bom" type="button" onclick="closeAdvancedPrintMenus();printBomSvg()">SVG打印</button><button id="btn-svg-pdf-bom" type="button" onclick="closeAdvancedPrintMenus();exportBomSvgPdf()">SVG导出PDF</button></div></div><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
+        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板切割估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>板件旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><div class="advanced-print" id="bom-advanced-print-menu"><button class="bom-export" type="button" onclick="toggleAdvancedPrintMenu('bom-advanced-print-menu')">高级打印</button><div class="advanced-print-menu"><button id="btn-svg-print-bom" type="button" onclick="closeAdvancedPrintMenus();printBomSvg()">SVG打印</button><button id="btn-svg-pdf-bom" type="button" onclick="closeAdvancedPrintMenus();exportBomSvgPdf()">SVG导出PDF</button></div></div><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -833,6 +846,13 @@ let quickEditingCellRef = null;
 let autoOpenTotalOnQuickFocus = false;
 let quickSelectAllActive = false;
 let noteInputValue = '';
+let freePlanTexts = [];
+let selectedFreeTextId = null;
+let freeTextDrag = null;
+let textToolMode = false;
+const DEFAULT_TAG_FONT_SIZE = 8;
+let defaultTextStyle = {fontSize:15, bold:false, color:'#000000'};
+let sheetHeaderStyle = {fontSize:15, bold:false, color:'#000000'};
 let lastCanvasTextHitArea = null;
 let suppressNextCanvasClick = false;
 let lastBomPieces = [];
@@ -1160,7 +1180,16 @@ function selectedNoteTarget() {
   if (selectionScope === 'sheet-note') {
     return {
       text: sheetHeaderText || '',
+      style: sheetHeaderStyle,
       set(value) { sheetHeaderText = value; }
+    };
+  }
+  if (selectionScope === 'free-text') {
+    const item = freePlanTexts.find(textItem => textItem.id === selectedFreeTextId);
+    return {
+      text: item?.text || '',
+      style: item?.style || defaultTextStyle,
+      set(value) { if (item) item.text = value; }
     };
   }
   if (selectionScope === 'booth' && row && selectedBoothRef) {
@@ -1178,8 +1207,10 @@ function selectedNoteTarget() {
     };
   }
   if (row) {
+    if (!row.noteStyle) row.noteStyle = {};
     return {
       text: row.note || '',
+      style: row.noteStyle,
       set(value) { row.note = value; }
     };
   }
@@ -1197,7 +1228,99 @@ function syncPlanNoteInputFromSelection() {
 }
 
 function activeCanvasTextEditable() {
-  return currentTab === 'plan' && (selectionScope === 'sheet-note' || selectionScope === 'tag');
+  return currentTab === 'plan' && (selectionScope === 'sheet-note' || selectionScope === 'tag' || selectionScope === 'free-text');
+}
+
+
+function normalizeTextStyle(style = {}) {
+  return {
+    fontSize:Math.max(8, Math.min(96, Math.round(Number(style.fontSize) || defaultTextStyle.fontSize || 15))),
+    bold:style.bold === true,
+    color:/^#[0-9a-f]{6}$/i.test(String(style.color || '')) ? String(style.color) : (defaultTextStyle.color || '#000000')
+  };
+}
+
+function normalizeTagTextStyle(style = {}, isSingleBoothTag = false) {
+  return {
+    fontSize:Math.max(8, Math.min(120, Math.round(Number(style.fontSize) || DEFAULT_TAG_FONT_SIZE))),
+    bold:style.bold === true,
+    color:/^#[0-9a-f]{6}$/i.test(String(style.color || '')) ? String(style.color) : '#d64242'
+  };
+}
+
+function tagVisualFontSize(fontSize, renderFit = 1) {
+  const size = Math.max(8, Math.min(120, Math.round(Number(fontSize) || 15)));
+  const fit = Math.max(0.05, Number(renderFit) || 1);
+  return size / fit;
+}
+
+function currentTextStyleTarget() {
+  if (selectionScope === 'sheet-note') return {style:sheetHeaderStyle};
+  if (selectionScope === 'tag') {
+    const row = activeRow();
+    if (row) {
+      if (!row.noteStyle) row.noteStyle = {};
+      return {style:row.noteStyle};
+    }
+  }
+  if (selectionScope === 'free-text') {
+    const item = freePlanTexts.find(textItem => textItem.id === selectedFreeTextId);
+    if (item) {
+      if (!item.style) item.style = {...defaultTextStyle};
+      return {style:item.style};
+    }
+  }
+  return {style:defaultTextStyle, isDefault:true};
+}
+
+function syncTextStyleControls() {
+  const style = normalizeTextStyle(currentTextStyleTarget().style || defaultTextStyle);
+  const size = document.getElementById('text-size-input');
+  const bold = document.getElementById('text-bold-toggle');
+  const colorButton = document.getElementById('text-color-button');
+  if (size) size.value = String(style.fontSize);
+  if (bold) bold.classList.toggle('active', style.bold);
+  if (colorButton) colorButton.style.setProperty('--text-current-color', style.color);
+}
+
+function toggleTextColorPalette(force = null) {
+  const palette = document.getElementById('text-color-palette');
+  if (!palette) return;
+  const open = force === null ? !palette.classList.contains('open') : !!force;
+  palette.classList.toggle('open', open);
+}
+
+function selectTextPaletteColor(color) {
+  applyTextStyleChange('color', color);
+  toggleTextColorPalette(false);
+}
+
+function handleTextColorPaletteOutsideClick(e) {
+  const palette = document.getElementById('text-color-palette');
+  if (!palette || !palette.classList.contains('open')) return;
+  if (e.target.closest?.('.text-color-control')) return;
+  toggleTextColorPalette(false);
+}
+
+document.addEventListener('pointerdown', handleTextColorPaletteOutsideClick, {capture:true});
+
+function applyTextStyleChange(key, value) {
+  const target = currentTextStyleTarget();
+  if (!target.style) target.style = defaultTextStyle;
+  if (key === 'fontSize') {
+    target.style[key] = Math.max(8, Math.min(96, Math.round(Number(value) || Number(target.style.fontSize) || 15)));
+  } else if (key === 'bold') {
+    target.style[key] = value === true;
+  } else if (key === 'color' && /^#[0-9a-f]{6}$/i.test(String(value || ''))) {
+    target.style[key] = String(value);
+  }
+  syncTextStyleControls();
+  if (lastParams) drawView(lastParams, currentTab);
+}
+
+function toggleTextBold() {
+  const style = normalizeTextStyle(currentTextStyleTarget().style || defaultTextStyle);
+  applyTextStyleChange('bold', !style.bold);
 }
 
 function focusCanvasTextEditor() {
@@ -1210,6 +1333,7 @@ function focusCanvasTextEditor() {
     return;
   }
   const target = selectedNoteTarget();
+  syncTextStyleControls();
   const value = normalizeTwoLineText(target.text || '');
   editor.classList.add('active');
   editor.value = value;
@@ -1562,6 +1686,129 @@ function drawCanvasTextCaret(x, y, h, color = '#000000') {
   ctx.moveTo(x, y);
   ctx.lineTo(x, y + h);
   ctx.stroke();
+  ctx.restore();
+}
+
+function createFreePlanTextId() {
+  return 'free-text-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function refreshTextToolButton() {
+  const btn = document.getElementById('text-tool-toggle');
+  if (!btn) return;
+  btn.classList.toggle('active', textToolMode);
+  btn.setAttribute('aria-pressed', textToolMode ? 'true' : 'false');
+}
+
+function setTextToolMode(enabled) {
+  textToolMode = !!enabled;
+  refreshTextToolButton();
+}
+
+function toggleTextToolMode() {
+  setTextToolMode(!textToolMode);
+}
+
+function startFreePlanTextAtPoint(pt) {
+  if (currentTab !== 'plan') return;
+  const item = {id:createFreePlanTextId(), x:Math.round(pt.x), y:Math.round(pt.y), text:'', style:{...defaultTextStyle}};
+  freePlanTexts.push(item);
+  selectedFreeTextId = item.id;
+  lastCanvasTextHitArea = {type:'free-text', id:item.id, x:item.x, y:item.y, w:1, h:1};
+  selectionScope = 'free-text';
+  clearSelectedBooth();
+  clearSelectedDepthPanel();
+  syncPlanNoteInputFromSelection();
+  drawView(lastParams || getParams(), currentTab);
+  focusCanvasTextEditor();
+}
+
+function editFreePlanTextFromHit(hit) {
+  if (!hit || hit.type !== 'free-text') return;
+  lastCanvasTextHitArea = {...hit};
+  selectedFreeTextId = hit.id;
+  selectionScope = 'free-text';
+  clearSelectedBooth();
+  clearSelectedDepthPanel();
+  clearMultiSelections();
+  syncPlanNoteInputFromSelection();
+  drawView(lastParams || getParams(), currentTab);
+  focusCanvasTextEditor();
+}
+
+function beginFreeTextDrag(hit, pt, e) {
+  const item = freePlanTexts.find(textItem => textItem.id === hit?.id);
+  if (!item || !pt) return false;
+  editFreePlanTextFromHit(hit);
+  freeTextDrag = {
+    id:item.id,
+    startX:Number(item.x) || 0,
+    startY:Number(item.y) || 0,
+    pointerX:pt.x,
+    pointerY:pt.y,
+    moved:false
+  };
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  cv.style.cursor = 'grabbing';
+  return true;
+}
+
+function updateFreeTextDrag(pt) {
+  if (!freeTextDrag || !pt) return;
+  const item = freePlanTexts.find(textItem => textItem.id === freeTextDrag.id);
+  if (!item) {
+    freeTextDrag = null;
+    return;
+  }
+  const dx = pt.x - freeTextDrag.pointerX;
+  const dy = pt.y - freeTextDrag.pointerY;
+  if (Math.hypot(dx, dy) > 1) freeTextDrag.moved = true;
+  item.x = Math.round(freeTextDrag.startX + dx);
+  item.y = Math.round(freeTextDrag.startY + dy);
+  selectedFreeTextId = item.id;
+  selectionScope = 'free-text';
+  if (lastParams) drawView(lastParams, currentTab);
+}
+
+function finishFreeTextDrag() {
+  if (!freeTextDrag) return;
+  const moved = !!freeTextDrag.moved;
+  freeTextDrag = null;
+  cv.style.cursor = 'default';
+  if (moved) suppressNextPlanClick = true;
+  if (lastParams) drawView(lastParams, currentTab);
+}
+
+function drawFreePlanTexts(layout) {
+  if (currentTab !== 'plan') return;
+  ctx.save();
+  ctx.font = `${normalizeTextStyle(defaultTextStyle).fontSize}px 'Microsoft YaHei', Arial, sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  freePlanTexts.forEach(item => {
+    const textValue = String(item.text || '');
+    const style = normalizeTextStyle(item.style || defaultTextStyle);
+    const visible = textValue || (selectionScope === 'free-text' && selectedFreeTextId === item.id);
+    if (!visible) return;
+    const x = Number(item.x) || 0;
+    const y = Number(item.y) || 0;
+    const width = Math.max(24, ctx.measureText(textValue || ' ').width + 8);
+    const height = 30;
+    if (!drawingForExport) planHitAreas.push({type:'free-text', id:item.id, x, y, w:width, h:height});
+    ctx.font = `${style.bold ? '700 ' : ''}${style.fontSize}px 'Microsoft YaHei', Arial, sans-serif`;
+    ctx.fillStyle = style.color;
+    if (textValue) ctx.fillText(textValue, x, y);
+    if (selectionScope === 'free-text' && selectedFreeTextId === item.id) drawPlanSelectionBox(x - 4, y - 4, width, height, 4, true);
+    if (canvasTextCaretVisible('free-text') && selectedFreeTextId === item.id) {
+      const caret = canvasTextCaretPosition();
+      const beforeCaret = String(caret.lineTextBeforeCaret || '');
+      const caretX = x + ctx.measureText(beforeCaret).width + 2;
+      drawCanvasTextCaret(caretX, y, Math.max(12, style.fontSize), style.color);
+    }
+  });
   ctx.restore();
 }
 
@@ -2135,6 +2382,10 @@ function cloneState() {
     activeQuickPage,
     noteInputValue,
     sheetHeaderText,
+    sheetHeaderStyle: JSON.parse(JSON.stringify(sheetHeaderStyle)),
+    defaultTextStyle: JSON.parse(JSON.stringify(defaultTextStyle)),
+    freePlanTexts: JSON.parse(JSON.stringify(freePlanTexts)),
+    selectedFreeTextId,
     currentPlanPage
   };
 }
@@ -2153,6 +2404,10 @@ function restoreState(state) {
   quickLayoutRows = quickLayoutPages[activeQuickPage] || [['','','']];
   noteInputValue = state.noteInputValue || state.planNoteText || '';
   sheetHeaderText = state.sheetHeaderText || '';
+  sheetHeaderStyle = normalizeTextStyle(state.sheetHeaderStyle || sheetHeaderStyle);
+  defaultTextStyle = normalizeTextStyle(state.defaultTextStyle || defaultTextStyle);
+  freePlanTexts = JSON.parse(JSON.stringify(state.freePlanTexts || []));
+  selectedFreeTextId = state.selectedFreeTextId || null;
   const noteInput = document.getElementById('plan-note-input');
   if (noteInput) noteInput.value = noteInputValue;
   currentPlanPage = state.currentPlanPage || 0;
@@ -3944,6 +4199,7 @@ function drawView(p, tab) {
     drawSheet(drawingTitleForTab(tab), p, 0, 0, currentTab === 'plan' ? currentPlanPage : 0);
     drawTabContent(tab, p);
   }
+  if (tab === 'plan') drawFreePlanTexts();
   ctx.restore();
   updateZoomInfo();
   updateSheetPageInfo(p);
@@ -5125,9 +5381,10 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
   ctx.strokeRect(x, y, w, h);
   if (selectionScope === 'sheet-note' || isMultiSelected('sheet-note', 'sheet', 'header')) drawPlanSelectionBox(x, y, w, h, 6, true);
   if (sheetHeaderText || canvasTextCaretVisible('sheet-note')) {
-    ctx.fillStyle = '#000000';
-    const fit = fitCanvasTextLines(sheetHeaderText, w - 36, 2, {maxFont:22, minFont:10});
-    ctx.font = `${fit.fontSize}px 'Microsoft YaHei', Arial, sans-serif`;
+    const style = normalizeTextStyle(sheetHeaderStyle);
+    ctx.fillStyle = style.color;
+    const fit = fitCanvasTextLines(sheetHeaderText, w - 36, 2, {maxFont:style.fontSize, minFont:Math.min(10, style.fontSize)});
+    ctx.font = `${style.bold ? '700 ' : ''}${fit.fontSize}px 'Microsoft YaHei', Arial, sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     const lines = fit.lines;
@@ -5140,7 +5397,7 @@ function drawSheetNoteCard(layout, offsetX = 0, offsetY = 0) {
       const safeCaretLine = ellipsizeCanvasText(caret.lineTextBeforeCaret, w - 36);
       const caretX = Math.min(x + w - 18, x + 18 + ctx.measureText(safeCaretLine).width + 2);
       const caretY = startY + lineIndex * lineH - fit.fontSize / 2;
-      drawCanvasTextCaret(caretX, caretY, Math.max(12, fit.fontSize), '#000000');
+      drawCanvasTextCaret(caretX, caretY, Math.max(12, fit.fontSize), style.color);
     }
   }
   ctx.restore();
@@ -5929,11 +6186,13 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     ctx.save();
     const tagText = String(options.tagText || showGroupName);
     const isSingleBoothTag = Math.max(1, Number(p.count) || 1) === 1;
-    const tagFontSize = isSingleBoothTag ? 66 : 95;
-    const tagHPreset = isSingleBoothTag ? 76 : PLAN_ANCHOR.noteTagH;
+    const tagStyle = normalizeTagTextStyle(options.tagStyle || activeRow()?.noteStyle || {}, isSingleBoothTag);
+    const tagFontSize = tagStyle.fontSize || DEFAULT_TAG_FONT_SIZE;
+    const tagDrawFontSize = tagVisualFontSize(tagFontSize, options.renderFit);
+    const tagHPreset = Math.max(isSingleBoothTag ? 76 : PLAN_ANCHOR.noteTagH, tagDrawFontSize * 1.15);
     const tagMinW = isSingleBoothTag ? 250 : PLAN_ANCHOR.noteTagMinW;
     const tagPadX = isSingleBoothTag ? 50 : 90;
-    ctx.font = planFont(tagFontSize);
+    ctx.font = `${tagStyle.bold ? '700 ' : ''}${tagDrawFontSize}px 'Microsoft YaHei', Arial, sans-serif`;
     const tagW = Math.max(anno(tagMinW), ctx.measureText(tagText).width + anno(tagPadX));
     const tagH = anno(tagHPreset);
     const totalY = oy - swt - (options.totalDimGap ?? PLAN_ANCHOR.totalDimGap);
@@ -5964,15 +6223,20 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     ctx.rect(tagX, tagY, tagW, tagH);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = '#d64242';
+    ctx.fillStyle = tagStyle.color;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(tagText, tagX + tagW / 2, tagY + tagH / 2);
     const tagSelected = !drawingForExport && ((selectionScope === 'tag' && options.groupId === activeGroupId && options.rowId === activeRowId) || isMultiSelected('tag', options.groupId, options.rowId));
     if (tagSelected) drawPlanSelectionBox(tagX, tagY, tagW, tagH, anno(10));
     if (canvasTextCaretVisible('tag') && options.groupId === activeGroupId && options.rowId === activeRowId) {
+      const caret = canvasTextCaretPosition();
+      const beforeCaret = String(caret.lineTextBeforeCaret || '');
+      const safeBeforeCaret = beforeCaret.slice(0, String(tagText || '').length);
       const textW = ctx.measureText(tagText).width;
-      const caretX = tagX + tagW / 2 + textW / 2 + anno(10);
-      drawCanvasTextCaret(caretX, tagY + tagH / 2 - anno(42), anno(84), '#d64242');
+      const caretTextW = ctx.measureText(safeBeforeCaret).width;
+      const textLeft = tagX + tagW / 2 - textW / 2;
+      const caretX = Math.max(tagX + anno(8), Math.min(tagX + tagW - anno(8), textLeft + caretTextW + anno(2)));
+      drawCanvasTextCaret(caretX, tagY + tagH / 2 - tagDrawFontSize / 2, Math.max(12, tagDrawFontSize), tagStyle.color);
     }
     ctx.restore();
   }
@@ -6166,6 +6430,7 @@ function drawPlanBlock(block, x, y, fit, pageOffsetX, pageOffsetY) {
     rowId: g.id,
     tagText: g.note || groupDisplayName(group),
     tagPreviewOnly: !g.note && !String(group.name || '').trim(),
+    renderFit: fit,
     hitScale: fit,
     hitX: pageOffsetX,
     hitY: pageOffsetY
@@ -6215,6 +6480,7 @@ function drawSheetDragOverlay() {
           rowId: block.row.id,
           tagText: block.row.note || groupDisplayName(block.group),
           tagPreviewOnly: !block.row.note && !String(block.group.name || '').trim(),
+          renderFit: fit,
           hitScale: 1,
           hitX: 0,
           hitY: 0
@@ -6352,7 +6618,8 @@ function drawPlan(p) {
   );
   ctx.clip();
 
-  drawPlanPageContent(page, layout, 0, 0, orientationPageIndex, pageIndex);  if (pages.length > 1) {
+  drawPlanPageContent(page, layout, 0, 0, orientationPageIndex, pageIndex);
+  if (pages.length > 1) {
     ctx.save();
     ctx.fillStyle = '#000000';
     ctx.font = `14px 'Microsoft YaHei', Arial, sans-serif`;
@@ -7012,6 +7279,10 @@ function pruneFreeRects(rects) {
     && rect.y + rect.h <= other.y + other.h));
 }
 
+function pieceFitsSheet(piece, sheet, allowRotate) {
+  return (piece.w <= sheet.w && piece.h <= sheet.h) || (allowRotate && piece.h <= sheet.w && piece.w <= sheet.h);
+}
+
 function placePieceOnBoard(board, piece, allowRotate) {
   let best = null;
   board.free.forEach((rect, rectIndex) => {
@@ -7035,6 +7306,8 @@ function placePieceOnBoard(board, piece, allowRotate) {
   if (bottom.w > 0 && bottom.h > 0) board.free.push(bottom);
   board.free = pruneFreeRects(board.free);
   board.usedArea += size.w * size.h;
+  if (!board.placed) board.placed = [];
+  board.placed.push({x:rect.x, y:rect.y, w:size.w, h:size.h});
   return true;
 }
 
@@ -7044,7 +7317,7 @@ function estimatePackedBoardSheetCount(pieces, sheet, allowRotate) {
   pieces.forEach(piece => {
     let placed = boards.some(board => placePieceOnBoard(board, piece, allowRotate));
     if (!placed) {
-      const fits = (piece.w <= sheet.w && piece.h <= sheet.h) || (allowRotate && piece.h <= sheet.w && piece.w <= sheet.h);
+      const fits = pieceFitsSheet(piece, sheet, allowRotate);
       if (!fits) {
         unplaced.push(piece);
         return;
@@ -7063,96 +7336,132 @@ function estimateSingleBoardSheetCount(pieces, sheet, allowRotate) {
   return estimatePackedBoardSheetCount(pieces, sheet, allowRotate);
 }
 
-function estimateStripPackBoardSheetCount(pieces, sheet, allowRotate) {
-  const W = sheet.w, H = sheet.h;
-  const boards = [];
-  const unplaced = [];
-  for (const piece of pieces) {
-    const variants = allowRotate && piece.w !== piece.h ? [{w:piece.w, h:piece.h},{w:piece.h, h:piece.w}] : [{w:piece.w, h:piece.h}];
-    let placed = false;
-    for (const size of variants) {
-      for (const board of boards) {
-        for (const strip of board.strips) {
-          if (size.h <= strip.h && strip.x + size.w <= W) {
-            strip.x += size.w;
-            placed = true;
-            break;
-          }
-        }
-        if (placed) break;
-        const lastY = board.strips.length ? board.strips[board.strips.length - 1].y + board.strips[board.strips.length - 1].h : 0;
-        if (lastY + size.h <= H) {
-          board.strips.push({y:lastY, h:size.h, x:size.w});
-          placed = true;
-          break;
-        }
-      }
-      if (placed) break;
-    }
-    if (placed) continue;
-    const fits = variants.find(s => s.w <= W && s.h <= H);
-    if (!fits) { unplaced.push(piece); continue; }
-    boards.push({strips:[{y:0, h:fits.h, x:fits.w}], area:W*H});
-  }
-  const totalUsed = pieces.reduce((s, p) => s + p.w * p.h, 0);
-  const totalArea = boards.reduce((s, b) => s + b.area, 0);
-  return {count:boards.length, unplacedCount:unplaced.length, utilization:totalArea ? totalUsed / totalArea : 0};
+function betterBoardEstimate(a, b) {
+  if (!a) return b;
+  if (!b) return a;
+  if ((b.unplacedCount || 0) !== (a.unplacedCount || 0)) return (b.unplacedCount || 0) < (a.unplacedCount || 0) ? b : a;
+  if ((b.count || 0) !== (a.count || 0)) return (b.count || 0) < (a.count || 0) ? b : a;
+  return (b.utilization || 0) > (a.utilization || 0) ? b : a;
 }
 
-function estimateBoardSheets(pieces, sheets, allowRotate, kerf = 0) {
-  const enabledSheets = sheets.filter(sheet => sheet.enabled && sheet.w > 0 && sheet.h > 0);
-  const sorted = pieces
-    .filter(piece => piece.w > 0 && piece.h > 0)
-    .sort((a, b) => (b.w * b.h - a.w * a.h) || Math.max(b.w, b.h) - Math.max(a.w, a.h));
-  
-function estimateBoardSheets(pieces, sheets, allowRotate) {
-  const enabledSheets = sheets.filter(sheet => sheet.enabled && sheet.w > 0 && sheet.h > 0);
-  const filtered = pieces.filter(piece => piece.w > 0 && piece.h > 0);
-  if (enabledSheets.length === 1) {
-    const sheet = enabledSheets[0];
-    const totalArea = filtered.reduce((sum, piece) => sum + piece.w * piece.h, 0);
-    let best = null;
-    const strategies = [
-      filtered.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || Math.max(b.w, b.h) - Math.max(a.w, a.h)),
-      filtered.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || Math.min(b.w, b.h) - Math.min(a.w, a.h)),
-      filtered.slice().sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || (b.w * b.h - a.w * a.h)),
-      filtered.slice().sort((a, b) => Math.min(b.w, b.h) - Math.min(a.w, a.h) || (b.w * b.h - a.w * a.h)),
-      filtered.slice().sort((a, b) => (b.w - a.w) || (b.h - a.h)),
-      filtered.slice().sort((a, b) => (b.h - a.h) || (b.w - a.w)),
-    ];
-    for (const sorted of strategies) {
-      const result = estimateStripPackBoardSheetCount(sorted, sheet, allowRotate);
-      const sheetArea = (result.count || 0) * sheet.w * sheet.h;
-      result.utilization = sheetArea ? totalArea / sheetArea : 0;
-      if (!best || result.count < best.count || (result.count === best.count && result.utilization > best.utilization)) {
-        best = result;
-      }
-    }
-    return best;
-  }
-;
-  }
-  const boards = [];
-  const unplaced = [];
-  sorted.forEach(piece => {
-    if (!enabledSheets.length) return;
-    let placed = boards.some(board => placePieceOnBoard(board, piece, allowRotate, kerf));
-    if (!placed) {
-      const sheet = enabledSheets
-        .filter(candidate => (piece.w <= candidate.w && piece.h <= candidate.h) || (allowRotate && piece.h <= candidate.w && piece.w <= candidate.h))
-        .sort((a, b) => (a.w * a.h - b.w * b.h))[0];
+function estimateBoardSheetsByMode(filtered, enabledSheets, allowRotate) {
+  if (!enabledSheets.length || !filtered.length) return {count:0, unplacedCount:filtered.length, utilization:0};
+  const strategies = [
+    filtered.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || Math.max(b.w, b.h) - Math.max(a.w, a.h)),
+    filtered.slice().sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || (b.w * b.h - a.w * a.h)),
+    filtered.slice().sort((a, b) => Math.min(b.w, b.h) - Math.min(a.w, a.h) || (b.w * b.h - a.w * a.h)),
+    filtered.slice().sort((a, b) => (b.w - a.w) || (b.h - a.h)),
+    filtered.slice().sort((a, b) => (b.h - a.h) || (b.w - a.w)),
+  ];
+  let best = null;
+  const sheetOrders = [
+    enabledSheets.slice().sort((a, b) => (b.w * b.h - a.w * a.h)),
+    enabledSheets.slice().sort((a, b) => (a.w * a.h - b.w * b.h)),
+    enabledSheets.slice().sort((a, b) => (Math.max(b.w, b.h) - Math.max(a.w, a.h)) || (b.w * b.h - a.w * a.h)),
+  ];
+  strategies.forEach(sorted => sheetOrders.forEach(sheetOrder => {
+    const boards = [];
+    const unplaced = [];
+    sorted.forEach(piece => {
+      if (boards.some(board => placePieceOnBoard(board, piece, allowRotate))) return;
+      const sheet = sheetOrder.find(candidate => pieceFitsSheet(piece, candidate, allowRotate));
       if (!sheet) {
         unplaced.push(piece);
         return;
       }
-      const board = {free:[{x:0,y:0,w:sheet.w,h:sheet.h}], usedArea:0, area:sheet.w * sheet.h};
-      placePieceOnBoard(board, piece, allowRotate, kerf);
+      const board = {free:[{x:0,y:0,w:sheet.w,h:sheet.h}], usedArea:0, area:sheet.w * sheet.h, sheet};
+      placePieceOnBoard(board, piece, allowRotate);
       boards.push(board);
+    });
+    const usedArea = sorted.reduce((sum, piece) => sum + piece.w * piece.h, 0);
+    const sheetArea = boards.reduce((sum, board) => sum + board.area, 0);
+    const remnants = boardRemnantPiecesFromEstimate(boards);
+    const result = {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0, remnants};
+    best = betterBoardEstimate(best, result);
+  }));
+  return best || {count:0, unplacedCount:filtered.length, utilization:0};
+}
+
+function estimateBoardSheets(pieces, sheets, allowRotate) {
+  const enabledSheets = sheets.filter(sheet => sheet.enabled && sheet.w > 0 && sheet.h > 0);
+  const filtered = pieces.filter(piece => piece.w > 0 && piece.h > 0);
+  if (!enabledSheets.length || !filtered.length) return {count:0, unplacedCount:filtered.length, utilization:0};
+  const noRotateEstimate = estimateBoardSheetsByMode(filtered, enabledSheets, false);
+  if (!allowRotate) return noRotateEstimate;
+  const rotateEstimate = estimateBoardSheetsByMode(filtered, enabledSheets, true);
+  return betterBoardEstimate(noRotateEstimate, rotateEstimate);
+}
+
+function mergeAdjacentRects(rects) {
+  const merged = rects.map(rect => ({...rect}));
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = 0; i < merged.length; i++) {
+      for (let j = i + 1; j < merged.length; j++) {
+        const a = merged[i];
+        const b = merged[j];
+        let next = null;
+        if (a.x === b.x && a.w === b.w && (a.y + a.h === b.y || b.y + b.h === a.y)) {
+          next = {x:a.x, y:Math.min(a.y, b.y), w:a.w, h:a.h + b.h};
+        } else if (a.y === b.y && a.h === b.h && (a.x + a.w === b.x || b.x + b.w === a.x)) {
+          next = {x:Math.min(a.x, b.x), y:a.y, w:a.w + b.w, h:a.h};
+        }
+        if (!next) continue;
+        merged.splice(j, 1);
+        merged[i] = next;
+        changed = true;
+        break;
+      }
+      if (changed) break;
     }
+  }
+  return merged;
+}
+
+function remnantPiecesFromPlacedCuts(board, boardIndex) {
+  const sheetW = Math.round(Number(board?.sheet?.w) || 0);
+  const sheetH = Math.round(Number(board?.sheet?.h) || 0);
+  const placed = Array.isArray(board?.placed) ? board.placed : [];
+  if (!sheetW || !sheetH || !placed.length) return null;
+  const remnants = [];
+  const byRow = new Map();
+  const byCol = new Map();
+  placed.forEach(piece => {
+    const rowKey = Math.round(piece.y) + '|' + Math.round(piece.h);
+    const colKey = Math.round(piece.x) + '|' + Math.round(piece.w);
+    if (!byRow.has(rowKey)) byRow.set(rowKey, []);
+    if (!byCol.has(colKey)) byCol.set(colKey, []);
+    byRow.get(rowKey).push(piece);
+    byCol.get(colKey).push(piece);
   });
-  const usedArea = sorted.reduce((sum, piece) => sum + piece.w * piece.h, 0);
-  const sheetArea = boards.reduce((sum, board) => sum + board.area, 0);
-  return {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0};
+  byRow.forEach(row => {
+    const y = Math.round(row[0].y);
+    const h = Math.round(row[0].h);
+    const minX = Math.min(...row.map(piece => Math.round(piece.x)));
+    const totalW = row.reduce((sum, piece) => sum + Math.round(piece.w), 0);
+    const remW = sheetW - totalW;
+    if (y === 0 && minX === 0 && h > 0 && remW > 0 && row.every(piece => Math.round(piece.h) === h)) remnants.push({w:remW, h:sheetH, boardIndex});
+  });
+  if (remnants.length) return remnants;
+  byCol.forEach(col => {
+    const x = Math.round(col[0].x);
+    const w = Math.round(col[0].w);
+    const minY = Math.min(...col.map(piece => Math.round(piece.y)));
+    const totalH = col.reduce((sum, piece) => sum + Math.round(piece.h), 0);
+    const remH = sheetH - totalH;
+    if (x === 0 && minY === 0 && w > 0 && remH > 0 && col.every(piece => Math.round(piece.w) === w)) remnants.push({w:sheetW, h:remH, boardIndex});
+  });
+  return remnants;
+}
+
+function boardRemnantPiecesFromEstimate(boards) {
+  const minUsefulSide = 1;
+  return (boards || []).flatMap((board, boardIndex) => {
+    const cutRemnants = remnantPiecesFromPlacedCuts(board, boardIndex + 1);
+    const source = cutRemnants || mergeAdjacentRects(board.free || []).map(rect => ({w:Math.round(rect.w), h:Math.round(rect.h), boardIndex:boardIndex + 1}));
+    return source.filter(rect => rect.w >= minUsefulSide && rect.h >= minUsefulSide);
+  }).sort((a, b) => (a.boardIndex - b.boardIndex) || (b.h * b.w - a.h * a.w) || (b.h - a.h) || (b.w - a.w));
 }
 
 function checkBoardFitWarnings(pieces = lastBomPieces) {
@@ -7160,8 +7469,8 @@ function checkBoardFitWarnings(pieces = lastBomPieces) {
   const sheetW = Math.round(Number(activeSheet?.w) || 0);
   const sheetH = Math.round(Number(activeSheet?.h) || 0);
   if (!sheetW || !sheetH || !Array.isArray(pieces) || !pieces.length) return;
-  const tooTall = pieces.filter(piece => piece.h > sheetH && piece.h <= sheetW && piece.w <= sheetH);
-  const tooLarge = pieces.filter(piece => (piece.h > sheetH || piece.w > sheetW) && !(piece.h <= sheetW && piece.w <= sheetH));
+  const tooTall = pieces.filter(piece => piece.h > sheetH && pieceFitsSheet(piece, activeSheet, true));
+  const tooLarge = pieces.filter(piece => !pieceFitsSheet(piece, activeSheet, true));
   const messages = [];
   if (tooTall.length) {
     const maxHeight = Math.max(...tooTall.map(piece => piece.h));
@@ -7202,6 +7511,14 @@ function updateBoardSheetEstimate() {
   checkBoardFitWarnings(lastBomPieces);
 }
 
+function boardRemnantBomItem(estimate) {
+  const remnants = Array.isArray(estimate?.remnants) ? estimate.remnants : [];
+  if (!remnants.length) return {name:'余料', val:'0 块', sub:'无可用余料'};
+  const bucket = createBomBucket();
+  remnants.forEach(piece => addBomPiece(bucket, piece.h, fmtMm(piece.w), ''));
+  return {name:'余料', val:`${remnants.length} 块`, sub:formatBomBucket(bucket) || '无可用余料'};
+}
+
 function saveBoardSheetSettings() {
   localStorage.setItem('partition-board-sheets', JSON.stringify(boardSheets));
   localStorage.setItem('partition-board-sheet-active', String(activeBoardSheetIndex));
@@ -7220,7 +7537,6 @@ function setBoardSheetEstimateInput() {
     else updateBoardSheetEstimate();
   }, 120);
 }
-
 
 function setActiveBoardSheet(index) {
   activeBoardSheetIndex = Math.max(0, Math.min(2, Number(index) || 0));
@@ -7250,6 +7566,8 @@ function renderBomItems(items) {
   if (urinal) allItems.push(urinal);
   lastBomRenderMobileMode = isMobileViewport();
   lastBomPieces = collectBomPiecesFromItems(allItems);
+  const estimate = estimateBoardSheets(lastBomPieces, boardSheets, boardRotateEnabled);
+  allItems.push(boardRemnantBomItem(estimate));
   document.getElementById('bom').innerHTML = allItems.map(i=>`
     <div class="bom-card">
       <div class="bom-card-head"><div class="name">${escapeHtml(i.name)}</div><div class="val">${formatBomChips(i.val)}</div></div>
@@ -8120,11 +8438,13 @@ function buildPlanRowDrawingModel(p, ox = 150, oy = 260, scale = null, labelPref
   if (showGroupName && !(drawingForExport && options.tagPreviewOnly)) {
     const tagText = String(options.tagText || showGroupName);
     const isSingleBoothTag = Math.max(1, Number(p.count) || 1) === 1;
-    const tagFontSize = isSingleBoothTag ? 30 : 42;
-    const tagH = isSingleBoothTag ? 76 : PLAN_ANCHOR.noteTagH;
+    const tagStyle = normalizeTagTextStyle(options.tagStyle || {}, isSingleBoothTag);
+    const tagFontSize = tagStyle.fontSize || DEFAULT_TAG_FONT_SIZE;
+    const tagDrawFontSize = tagVisualFontSize(tagFontSize, options.renderFit);
+    const tagH = Math.max(isSingleBoothTag ? 76 : PLAN_ANCHOR.noteTagH, tagDrawFontSize * 1.15);
     const tagMinW = isSingleBoothTag ? 250 : PLAN_ANCHOR.noteTagMinW;
     const tagPadX = isSingleBoothTag ? 50 : 90;
-    const approxTextW = tagText.length * tagFontSize;
+    const approxTextW = tagText.length * tagDrawFontSize;
     const tagW = Math.max(tagMinW, approxTextW + tagPadX);
     const totalY = oy - swt - (options.totalDimGap ?? PLAN_ANCHOR.totalDimGap);
     const tagGap = PLAN_ANCHOR.noteTagGap;
@@ -8132,8 +8452,8 @@ function buildPlanRowDrawingModel(p, ox = 150, oy = 260, scale = null, labelPref
     const tagY = isSingleBoothTag
       ? Math.max(totalY + tagGap, Math.min(wallTopY - tagH - tagGap, totalY + (wallTopY - totalY - tagH) / 2))
       : totalY - tagH - tagGap;
-    B.rect(model, ox, tagY, tagW, tagH, {fill:'#fff', stroke:'#d64242', strokeWidth:1.2});
-    B.text(model, tagText, ox + tagW / 2, tagY + tagH / 2, {fill:'#d64242', fontSize:tagFontSize, align:'middle', baseline:'central', className:'note-tag', maxWidth:Math.max(1, tagW - tagPadX), fitMode:'shrink'});
+    B.rect(model, ox, tagY, tagW, tagH, {fill:'#fff', stroke:tagStyle.color, strokeWidth:1.2});
+    B.text(model, tagText, ox + tagW / 2, tagY + tagH / 2, {fill:tagStyle.color, fontSize:tagDrawFontSize, fontWeight:tagStyle.bold ? '700' : '400', align:'middle', baseline:'central', className:'note-tag', maxWidth:Math.max(1, tagW - tagPadX), fitMode:'shrink'});
   }
   const drawDepthPanel = geom => {
     if (geom) B.rect(model, geom.panelX, geom.panelY, geom.panelW, Math.max(1, geom.panelH), {fill:'none', stroke:'#000', strokeWidth:0.8});
@@ -8454,11 +8774,12 @@ function backendAddSheetFrame(B, model, layout, title, pageIndex = 0, pagesLengt
   if (pageIndex === 0) {
     B.rect(model, layout.frame.x, layout.frame.y, layout.frame.w, SHEET_TITLE_H, {fill:'none', stroke:'#c7cbd1', strokeWidth:1});
     if (sheetHeaderText) {
-      const fit = fitCanvasTextLines(sheetHeaderText, layout.frame.w - 36, 2, {maxFont:22, minFont:10});
+      const style = normalizeTextStyle(sheetHeaderStyle);
+      const fit = fitCanvasTextLines(sheetHeaderText, layout.frame.w - 36, 2, {maxFont:style.fontSize, minFont:Math.min(10, style.fontSize)});
       const lineH = Math.max(14, fit.fontSize * 1.18);
       const startY = fit.lines.length > 1 ? layout.frame.y + SHEET_TITLE_H / 2 - lineH / 2 : layout.frame.y + SHEET_TITLE_H / 2;
       fit.lines.forEach((line, index) => {
-        B.text(model, ellipsizeCanvasText(line, layout.frame.w - 36), layout.frame.x + 18, startY + index * lineH, {fill:'#000', fontSize:fit.fontSize, fontWeight:'400', align:'start', baseline:'central', className:'sheet-header-text'});
+        B.text(model, ellipsizeCanvasText(line, layout.frame.w - 36), layout.frame.x + 18, startY + index * lineH, {fill:style.color, fontSize:fit.fontSize, fontWeight:style.bold ? '700' : '400', align:'start', baseline:'central', className:'sheet-header-text'});
       });
     }
   }
@@ -8520,7 +8841,9 @@ function buildPlanPageDrawingModel(p = lastParams || getParams(), pageIndex = cu
       labelStart:block.labelStart || 0,
       showGroupName:String(block.row.note || '').trim(),
       tagText:String(block.row.note || '').trim(),
+      tagStyle:block.row.noteStyle || {},
       tagPreviewOnly:!String(block.row.note || '').trim(),
+      renderFit:placement.fit,
       showTopDims:true,
       showBoothDim:true
     });
@@ -9042,10 +9365,15 @@ function currentBomSourceItems() {
   return [{name:'当前图纸', val:'空白', sub:'输入参数或点击生成后显示'}];
 }
 
-function collectBomImageItems() {
+function currentBomPrintableItems() {
   const items = currentBomSourceItems();
   const urinal = urinalBomItem();
   if (urinal) items.push(urinal);
+  return items;
+}
+
+function collectBomImageItems() {
+  const items = currentBomPrintableItems();
   return items.map(item => ({
     name:item.name || '',
     val:String(item.val || '').replace(/<[^>]*>/g, '').trim(),
@@ -9056,9 +9384,7 @@ function collectBomImageItems() {
 }
 
 function bomImageCardsHtml() {
-  const items = currentBomSourceItems();
-  const urinal = urinalBomItem();
-  if (urinal) items.push(urinal);
+  const items = currentBomPrintableItems();
   return items.map(item => `<div class="bom-image-card"><div class="bom-image-card-head"><div class="name">${escapeHtml(item.name)}</div><div class="val">${formatBomChips(item.val)}</div></div>${item.name === '前沿板' ? formatBomMobileLines(item.sub) : formatBomLines(item.sub, item.name)}</div>`).join('');
 }
 
@@ -9518,6 +9844,7 @@ function activeCanvasTextHitArea() {
   if (!activeCanvasTextEditable()) return null;
   if (selectionScope === 'sheet-note') return planHitAreas.find(area => area.type === 'sheet-note') || (lastCanvasTextHitArea?.type === 'sheet-note' ? lastCanvasTextHitArea : null);
   if (selectionScope === 'tag') return planHitAreas.find(area => area.type === 'tag' && area.groupId === activeGroupId && area.rowId === activeRowId) || (lastCanvasTextHitArea?.type === 'tag' ? lastCanvasTextHitArea : null);
+  if (selectionScope === 'free-text') return planHitAreas.find(area => area.type === 'free-text' && area.id === selectedFreeTextId) || (lastCanvasTextHitArea?.type === 'free-text' ? lastCanvasTextHitArea : null);
   return null;
 }
 
@@ -9889,7 +10216,7 @@ function hitPlanDimension(x, y) {
 
 function hitPlanSelectable(x, y) {
   const hits = [...planHitAreas].reverse().filter(area => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
-  return hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'block') || null;
+  return hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'free-text') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'block') || null;
 }
 
 function hitPlanBlock(x, y) {
@@ -10225,6 +10552,15 @@ cv.addEventListener('touchend', e => {
   touchState = null;
 }, {passive:false});
 cv.addEventListener('mousedown', e => {
+  if (textToolMode) return;
+  if (e.button === 0 && currentTab === 'plan') {
+    const pt = canvasPlanPoint(e);
+    const hit = hitPlanSelectable(pt.x, pt.y);
+    if (hit?.type === 'free-text') {
+      beginFreeTextDrag(hit, pt, e);
+      return;
+    }
+  }
   if (e.button === 0 && currentTab === 'plan' && canvasMode === 'sheets') {
     const pt = canvasPlanPoint(e);
     if (hitPlanDimension(pt.x, pt.y)) return;
@@ -10260,6 +10596,13 @@ cv.addEventListener('dblclick', e => {
     return;
   }
   const textHit = hitPlanSelectable(pt.x, pt.y);
+  if (textHit?.type === 'free-text') {
+    e.preventDefault();
+    e.stopPropagation();
+    suppressNextCanvasClick = true;
+    editFreePlanTextFromHit(textHit);
+    return;
+  }
   if (textHit?.type === 'sheet-note' || textHit?.type === 'tag') {
     e.preventDefault();
     e.stopPropagation();
@@ -10270,6 +10613,11 @@ cv.addEventListener('dblclick', e => {
 
 function handlePlanTapFromPoint(pt, shiftKey = false) {
   if (currentTab !== 'plan' || isDragging) return;
+  if (textToolMode) {
+    startFreePlanTextAtPoint(pt);
+    setTextToolMode(false);
+    return;
+  }
   if (hitPlanDimension(pt.x, pt.y)) return;
   const hit = hitPlanSelectable(pt.x, pt.y);
   if (!hit) {
@@ -10288,46 +10636,11 @@ function handlePlanTapFromPoint(pt, shiftKey = false) {
   if (shiftKey && hitCanMultiSelect(hit)) {
     if (hit.type === 'sheet-note') toggleMultiSelection('sheet-note', 'sheet', 'header');
     else toggleMultiSelection(hit.type, hit.groupId, hit.rowId, hitSelectionIndex(hit));
-    if (hit.type === 'sheet-note') {
-      selectionScope = 'sheet-note';
-      selectedBoothIndex = null;
-      selectedBoothRef = null;
-      selectedDepthPanelRef = null;
-    } else {
-      const group = groups.find(g => g.id === hit.groupId);
-      const row = group ? ensureRows(group).find(r => r.id === hit.rowId) : null;
-      if (!group || !row) return;
-      activeGroupId = group.id;
-      activeRowId = row.id;
-      if (hit.type === 'booth') {
-        selectionScope = 'booth';
-        selectedBoothIndex = hit.index;
-        selectedBoothRef = {groupId:group.id, rowId:row.id, index:hit.index};
-        selectedDepthPanelRef = null;
-      } else if (hit.type === 'depth-panel') {
-        selectionScope = 'depth-panel';
-        selectedBoothIndex = null;
-        selectedBoothRef = null;
-        selectedDepthPanelRef = {groupId:group.id, rowId:row.id, index:hit.index};
-      } else if (hit.type === 'tag') {
-        selectionScope = 'tag';
-        selectedBoothIndex = null;
-        selectedBoothRef = null;
-        selectedDepthPanelRef = null;
-      } else if (hit.type === 'block') {
-        selectionScope = 'row';
-        selectedBoothIndex = null;
-        selectedBoothRef = null;
-        selectedDepthPanelRef = null;
-      }
-    }
-    renderSwingButtons();
-    renderBoothSwingPanel();
-    renderDepthPanelSpecialPanel();
-    syncPlanNoteInputFromSelection();
-    lastCanvasTextHitArea = (hit.type === 'sheet-note' || hit.type === 'tag') ? {...hit} : null;
-    drawView(lastParams || getParams(), currentTab);
-    focusCanvasTextEditor();
+    if (hit.type === 'free-text') editFreePlanTextFromHit(hit);
+    return;
+  }
+  if (hit.type === 'free-text') {
+    editFreePlanTextFromHit(hit);
     return;
   }
   if (hit.type === 'sheet-note') {
@@ -10392,6 +10705,10 @@ cv.addEventListener('click', e => {
   handlePlanTapFromPoint(canvasPlanPoint(e), e.shiftKey);
 });
 window.addEventListener('mousemove', e => {
+  if (freeTextDrag) {
+    updateFreeTextDrag(canvasPlanPoint(e));
+    return;
+  }
   if (pendingSheetOrderDrag && !sheetOrderDrag) {
     const moved = Math.hypot(e.clientX - pendingSheetOrderDrag.startX, e.clientY - pendingSheetOrderDrag.startY);
     if (moved > 4) {
@@ -10441,6 +10758,10 @@ window.addEventListener('mousemove', e => {
 });
 
 window.addEventListener('mouseup', e => {
+  if (freeTextDrag && e.button === 0) {
+    finishFreeTextDrag();
+    return;
+  }
   if (pendingSheetOrderDrag && e.button === 0) {
     pendingSheetOrderDrag = null;
     sheetDragVisual = null;
@@ -10470,6 +10791,7 @@ window.addEventListener('mouseup', e => {
 });
 
 cv.addEventListener('mouseleave', () => {
+  freeTextDrag = null;
   pendingSheetOrderDrag = null;
   sheetOrderDrag = null;
   previewSheetOrder = null;
