@@ -240,7 +240,7 @@ body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px r
 .bom-board-estimator .switch-track{width:2.25rem;height:1.25rem}
 .bom-board-estimator .switch-track::after{width:0.875rem;height:0.875rem}
 .bom-board-estimator .switch-toggle.active .switch-track::after{left:1.125rem}
-.bom-board-result{font-size:0.9375rem;font-weight:900;color:#185FA5;white-space:nowrap;flex:0 0 auto;margin-left:auto;text-align:right}.bom-title .bom-board-result{margin-left:0;text-align:left;white-space:normal;overflow-wrap:anywhere;min-width:0}
+.bom-board-result{font-size:0.9375rem;font-weight:900;color:#185FA5;white-space:nowrap;flex:0 0 auto;margin-left:auto;text-align:right}.bom-title .bom-board-result{margin-left:0;text-align:left;white-space:normal;overflow-wrap:anywhere;min-width:0}.bom-cut-layout-toggle{height:2.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:700;cursor:pointer;white-space:nowrap}.bom-cut-layout-toggle.active{border-color:#378ADD;color:#185FA5;background:#E6F1FB}.bom-cut-layout-fullscreen{height:2.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:700;cursor:pointer;white-space:nowrap}.bom-cut-layout-modal{position:absolute;left:0;right:0;top:0;bottom:0;z-index:80;display:none;background:rgba(246,248,250,.96);padding:1rem}.bom-cut-layout-modal.show{display:flex;flex-direction:column}.bom-cut-layout-modal-head{display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.75rem}.bom-cut-layout-modal-title{font-size:1rem;font-weight:900;color:var(--color-text-primary)}.bom-cut-layout-modal-close{height:2.25rem;padding:0 0.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-weight:800;cursor:pointer}.bom-cut-layout-modal-body{min-height:0;flex:1;overflow:auto}.bom-cut-layout-modal .bom-cut-layout{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:flex-start;max-height:none;margin-bottom:0}.bom-cut-layout-modal .bom-cut-board{width:max-content;max-width:100%}.bom-cut-layout-modal .bom-cut-figure{width:24rem}.bom-cut-layout-modal .bom-cut-canvas{height:auto;aspect-ratio:var(--sheet-ratio);max-height:calc(100dvh - 8rem)}.bom-cut-layout-modal .bom-cut-piece{font-size:15px}.bom-cut-layout{display:grid;gap:0.625rem;max-height:16rem;overflow:auto;margin-bottom:0.625rem}.bom-cut-board{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.625rem;background:var(--color-background-primary)}.bom-cut-board-title{font-size:0.8125rem;font-weight:800;color:var(--color-text-primary);margin-bottom:0.5rem}.bom-cut-figure{position:relative;display:block;padding:0.625rem 1.375rem 1.25rem 0.625rem;max-width:100%;box-sizing:border-box}.bom-cut-canvas{position:relative;width:100%;height:9rem;border:1px solid #222;background:#fff;overflow:hidden;box-sizing:border-box}.bom-cut-piece,.bom-cut-free{position:absolute;box-sizing:border-box;overflow:hidden}.bom-cut-piece{border:1px solid #185FA5;background:rgba(24,95,165,.13);color:#0C447C;font-size:0.625rem;font-weight:700;line-height:1.2;padding:0.125rem}.bom-cut-free{border:1px dashed #9da7b3;background:rgba(110,119,129,.06)}.bom-cut-piece-text{position:absolute;left:0.25rem;top:0.25rem;right:0.25rem;bottom:0.25rem;color:#0C447C;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:clip}.bom-cut-piece-text.horizontal{display:flex;align-items:flex-start;justify-content:flex-start;gap:0.35rem}.bom-cut-piece-text.vertical{left:0.25rem;top:0.25rem;right:0.25rem;bottom:auto;max-width:none;transform:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:0.12rem;line-height:1.05;white-space:normal}.bom-cut-piece-name,.bom-cut-piece-width-dim,.bom-cut-piece-height-dim{position:static;color:#0C447C;font-weight:800;white-space:nowrap}.bom-cut-sheet-width-dim{position:absolute;left:0.625rem;right:1.375rem;bottom:0;color:#d64242;text-align:center;font-weight:800;border-top:1px solid #d64242;line-height:1.1}.bom-cut-sheet-height-dim{position:absolute;right:0;top:0.625rem;bottom:1.25rem;width:1rem;color:#d64242;font-weight:800;border-left:1px solid #d64242;writing-mode:vertical-rl;text-align:center;line-height:1}
 .bom-actions{display:flex;align-items:center;gap:0.5rem;flex:0 0 auto}
 .bom-export{height:2.25rem;padding:0 0.875rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:0.875rem;font-weight:700;cursor:pointer;white-space:nowrap}
 .bom-export:hover{border-color:#378ADD;color:#185FA5;background:#fff}
@@ -250,7 +250,7 @@ body.theme-dark .bom-title{color:#f6f8fa}
 .bom-area.collapsed{bottom:auto;width:13rem;min-width:13rem;max-width:13rem;max-height:4rem;overflow:hidden}
 .bom-area.collapsed .bom-grid{max-height:0;opacity:0;overflow:hidden;pointer-events:none}
 .bom-area.collapsed .bom-head{margin-bottom:0;display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:0.5rem}
-.bom-area.collapsed .bom-board-estimator{display:none}.bom-area.collapsed .bom-title .bom-board-result{display:none}
+.bom-area.collapsed .bom-board-estimator{display:none}.bom-area.collapsed .bom-title .bom-board-result{display:none}.bom-area.collapsed .bom-cut-layout{display:none}
 .bom-area.collapsed .bom-export{display:none}
 .bom-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0.75rem;min-width:0}
 .bom-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:0.625rem;margin-bottom:0.5rem}
@@ -708,10 +708,10 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" enterkeyhint="done" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">开料清单<span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-board-estimator" aria-label="整板切割估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>板件旋转</span><span class="switch-track" aria-hidden="true"></span></button></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><div class="advanced-print" id="bom-advanced-print-menu"><button class="bom-export" type="button" onclick="toggleAdvancedPrintMenu('bom-advanced-print-menu')">高级打印</button><div class="advanced-print-menu"><button id="btn-svg-print-bom" type="button" onclick="closeAdvancedPrintMenus();printBomSvg()">SVG打印</button><button id="btn-svg-pdf-bom" type="button" onclick="closeAdvancedPrintMenus();exportBomSvgPdf()">SVG导出PDF</button></div></div><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
-        <div class="bom-grid" id="bom"></div>
+        <div class="bom-head"><div class="bom-title">开料清单<span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-board-estimator" aria-label="整板切割估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>板件旋转</span><span class="switch-track" aria-hidden="true"></span></button><button class="bom-cut-layout-toggle" id="bom-cut-layout-toggle" type="button" onclick="toggleBoardCutLayoutPreview()">&#20999;&#21106;&#24067;&#23616;</button><button class="bom-cut-layout-fullscreen" id="bom-cut-layout-fullscreen" type="button" onclick="openBoardCutLayoutFullscreen()">&#20840;&#23631;</button></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><div class="advanced-print" id="bom-advanced-print-menu"><button class="bom-export" type="button" onclick="toggleAdvancedPrintMenu('bom-advanced-print-menu')">高级打印</button><div class="advanced-print-menu"><button id="btn-svg-print-bom" type="button" onclick="closeAdvancedPrintMenus();printBomSvg()">SVG打印</button><button id="btn-svg-pdf-bom" type="button" onclick="closeAdvancedPrintMenus();exportBomSvgPdf()">SVG导出PDF</button></div></div><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
+        <div class="bom-cut-layout" id="bom-cut-layout" hidden></div><div class="bom-grid" id="bom"></div>
       </div>
-      <div class="cv-controls">
+      <div class="bom-cut-layout-modal" id="bom-cut-layout-modal" aria-hidden="true"><div class="bom-cut-layout-modal-head"><div class="bom-cut-layout-modal-title">&#20999;&#21106;&#24067;&#23616;</div><button class="bom-cut-layout-modal-close" type="button" onclick="closeBoardCutLayoutFullscreen()">&#20851;&#38381;</button></div><div class="bom-cut-layout-modal-body"><div class="bom-cut-layout" id="bom-cut-layout-fullscreen-body"></div></div></div><div class="cv-controls">
         <span class="zoom-info" id="zoom-info">100%</span>
         <button class="cv-btn" onclick="resetZoom()">重置视图</button>
       </div>
@@ -7625,7 +7625,7 @@ function placePieceOnBoard(board, piece, allowRotate) {
   board.free = pruneFreeRects(board.free);
   board.usedArea += size.w * size.h;
   if (!board.placed) board.placed = [];
-  board.placed.push({x:rect.x, y:rect.y, w:size.w, h:size.h});
+  board.placed.push({x:rect.x, y:rect.y, w:size.w, h:size.h, label:piece.label || '', originalW:piece.w, originalH:piece.h});
   return true;
 }
 
@@ -7640,14 +7640,14 @@ function estimatePackedBoardSheetCount(pieces, sheet, allowRotate) {
         unplaced.push(piece);
         return;
       }
-      const board = {free:[{x:0,y:0,w:sheet.w,h:sheet.h}], usedArea:0, area:sheet.w * sheet.h};
+      const board = {free:[{x:0,y:0,w:sheet.w,h:sheet.h}], usedArea:0, area:sheet.w * sheet.h, sheet};
       placePieceOnBoard(board, piece, allowRotate);
       boards.push(board);
     }
   });
   const usedArea = pieces.reduce((sum, piece) => sum + piece.w * piece.h, 0);
   const sheetArea = boards.reduce((sum, board) => sum + board.area, 0);
-  return {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0, sheetArea};
+  return {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0, sheetArea, boards};
 }
 
 function estimateSingleBoardSheetCount(pieces, sheet, allowRotate) {
@@ -7710,10 +7710,10 @@ function estimateBoardSheetsByMode(filtered, enabledSheets, allowRotate) {
     const sheetArea = boards.reduce((sum, board) => sum + board.area, 0);
     const remnants = boardRemnantPiecesFromEstimate(boards);
     const sheetCounts = boardSheetCountsFromBoards(boards);
-    const result = {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0, remnants, sheetCounts, sheetArea};
+    const result = {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0, remnants, sheetCounts, sheetArea, boards};
     best = betterBoardEstimate(best, result);
   }));
-  return best || {count:0, unplacedCount:filtered.length, utilization:0, sheetCounts:[], sheetArea:0};
+  return best || {count:0, unplacedCount:filtered.length, utilization:0, sheetCounts:[], sheetArea:0, boards:[]};
 }
 
 function boardSheetCountsFromBoards(boards) {
@@ -7921,6 +7921,102 @@ function toggleBoardRotate() {
   updateBoardSheetEstimate();
 }
 
+let boardCutLayoutVisible = false;
+let lastBoardSheetEstimate = null;
+
+function toggleBoardCutLayoutPreview(force = null) {
+  boardCutLayoutVisible = force === null ? !boardCutLayoutVisible : force === true;
+  renderBoardCutLayoutPreview(lastBoardSheetEstimate);
+}
+
+function boardCutPieceLabel(piece) {
+  const label = String(piece?.label || '').trim();
+  const size = `${Math.round(piece?.h || 0)}\u00d7${Math.round(piece?.w || 0)}`;
+  return label ? `${label} ${size}` : size;
+}
+
+function bomCutPieceDims(piece) {
+  return {
+    name: String(piece?.label || '').trim(),
+    w: Math.round(Number(piece?.w) || 0),
+    h: Math.round(Number(piece?.h) || 0)
+  };
+}
+
+function bomCutPieceTextFlow(piece, previewW, previewH) {
+  const pieceW = Number(piece?.w) || 0;
+  if (pieceW < 520) return 'vertical';
+  const dims = bomCutPieceDims(piece);
+  const text = [dims.name, `${dims.h}\u00d7${dims.w}`].filter(Boolean).join(' ');
+  const estimatedTextWidth = Math.max(28, text.length * 8);
+  const estimatedTextHeight = Math.max(28, text.length * 8);
+  if (previewW >= estimatedTextWidth || previewW >= previewH) return 'horizontal';
+  if (previewH >= estimatedTextHeight) return 'vertical';
+  return 'horizontal';
+}
+
+function bomCutPieceTextHtml(dims, textFlow) {
+  const name = escapeHtml(dims.name);
+  if (textFlow === 'vertical') {
+    return `${name ? `<span>${name}</span>` : ''}<span>${dims.h}\u00d7${dims.w}</span>`;
+  }
+  return `<span class="bom-cut-piece-name">${name}</span><span class="bom-cut-piece-width-dim">${dims.w}\u00d7${dims.h}</span>`;
+}
+
+function openBoardCutLayoutFullscreen() {
+  const modal = document.getElementById('bom-cut-layout-modal');
+  if (!modal) return;
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+  renderBoardCutLayoutPreview(lastBoardSheetEstimate, {targetId:'bom-cut-layout-fullscreen-body', forceVisible:true});
+}
+
+function closeBoardCutLayoutFullscreen() {
+  const modal = document.getElementById('bom-cut-layout-modal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+function renderBoardCutLayoutPreview(estimate = lastBoardSheetEstimate, options = {}, targetId = options.targetId || 'bom-cut-layout') {
+  const box = document.getElementById(targetId);
+  const btn = document.getElementById('bom-cut-layout-toggle');
+  const visible = options.forceVisible === true || boardCutLayoutVisible;
+  if (!box) return;
+  if (targetId === 'bom-cut-layout') btn?.classList.toggle('active', boardCutLayoutVisible);
+  if (!visible || !estimate?.boards?.length) {
+    box.hidden = targetId === 'bom-cut-layout';
+    box.innerHTML = '';
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML = estimate.boards.map((board, index) => {
+    const sheet = board.sheet || board;
+    const sheetW = Math.max(1, Math.round(Number(sheet.w) || 0));
+    const sheetH = Math.max(1, Math.round(Number(sheet.h) || 0));
+    const xScale = 100 / sheetW;
+    const yScale = 100 / sheetH;
+    const placed = (board.placed || []).map(piece => {
+      const x = (piece.x || 0) * xScale;
+      const y = (piece.y || 0) * yScale;
+      const w = Math.max(0.5, (piece.w || 0) * xScale);
+      const h = Math.max(0.5, (piece.h || 0) * yScale);
+      const label = escapeHtml(boardCutPieceLabel(piece));
+      const dims = bomCutPieceDims(piece);
+      const textFlow = bomCutPieceTextFlow(piece, w, h);
+      return `<div class="bom-cut-piece" title="${label}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%"><span class="bom-cut-piece-text ${textFlow}">${bomCutPieceTextHtml(dims, textFlow)}</span></div>`;
+    }).join('');
+    const free = (board.free || []).map(rect => {
+      const x = (rect.x || 0) * xScale;
+      const y = (rect.y || 0) * yScale;
+      const w = Math.max(0.5, (rect.w || 0) * xScale);
+      const h = Math.max(0.5, (rect.h || 0) * yScale);
+      return `<div class="bom-cut-free" title="${Math.round(rect.h || 0)}\u00d7${Math.round(rect.w || 0)}" style="left:${x}%;top:${y}%;width:${w}%;height:${h}%"></div>`;
+    }).join('');
+    return `<div class="bom-cut-board"><div class="bom-cut-board-title">${index + 1}. ${sheetW}\u00d7${sheetH}</div><div class="bom-cut-figure"><div class="bom-cut-canvas" style="--sheet-ratio:${sheetW}/${sheetH}">${free}${placed}</div><div class="bom-cut-sheet-width-dim">${sheetW}</div><div class="bom-cut-sheet-height-dim">${sheetH}</div></div></div>`;
+  }).join('');
+}
+
 function renderBomItems(items) {
   const allItems = [...items];
   const urinal = urinalBomItem();
@@ -7928,6 +8024,7 @@ function renderBomItems(items) {
   lastBomRenderMobileMode = isMobileViewport();
   lastBomPieces = collectBomPiecesFromItems(allItems);
   const estimate = estimateBoardSheets(lastBomPieces, boardSheets, boardRotateEnabled);
+  lastBoardSheetEstimate = estimate;
   allItems.push(boardRemnantBomItem(estimate));
   document.getElementById('bom').innerHTML = allItems.map(i=>`
     <div class="bom-card">
@@ -7935,6 +8032,7 @@ function renderBomItems(items) {
       ${formatBomLines(i.sub, i.name)}
     </div>`).join('');
   updateBoardSheetEstimate();
+  renderBoardCutLayoutPreview(estimate);
 }
 
 function escapeHtml(value) {
@@ -11471,6 +11569,7 @@ document.getElementById('dimension-editor')?.addEventListener('keydown', e => {
 
 document.getElementById('dimension-editor')?.addEventListener('blur', () => finishDimensionEdit(true));
 
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBoardCutLayoutFullscreen(); });
 document.addEventListener('focusin', e => markGlobalEditStart(e.target), true);
 document.addEventListener('pointerdown', e => markGlobalEditStart(e.target), true);
 document.addEventListener('change', e => clearGlobalEditStart(e.target), true);
@@ -11539,4 +11638,3 @@ window.setInterval(() => {
 
 setTimeout(()=>{ initMobileSidebarResize(); bindTopButtonDrag(); applyViewMode(); renderSwingButtons(); renderBoothSwingPanel(); renderDepthPanelSpecialPanel(); updateLayoutTargetLabel(); renderGroups(); renderQuickLayout(); renderRebateToggle(); syncWidthCardsFromText(committedWidthsText); renderWidthCards(); bindNamedExportButtons(); generate(); setTimeout(updateMobileStickyOffsets, 80); }, 100);
 </script>
-
