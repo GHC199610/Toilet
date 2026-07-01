@@ -801,6 +801,7 @@ let selectionScope = 'row';
 let selectedBoothIndex = null;
 let selectedBoothRef = null;
 let selectedDepthPanelRef = null;
+let selectedBoardPanelRef = null;
 let multiSelections = new Set();
 let rowAnimation = null;
 let planHitAreas = [];
@@ -1381,6 +1382,11 @@ function clearSelectedBooth() {
 
 function clearSelectedDepthPanel() {
   selectedDepthPanelRef = null;
+  selectedBoardPanelRef = null;
+}
+
+function clearSelectedBoardPanel() {
+  selectedBoardPanelRef = null;
 }
 
 function selectionKey(type, groupId, rowId, index = '') {
@@ -1520,6 +1526,12 @@ function hitCanMultiSelect(hit) {
 
 function setSelectedDepthPanel(groupId, rowId, index) {
   selectedDepthPanelRef = {groupId, rowId, index};
+  selectedBoardPanelRef = null;
+}
+
+function setSelectedBoardPanel(groupId, rowId, panel) {
+  selectedBoardPanelRef = {groupId, rowId, panel};
+  selectedDepthPanelRef = null;
 }
 
 function isSelectedDepthPanel(groupId, rowId, index) {
@@ -1691,6 +1703,69 @@ function drawCanvasTextCaret(x, y, h, color = '#000000') {
 
 function createFreePlanTextId() {
   return 'free-text-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function isSelectedBoardPanel(groupId, rowId, panel) {
+  return selectionScope === 'board-panel'
+    && selectedBoardPanelRef?.groupId === groupId
+    && selectedBoardPanelRef?.rowId === rowId
+    && boardPanelKey(selectedBoardPanelRef?.panel) === boardPanelKey(panel);
+}
+
+function boardPanelKey(panel) {
+  return `${panel?.kind || ''}:${panel?.index ?? ''}:${panel?.lockIndex ?? ''}`;
+}
+
+function boardPanelName(panel) {
+  if (!panel) return '板件';
+  if (panel.kind === 'door') return `门板 ${Number(panel.index) + 1}`;
+  if (panel.kind === 'edge') return Number(panel.index) === 0 ? '左前沿板' : '右前沿板';
+  if (panel.kind === 'middle') return `第${Number(panel.index) + 1}道前沿板`;
+  return '板件';
+}
+
+function boardPanelHeightKey(panel) {
+  if (!panel) return '';
+  return `${panel.kind || 'panel'}:${panel.lockIndex ?? panel.index ?? 0}`;
+}
+
+function boardPanelDefaultHeight(panel, row) {
+  return panel?.kind === 'door' ? Number(row?.hDoor) || 0 : Number(row?.hUpright) || 0;
+}
+
+function boardPanelHeightValue(panel, row) {
+  const key = boardPanelHeightKey(panel);
+  const value = key ? Number(row?.boardPanelHeights?.[key]) : 0;
+  return value > 0 ? Math.round(value) : boardPanelDefaultHeight(panel, row);
+}
+
+function boardPanelSizeText(panel, row) {
+  if (!panel) return '';
+  const height = boardPanelHeightValue(panel, row);
+  const width = Math.round(Number(panel.bigMm) || 0);
+  return width && height ? `${height} x ${width}` : '';
+}
+
+function drawSelectedBoardPanelMarker(x, y, w, h) {
+  if (drawingForExport) return;
+  ctx.save();
+  ctx.strokeStyle = '#d64242';
+  ctx.lineWidth = Math.max(1.1, anno(3));
+  ctx.setLineDash([]);
+  ctx.strokeRect(x, y, w, h);
+  ctx.restore();
+  drawPlanSelectionBox(x, y, w, h, anno(10));
+}
+
+function drawGenericBoardPanelSelection(x, y, w, h) {
+  drawSelectedBoardPanelMarker(x, y, w, h);
+}
+
+function selectedBoardPanelRow() {
+  if (!selectedBoardPanelRef) return null;
+  const group = groups.find(g => g.id === selectedBoardPanelRef.groupId);
+  const row = group ? ensureRows(group).find(r => r.id === selectedBoardPanelRef.rowId) : null;
+  return row ? {group, row, panel:selectedBoardPanelRef.panel} : null;
 }
 
 function refreshTextToolButton() {
@@ -1915,6 +1990,22 @@ function renderDepthPanelSpecialPanel() {
   const panel = document.getElementById('depth-panel-special-panel');
   if (!panel) return;
   const target = selectedDepthPanelRow();
+  const boardTarget = selectedBoardPanelRow();
+  if (boardTarget && selectionScope === 'board-panel') {
+    const {row, panel:boardPanel} = boardTarget;
+    const height = boardPanelHeightValue(boardPanel, row) || '';
+    panel.innerHTML = `
+      <div class="booth-swing-hint">${escapeAttr(boardPanelName(boardPanel))}：${escapeAttr(boardPanelSizeText(boardPanel, row) || '已选中')}</div>
+      <div class="special-card-row">
+        <div class="special-card-field"><label>板件类型</label><input class="width-card" value="${escapeAttr(boardPanelName(boardPanel))}" disabled></div>
+        <div class="special-card-field"><label>高度</label><input class="width-card" inputmode="numeric" maxlength="4" value="${height}" oninput="limitDepthPanelCardInput(this)" onchange="applySelectedBoardPanelHeight(this.value)" onkeydown="handleBoardPanelHeightKey(event)"></div>
+        <div class="special-card-field"><label>当前尺寸</label><input class="width-card" value="${escapeAttr(boardPanelSizeText(boardPanel, row))}" disabled></div>
+      </div>
+      <div class="booth-pick-line">
+        <button class="booth-pick-clear" type="button" onclick="resetSelectedBoardPanelHeight()" ${row.boardPanelHeights?.[boardPanelHeightKey(boardPanel)] ? '' : 'disabled'}>恢复默认高度</button>
+      </div>`;
+    return;
+  }
   if (!target || selectionScope !== 'depth-panel') {
     panel.innerHTML = `
       <div class="booth-swing-hint">选择深度板后可自定义墙凸或指定板深度</div>
@@ -2058,6 +2149,51 @@ function resetSelectedBoothDoorWidth() {
   renderBOM(lastParams);
 }
 
+function applySelectedBoardPanelHeight(value) {
+  const target = selectedBoardPanelRow();
+  const next = Math.max(1, Math.round(Number(value) || 0));
+  if (!target || selectionScope !== 'board-panel' || !(next > 0)) return;
+  const key = boardPanelHeightKey(target.panel);
+  if (!key) return;
+  pushHistory();
+  target.row.boardPanelHeights = {...(target.row.boardPanelHeights || {}), [key]:next};
+  activeGroupId = target.group.id;
+  activeRowId = target.row.id;
+  loadGroupToForm(target.group, target.row);
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
+  renderDepthPanelSpecialPanel();
+  updateGroupListState();
+}
+
+function resetSelectedBoardPanelHeight() {
+  const target = selectedBoardPanelRow();
+  if (!target || selectionScope !== 'board-panel') return;
+  const key = boardPanelHeightKey(target.panel);
+  if (!key || !target.row.boardPanelHeights?.[key]) return;
+  pushHistory();
+  const next = {...target.row.boardPanelHeights};
+  delete next[key];
+  target.row.boardPanelHeights = Object.keys(next).length ? next : null;
+  activeGroupId = target.group.id;
+  activeRowId = target.row.id;
+  loadGroupToForm(target.group, target.row);
+  lastParams = getParams();
+  drawView(lastParams, currentTab);
+  renderBOM(lastParams);
+  renderDepthPanelSpecialPanel();
+  updateGroupListState();
+}
+
+function handleBoardPanelHeightKey(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    applySelectedBoardPanelHeight(event.currentTarget.value);
+    event.currentTarget.blur();
+  }
+}
+
 function updateLayoutTargetLabel() {
   const group = activeGroup();
   const row = activeRow();
@@ -2157,6 +2293,7 @@ function applyGroupParamsToRow(row, params, enable = false) {
     wall: row.wall,
     depthPanelSpecials: row.depthPanelSpecials,
     dimensionLocks: row.dimensionLocks,
+    boardPanelHeights: row.boardPanelHeights,
     note: row.note
   };
   applyParamsToRow(row, {...params, ...keep}, enable);
@@ -2169,7 +2306,8 @@ function applyParamsToRow(row, params, enable = false) {
   const boothDoorWidths = rowDoorWidthOverrides(row === activeRow() ? params : row, params.count);
   const depthPanelSpecials = normalizeDepthPanelSpecials(row === activeRow() ? params.depthPanelSpecials : row.depthPanelSpecials, depthPanelCount(params));
   const dimensionLocks = row === activeRow() ? (params.dimensionLocks || row.dimensionLocks || null) : (row.dimensionLocks || null);
-  Object.assign(row, {...params, boothSwings, noDoorBooths, boothDoorWidths, depthPanelSpecials, dimensionLocks}, {enabled: nextEnabled});
+  const boardPanelHeights = row === activeRow() ? (params.boardPanelHeights || row.boardPanelHeights || null) : (row.boardPanelHeights || null);
+  Object.assign(row, {...params, boothSwings, noDoorBooths, boothDoorWidths, depthPanelSpecials, dimensionLocks, boardPanelHeights}, {enabled: nextEnabled});
   row.boothSwings = normalizeBoothSwings(row.boothSwings, row.count, row.swing || swingMode);
   row.noDoorBooths = normalizeNoDoorBooths(row.noDoorBooths, row.count);
   row.boothNotes = normalizeBoothNotes(row.boothNotes, row.count);
@@ -3863,6 +4001,7 @@ function getParams() {
     noDoorBooths: normalizeNoDoorBooths(currentRow?.noDoorBooths, count),
     depthPanelSpecials: normalizeDepthPanelSpecials(currentRow?.depthPanelSpecials, count + 1),
     dimensionLocks: currentRow?.dimensionLocks || null,
+    boardPanelHeights: currentRow?.boardPanelHeights || null,
     hUpright: parseInt(document.getElementById('h-upright').value)||1830,
     hDoor: parseInt(document.getElementById('h-door').value)||1750,
     hHeader: Math.max(0, parseInt(document.getElementById('h-header').value) || 0),
@@ -6263,7 +6402,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
         drawDim(dimX, drawY, dimX, drawY + actualH, `${fmtMm(actualDepth)}mm`, 12, {kind:'depth-panel-depth', panelIndex});
       }
     }
-    if (selected && !drawingForExport) drawPlanSelectionBox(drawX, drawY, drawW, actualH, anno(10));
+    if (selected && !drawingForExport) drawSelectedBoardPanelMarker(drawX, drawY, drawW, actualH);
     if (!drawingForExport && options.groupId && options.rowId && depthPanelSelectable(p, panelIndex)) {
       const hitScale = options.hitScale || 1;
       const hitX = options.hitX || 0;
@@ -6354,6 +6493,27 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
   });
   const boardModel = buildBoardModel(p, c, doors, ox, sW, scale);
   drawPlanRebateDetails(p, ox, oy, sW, sD, st, scale, boardModel);
+
+  if (!drawingForExport && options.groupId && options.rowId) {
+    const hitScale = options.hitScale || 1;
+    const hitX = options.hitX || 0;
+    const hitY = options.hitY || 0;
+    const boardY = oy + sD;
+    (boardModel.panels || []).forEach(panel => {
+      const x1 = Math.min(panel.bigX1, panel.bigX2);
+      const w = Math.abs(panel.bigX2 - panel.bigX1);
+      if (w <= 0.5) return;
+      if (isSelectedBoardPanel(options.groupId, options.rowId, panel)) drawGenericBoardPanelSelection(x1, boardY, w, st);
+      planHitAreas.push({type:'board-panel', x:hitX + x1 * hitScale, y:hitY + boardY * hitScale, w:w * hitScale, h:Math.max(st, anno(44)) * hitScale, groupId:options.groupId, rowId:options.rowId, panel:{...panel}});
+    });
+    (boardModel.doors || []).forEach(panel => {
+      const x1 = Math.min(panel.bigX1, panel.bigX2);
+      const w = Math.abs(panel.bigX2 - panel.bigX1);
+      if (w <= 0.5) return;
+      if (isSelectedBoardPanel(options.groupId, options.rowId, panel)) drawGenericBoardPanelSelection(x1, boardY, w, st);
+      planHitAreas.push({type:'board-panel', x:hitX + x1 * hitScale, y:hitY + boardY * hitScale, w:w * hitScale, h:Math.max(st, anno(44)) * hitScale, groupId:options.groupId, rowId:options.rowId, panel:{...panel}});
+    });
+  }
 
   const edge = c.edge;
   const middle = c.middle;
@@ -7113,13 +7273,15 @@ function buildMaterialListItems(rows) {
   sourceRows.forEach(row => {
     const c = compute(row);
     const count = Math.max(1, Number(row.count) || 1);
-    const edgeWidths = [c.sidePairs[0]?.[0] || 0, c.sidePairs[count - 1]?.[1] || 0];
-    const middleWidths = c.sidePairs.slice(0, -1).map((pair, i) => pair[1] + c.sidePairs[i + 1][0]);
-    const frontHeight = Number(row.hUpright) || 1830;
+    const frontPanels = [
+      {kind:'edge', index:0, lockIndex:0, width:c.sidePairs[0]?.[0] || 0},
+      ...c.sidePairs.slice(0, -1).map((pair, i) => ({kind:'middle', index:i, lockIndex:i + 1, width:(pair[1] || 0) + (c.sidePairs[i + 1]?.[0] || 0)})),
+      {kind:'edge', index:count - 1, lockIndex:count, width:c.sidePairs[count - 1]?.[1] || 0}
+    ];
     if (row.rebate) {
-      addFrontRebateBomPieces(front, row, c, frontHeight);
+      addFrontRebateBomPieces(front, row, c);
     } else {
-      [...edgeWidths, ...middleWidths].forEach(width => addBomPiece(front, frontHeight, fmtMm(width), ''));
+      frontPanels.forEach(panel => addBomPiece(front, boardPanelHeightValue(panel, row), fmtMm(panel.width), ''));
     }
 
     for (let i = 0; i < count; i++) {
@@ -7128,7 +7290,7 @@ function buildMaterialListItems(rows) {
         continue;
       }
       const width = Math.round(Number(c.doorWidths?.[i]) || Number(row.doorW) || 0);
-      if (width) addBomPiece(doors, Number(row.hDoor) || 1750, row.rebate ? rebateBomSizeText(width, row) : fmtMm(width), row.rebate ? '双启口' : (sourceRows.some(item => item?.rebate) ? '平口' : ''));
+      if (width) addBomPiece(doors, boardPanelHeightValue({kind:'door', index:i}, row), row.rebate ? rebateBomSizeText(width, row) : fmtMm(width), row.rebate ? '双启口' : (sourceRows.some(item => item?.rebate) ? '平口' : ''));
     }
 
     const specialDepths = specialDepthPanelItems(row);
@@ -7164,20 +7326,20 @@ function buildMaterialListItems(rows) {
   ];
 }
 
-function addFrontRebateBomPieces(bucket, row, c = compute(row), height = row.hUpright || 1830) {
+function addFrontRebateBomPieces(bucket, row, c = compute(row)) {
   const count = Math.max(1, Number(row.count) || 1);
   const panels = [];
   if (count <= 0) return;
-  panels.push({width:c.frontPanelBigLocks?.[0] || c.sidePairs[0]?.[0] || 0, process:'单启口'});
+  panels.push({kind:'edge', index:0, lockIndex:0, width:c.frontPanelBigLocks?.[0] || c.sidePairs[0]?.[0] || 0, process:'单启口'});
   for (let i = 0; i < count - 1; i++) {
     const leftSwing = boothSwingAt(row, i);
     const rightSwing = boothSwingAt(row, i + 1);
     const width = c.frontPanelBigLocks?.[i + 1] || (c.sidePairs[i]?.[1] || 0) + (c.sidePairs[i + 1]?.[0] || 0);
     const mixed = frontSmallOnTopForSwing(leftSwing) !== frontSmallOnTopForSwing(rightSwing);
-    panels.push({width, process:mixed ? '异启口' : '双启口'});
+    panels.push({kind:'middle', index:i, lockIndex:i + 1, width, process:mixed ? '异启口' : '双启口'});
   }
-  panels.push({width:c.frontPanelBigLocks?.[count] || c.sidePairs[count - 1]?.[1] || 0, process:'单启口'});
-  panels.forEach(panel => addBomPiece(bucket, height, rebateBomSizeText(panel.width, row), panel.process));
+  panels.push({kind:'edge', index:count - 1, lockIndex:count, width:c.frontPanelBigLocks?.[count] || c.sidePairs[count - 1]?.[1] || 0, process:'单启口'});
+  panels.forEach(panel => addBomPiece(bucket, boardPanelHeightValue(panel, row), rebateBomSizeText(panel.width, row), panel.process));
 }
 
 function createBomBucket() {
@@ -10207,7 +10369,7 @@ function finishDimensionEdit(commit = true) {
 
 function hitPlanArea(x, y) {
   const hits = [...planHitAreas].reverse().filter(area => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
-  return hits.find(area => area.type === 'dimension') || hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'block') || null;
+  return hits.find(area => area.type === 'dimension') || hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'board-panel') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'block') || null;
 }
 
 function hitPlanDimension(x, y) {
@@ -10216,7 +10378,7 @@ function hitPlanDimension(x, y) {
 
 function hitPlanSelectable(x, y) {
   const hits = [...planHitAreas].reverse().filter(area => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
-  return hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'free-text') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'block') || null;
+  return hits.find(area => area.type === 'sheet-note') || hits.find(area => area.type === 'tag') || hits.find(area => area.type === 'free-text') || hits.find(area => area.type === 'board-panel') || hits.find(area => area.type === 'depth-panel') || hits.find(area => area.type === 'booth') || hits.find(area => area.type === 'block') || null;
 }
 
 function hitPlanBlock(x, y) {
@@ -10669,6 +10831,10 @@ function handlePlanTapFromPoint(pt, shiftKey = false) {
     selectionScope = 'depth-panel';
     clearSelectedBooth();
     setSelectedDepthPanel(group.id, row.id, hit.index);
+  } else if (hit.type === 'board-panel') {
+    selectionScope = 'board-panel';
+    clearSelectedBooth();
+    setSelectedBoardPanel(group.id, row.id, hit.panel);
   } else if (hit.type === 'tag') {
     lastCanvasTextHitArea = {...hit};
     selectionScope = 'tag';
