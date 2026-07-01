@@ -108,7 +108,6 @@ body.theme-dark .switch-toggle.active .switch-track{background:#58a6ff;border-co
 .quick-cell.active{border-color:#378ADD;background:#E6F1FB;color:#185FA5;box-shadow:0 0 0 2px rgba(55,138,221,.16)}
 body.theme-dark .quick-cell.active{background:#102a43;color:#b9dcff;border-color:#58a6ff}
 .quick-actions{display:grid;gap:var(--control-gap)}
-.quick-page-actions{display:grid;grid-template-columns:1fr 1fr;gap:var(--control-gap)}
 .quick-bottom-actions{display:grid;grid-template-columns:1fr;align-items:center;gap:var(--control-gap)}
 .quick-btn{height:2.25rem;padding:0 0.75rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);font-size:var(--sidebar-content-font);cursor:pointer;white-space:nowrap}
 .quick-btn:hover{border-color:#378ADD;color:#185FA5;background:var(--color-background-primary)}
@@ -222,12 +221,9 @@ body.theme-dark .bom-area{background:rgba(20,26,34,.92);box-shadow:0 10px 28px r
 .bom-board-estimator{display:flex;align-items:center;gap:0.5rem;flex:1 0 100%;min-width:0;font-size:0.875rem;font-weight:700;color:var(--color-text-secondary);flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding-bottom:0.125rem;scrollbar-width:thin}
 .bom-board-estimator input,.bom-board-estimator select{height:2.25rem;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:0.875rem;font-weight:800;text-align:center;padding:0 0.5rem}
 .bom-board-estimator input{width:4.75rem;-webkit-appearance:none;-moz-appearance:textfield}
-.bom-board-estimator #board-kerf{width:3rem}
 .bom-board-estimator input::-webkit-outer-spin-button,.bom-board-estimator input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .bom-board-estimator select{width:5.25rem;text-align:left}
 .bom-board-size{display:flex;align-items:center;gap:0.375rem;white-space:nowrap}
-.bom-board-kerf{gap:0.25rem}
-.bom-board-kerf-label{font-size:0.8125rem;font-weight:700;color:var(--color-text-tertiary)}
 .bom-board-sheet-toggle{display:none}
 .bom-board-sheet-toggle.show{display:inline-flex}
 .bom-board-estimator .switch-toggle{flex:0 0 auto}
@@ -344,7 +340,7 @@ body.theme-dark .bom-mobile-group-title{color:#b9dcff}
   .rebate-row{grid-template-columns:minmax(0,1fr) auto;gap:0.625rem;margin:0}
   .quick-cells{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:0.125rem}
   .quick-cell{width:3rem;height:2.75rem;font-size:1rem;flex:0 0 auto}
-  .quick-title-row,.quick-history-actions,.quick-cells,.quick-page-actions,.quick-bottom-actions{gap:0.625rem}
+  .quick-title-row,.quick-history-actions,.quick-cells,.quick-bottom-actions{gap:0.625rem}
   .quick-title-row{align-items:flex-start;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
   .quick-title-row .sec-title,.quick-history-actions{flex:0 0 auto}
   .quick-icon-btn{width:2.5rem;height:2.75rem}
@@ -389,7 +385,6 @@ body.theme-dark .bom-mobile-group-title{color:#b9dcff}
   .bom-head{flex-wrap:wrap;gap:0.5rem}
   .bom-board-estimator{order:3;flex:1 0 100%;flex-wrap:nowrap;overflow-x:auto;padding-bottom:0.125rem}
   .bom-board-estimator input{width:4rem;height:1.875rem;font-size:0.8125rem}
-  .bom-board-estimator #board-kerf{width:2.75rem}
   .bom-board-estimator select{width:4.75rem;height:1.875rem;font-size:0.8125rem}
   .bom-board-estimator .switch-toggle{font-size:0.8125rem}
   .bom-board-result{font-size:0.875rem}
@@ -513,7 +508,6 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .bom-head{flex-wrap:nowrap}
   .bom-board-estimator{order:0;flex:1 1 auto;flex-wrap:nowrap;overflow-x:auto}
   .bom-board-estimator input{width:3.75rem;height:1.75rem}
-  .bom-board-estimator #board-kerf{width:2.5rem}
   .bom-board-estimator select{width:4.25rem;height:1.75rem}
   .bom-board-result{font-size:0.8125rem}
   .bom-toggle,.bom-export{height:1.875rem;padding:0 0.625rem;font-size:0.8125rem}
@@ -529,7 +523,6 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
   .bom-actions{order:2;display:flex;align-items:center;gap:0.5rem;margin-left:0}
   .bom-board-estimator{order:1;grid-column:2;flex:0 1 auto;min-width:0;gap:0.375rem;overflow-x:auto;padding-bottom:0.125rem}
   .bom-board-estimator input{width:4rem;height:2rem;font-size:0.875rem}
-  .bom-board-estimator #board-kerf{width:2.75rem}
   .bom-board-estimator select{width:4.875rem;height:2rem;font-size:0.875rem}
   .bom-board-estimator .switch-toggle{height:2rem;font-size:0.8125rem;gap:0.25rem}
   .bom-board-result{margin-left:0;font-size:0.875rem}
@@ -702,7 +695,7 @@ body.theme-dark .cv-btn:hover{border-color:#58a6ff;color:#b9dcff;background:#141
       <textarea id="canvas-text-editor" class="canvas-text-editor" rows="2" enterkeyhint="done" aria-label="图纸文字输入"></textarea>
       <input id="dimension-editor" class="dimension-editor" inputmode="numeric" aria-label="尺寸输入" hidden>
       <div class="bom-area collapsed" id="bom-area">
-        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><span class="bom-board-size bom-board-kerf"><span class="bom-board-kerf-label">锯缝</span><input id="board-kerf" type="number" inputmode="numeric" min="0" step="0.5" value="2" aria-label="锯缝"></span><button class="switch-toggle bom-board-sheet-toggle" id="board-sheet-enabled-toggle" type="button" onclick="toggleBoardSheetEnabled()"><span>启用</span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><div class="advanced-print" id="bom-advanced-print-menu"><button class="bom-export" type="button" onclick="toggleAdvancedPrintMenu('bom-advanced-print-menu')">高级打印</button><div class="advanced-print-menu"><button id="btn-svg-print-bom" type="button" onclick="closeAdvancedPrintMenus();printBomSvg()">SVG打印</button><button id="btn-svg-pdf-bom" type="button" onclick="closeAdvancedPrintMenus();exportBomSvgPdf()">SVG导出PDF</button></div></div><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
+        <div class="bom-head"><div class="bom-title">开料清单</div><div class="bom-board-estimator" aria-label="整板估算"><select id="board-sheet-select" aria-label="整板规格"><option value="0">整板1</option><option value="1">整板2</option><option value="2">整板3</option></select><span class="bom-board-size"><input id="board-sheet-w" type="number" inputmode="numeric" min="1" step="10" value="1220" aria-label="整板宽度"><span>×</span><input id="board-sheet-h" type="number" inputmode="numeric" min="1" step="10" value="2440" aria-label="整板长度"></span><span class="switch-track" aria-hidden="true"></span></button><button class="switch-toggle active" id="board-rotate-toggle" type="button" onclick="toggleBoardRotate()"><span>旋转</span><span class="switch-track" aria-hidden="true"></span></button><span class="bom-board-result" id="board-sheet-result">≈ -- 张</span></div><div class="bom-actions"><button class="bom-export" id="btn-export-bom" type="button" onclick="openExportDialog('bom')">导出</button><button class="bom-export" id="btn-export-bom-pdf" type="button" onclick="exportBomPdf()">PDF</button><button class="bom-export" id="btn-print-bom" type="button" onclick="printBom()">打印</button><div class="advanced-print" id="bom-advanced-print-menu"><button class="bom-export" type="button" onclick="toggleAdvancedPrintMenu('bom-advanced-print-menu')">高级打印</button><div class="advanced-print-menu"><button id="btn-svg-print-bom" type="button" onclick="closeAdvancedPrintMenus();printBomSvg()">SVG打印</button><button id="btn-svg-pdf-bom" type="button" onclick="closeAdvancedPrintMenus();exportBomSvgPdf()">SVG导出PDF</button></div></div><button class="bom-toggle" type="button" onclick="toggleBom()">展开</button></div></div>
         <div class="bom-grid" id="bom"></div>
       </div>
       <div class="cv-controls">
@@ -854,7 +847,6 @@ let boardSheets = JSON.parse(localStorage.getItem('partition-board-sheets') || '
   {w:1220, h:2440, enabled:false}
 ];
 let boardRotateEnabled = localStorage.getItem('partition-board-rotate') !== 'false';
-let boardKerf = Number(localStorage.getItem('partition-board-kerf') || 2);
 let sheetHeaderText = '';
 const GROUP_NAME_PLACEHOLDER = '备注标签';
 const swingDefs = {
@@ -1985,10 +1977,9 @@ function syncQuickLayoutFromGroup(group = activeGroup()) {
     activeQuickPage = 0;
     return;
   }
-  const maxPage = Math.max(0, ...rows.map(row => Number(row.sheetPage) || 0));
-  const nextPages = Array.from({length: maxPage + 1}, () => [['', '', '']]);
+  const nextPages = [[['', '', '']]];
   rows.forEach(row => {
-    const pageIndex = Math.max(0, Number(row.sheetPage) || 0);
+    const pageIndex = 0;
     const rowIndex = Math.max(0, (Number(row.layoutRow) || 1) - 1);
     const colIndex = Math.max(0, (Number(row.layoutCol) || 1) - 1);
     while (nextPages[pageIndex].length <= rowIndex) nextPages[pageIndex].push(['', '', '']);
@@ -1996,7 +1987,7 @@ function syncQuickLayoutFromGroup(group = activeGroup()) {
     nextPages[pageIndex][rowIndex][colIndex] = String(Math.max(1, Number(row.count) || 1));
   });
   quickLayoutPages = nextPages;
-  activeQuickPage = Math.max(0, Math.min(activeQuickPage, quickLayoutPages.length - 1));
+  activeQuickPage = 0;
   quickLayoutRows = quickLayoutPages[activeQuickPage];
   normalizeQuickRows();
 }
@@ -2544,8 +2535,6 @@ function renderQuickLayout(focusRef = null) {
   }
   const box = document.getElementById('quick-layout');
   if (!box) return;
-  const prevBtn = document.getElementById('quick-prev-page');
-  if (prevBtn) prevBtn.disabled = activeQuickPage <= 0;
   box.innerHTML = quickLayoutRows.map((row, rowIndex) => `
     <div class="quick-row">
       <div class="quick-cells">
@@ -3172,6 +3161,7 @@ function autoCompactSheetLayout() {
     const score = scorePages(pages);
     if (!best || score < best.score) best = {pages, score};
   });
+  const groupOffsets = new Map();
   (best?.pages || []).forEach((page, pageIndex) => {
     const visualBlocks = page.blocks
       .slice()
@@ -3179,11 +3169,14 @@ function autoCompactSheetLayout() {
     visualBlocks.forEach((block, blockIndex) => {
       const row = block.originalRow;
       if (!row) return;
+      const groupKey = String(block.group.id);
+      const groupLocalIndex = groupOffsets.get(groupKey) || 0;
+      groupOffsets.set(groupKey, groupLocalIndex + 1);
       row.sheetPage = pageIndex;
       row.drawSheetPage = undefined;
       row.sheetOrder = pageIndex * 1000 + blockIndex;
-      row.layoutRow = Math.floor(blockIndex / QUICK_COMPACT_COLS) + 1;
-      row.layoutCol = (blockIndex % QUICK_COMPACT_COLS) + 1;
+      row.layoutRow = 1;
+      row.layoutCol = groupLocalIndex + 1;
       row.autoCompactSheetLayout = true;
     });
   });
@@ -6111,7 +6104,7 @@ function drawPlanRow(p, ox, oy, scale, labelPrefix = 'B', showGroupName = '', op
     for (let i = 0; i < p.count; i++) {
       const boothMm = c.boothWidths[i] || c.boothW;
       const boothPx = boothMm * scale;
-      drawDim(boothDimX, boothY, boothDimX + boothPx, boothY, `${fmtMm(boothMm)}mm`, -10, {kind:'booth-width', boothIndex:i});
+      drawDim(boothDimX, boothY, boothDimX + boothPx, boothY, `${fmtMm(boothMm)}`, -10, {kind:'booth-width', boothIndex:i});
       boothDimX += boothPx;
     }
   }
@@ -6899,8 +6892,8 @@ function buildMaterialListItems(rows) {
     {name:'前沿板', val:`${front.count} 块`, sub:formatBomBucket(front) || '无前沿板数据'},
     {name:'门板', val:`${doors.count} 块`, sub:doors.count ? `${formatBomBucket(doors)}${noDoorCount ? ` · ${noDoorCount}间无需门板` : ''}` : `${noDoorCount || 0} 间均无需门板`},
     {name:'中隔板', val:`${midDepths.count} 块`, sub:midDepths.count ? formatBomBucket(midDepths) : '单间无中隔板'},
-    {name:'拼接板', val:`${jointDepths.count} 块`, sub:jointDepths.count ? formatBomBucket(jointDepths) : '无拼接板'},
     {name:'见光板', val:`${visibleDepths.count} 块`, sub:visibleDepths.count ? formatBomBucket(visibleDepths) : '左右两侧均靠墙'},
+    {name:'拼接板', val:`${jointDepths.count} 块`, sub:jointDepths.count ? formatBomBucket(jointDepths) : '无拼接板'},
   ];
 }
 
@@ -7019,14 +7012,14 @@ function pruneFreeRects(rects) {
     && rect.y + rect.h <= other.y + other.h));
 }
 
-function placePieceOnBoard(board, piece, allowRotate, kerf = 0) {
+function placePieceOnBoard(board, piece, allowRotate) {
   let best = null;
   board.free.forEach((rect, rectIndex) => {
     const variants = allowRotate && piece.w !== piece.h ? [{w:piece.w,h:piece.h},{w:piece.h,h:piece.w}] : [{w:piece.w,h:piece.h}];
     variants.forEach(size => {
       if (size.w > rect.w || size.h > rect.h) return;
-      const occupyW = Math.min(rect.w, size.w + Math.max(0, kerf));
-      const occupyH = Math.min(rect.h, size.h + Math.max(0, kerf));
+      const occupyW = size.w;
+      const occupyH = size.h;
       const waste = rect.w * rect.h - occupyW * occupyH;
       const shortSide = Math.min(rect.w - occupyW, rect.h - occupyH);
       const score = waste * 100000 + shortSide;
@@ -7045,12 +7038,11 @@ function placePieceOnBoard(board, piece, allowRotate, kerf = 0) {
   return true;
 }
 
-function estimatePackedBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
+function estimatePackedBoardSheetCount(pieces, sheet, allowRotate) {
   const boards = [];
   const unplaced = [];
-  const safeKerf = Math.max(0, kerf);
   pieces.forEach(piece => {
-    let placed = boards.some(board => placePieceOnBoard(board, piece, allowRotate, safeKerf));
+    let placed = boards.some(board => placePieceOnBoard(board, piece, allowRotate));
     if (!placed) {
       const fits = (piece.w <= sheet.w && piece.h <= sheet.h) || (allowRotate && piece.h <= sheet.w && piece.w <= sheet.h);
       if (!fits) {
@@ -7058,7 +7050,7 @@ function estimatePackedBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
         return;
       }
       const board = {free:[{x:0,y:0,w:sheet.w,h:sheet.h}], usedArea:0, area:sheet.w * sheet.h};
-      placePieceOnBoard(board, piece, allowRotate, safeKerf);
+      placePieceOnBoard(board, piece, allowRotate);
       boards.push(board);
     }
   });
@@ -7067,8 +7059,44 @@ function estimatePackedBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
   return {count:boards.length, unplacedCount:unplaced.length, utilization:boards.length && sheetArea ? usedArea / sheetArea : 0};
 }
 
-function estimateSingleBoardSheetCount(pieces, sheet, allowRotate, kerf = 0) {
-  return estimatePackedBoardSheetCount(pieces, sheet, allowRotate, kerf);
+function estimateSingleBoardSheetCount(pieces, sheet, allowRotate) {
+  return estimatePackedBoardSheetCount(pieces, sheet, allowRotate);
+}
+
+function estimateStripPackBoardSheetCount(pieces, sheet, allowRotate) {
+  const W = sheet.w, H = sheet.h;
+  const boards = [];
+  const unplaced = [];
+  for (const piece of pieces) {
+    const variants = allowRotate && piece.w !== piece.h ? [{w:piece.w, h:piece.h},{w:piece.h, h:piece.w}] : [{w:piece.w, h:piece.h}];
+    let placed = false;
+    for (const size of variants) {
+      for (const board of boards) {
+        for (const strip of board.strips) {
+          if (size.h <= strip.h && strip.x + size.w <= W) {
+            strip.x += size.w;
+            placed = true;
+            break;
+          }
+        }
+        if (placed) break;
+        const lastY = board.strips.length ? board.strips[board.strips.length - 1].y + board.strips[board.strips.length - 1].h : 0;
+        if (lastY + size.h <= H) {
+          board.strips.push({y:lastY, h:size.h, x:size.w});
+          placed = true;
+          break;
+        }
+      }
+      if (placed) break;
+    }
+    if (placed) continue;
+    const fits = variants.find(s => s.w <= W && s.h <= H);
+    if (!fits) { unplaced.push(piece); continue; }
+    boards.push({strips:[{y:0, h:fits.h, x:fits.w}], area:W*H});
+  }
+  const totalUsed = pieces.reduce((s, p) => s + p.w * p.h, 0);
+  const totalArea = boards.reduce((s, b) => s + b.area, 0);
+  return {count:boards.length, unplacedCount:unplaced.length, utilization:totalArea ? totalUsed / totalArea : 0};
 }
 
 function estimateBoardSheets(pieces, sheets, allowRotate, kerf = 0) {
@@ -7076,11 +7104,33 @@ function estimateBoardSheets(pieces, sheets, allowRotate, kerf = 0) {
   const sorted = pieces
     .filter(piece => piece.w > 0 && piece.h > 0)
     .sort((a, b) => (b.w * b.h - a.w * a.h) || Math.max(b.w, b.h) - Math.max(a.w, a.h));
+  
+function estimateBoardSheets(pieces, sheets, allowRotate) {
+  const enabledSheets = sheets.filter(sheet => sheet.enabled && sheet.w > 0 && sheet.h > 0);
+  const filtered = pieces.filter(piece => piece.w > 0 && piece.h > 0);
   if (enabledSheets.length === 1) {
-    const single = estimateSingleBoardSheetCount(sorted, enabledSheets[0], allowRotate, kerf);
-    const usedArea = sorted.reduce((sum, piece) => sum + piece.w * piece.h, 0);
-    const sheetArea = (single.count || 0) * enabledSheets[0].w * enabledSheets[0].h;
-    return {...single, utilization:sheetArea ? usedArea / sheetArea : 0};
+    const sheet = enabledSheets[0];
+    const totalArea = filtered.reduce((sum, piece) => sum + piece.w * piece.h, 0);
+    let best = null;
+    const strategies = [
+      filtered.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || Math.max(b.w, b.h) - Math.max(a.w, a.h)),
+      filtered.slice().sort((a, b) => (b.w * b.h - a.w * a.h) || Math.min(b.w, b.h) - Math.min(a.w, a.h)),
+      filtered.slice().sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h) || (b.w * b.h - a.w * a.h)),
+      filtered.slice().sort((a, b) => Math.min(b.w, b.h) - Math.min(a.w, a.h) || (b.w * b.h - a.w * a.h)),
+      filtered.slice().sort((a, b) => (b.w - a.w) || (b.h - a.h)),
+      filtered.slice().sort((a, b) => (b.h - a.h) || (b.w - a.w)),
+    ];
+    for (const sorted of strategies) {
+      const result = estimateStripPackBoardSheetCount(sorted, sheet, allowRotate);
+      const sheetArea = (result.count || 0) * sheet.w * sheet.h;
+      result.utilization = sheetArea ? totalArea / sheetArea : 0;
+      if (!best || result.count < best.count || (result.count === best.count && result.utilization > best.utilization)) {
+        best = result;
+      }
+    }
+    return best;
+  }
+;
   }
   const boards = [];
   const unplaced = [];
@@ -7131,7 +7181,6 @@ function updateBoardSheetEstimate() {
   const select = document.getElementById('board-sheet-select');
   const wInput = document.getElementById('board-sheet-w');
   const hInput = document.getElementById('board-sheet-h');
-  const kerfInput = document.getElementById('board-kerf');
   const result = document.getElementById('board-sheet-result');
   const toggle = document.getElementById('board-rotate-toggle');
   const sheetToggle = document.getElementById('board-sheet-enabled-toggle');
@@ -7139,7 +7188,6 @@ function updateBoardSheetEstimate() {
   if (select) select.value = String(activeBoardSheetIndex);
   if (wInput && document.activeElement !== wInput) wInput.value = String(activeSheet?.w || '');
   if (hInput && document.activeElement !== hInput) hInput.value = String(activeSheet?.h || '');
-  if (kerfInput && document.activeElement !== kerfInput) kerfInput.value = String(boardKerf || 0);
   toggle?.classList.toggle('active', boardRotateEnabled);
   sheetToggle?.classList.toggle('show', activeBoardSheetIndex > 0);
   sheetToggle?.classList.toggle('active', activeSheet?.enabled !== false);
@@ -7148,7 +7196,7 @@ function updateBoardSheetEstimate() {
     result.textContent = '≈ -- 张';
     return;
   }
-  const estimate = estimateBoardSheets(lastBomPieces, boardSheets, boardRotateEnabled, boardKerf);
+  const estimate = estimateBoardSheets(lastBomPieces, boardSheets, boardRotateEnabled);
   const displayCount = estimate.count + (estimate.unplacedCount || 0);
   result.textContent = displayCount ? `≈ ${displayCount} 张` : '≈ -- 张';
   checkBoardFitWarnings(lastBomPieces);
@@ -7173,11 +7221,6 @@ function setBoardSheetEstimateInput() {
   }, 120);
 }
 
-function setBoardKerfInput() {
-  boardKerf = Math.max(0, Number(document.getElementById('board-kerf')?.value || 0));
-  localStorage.setItem('partition-board-kerf', String(boardKerf));
-  updateBoardSheetEstimate();
-}
 
 function setActiveBoardSheet(index) {
   activeBoardSheetIndex = Math.max(0, Math.min(2, Number(index) || 0));
@@ -8136,7 +8179,7 @@ function buildPlanRowDrawingModel(p, ox = 150, oy = 260, scale = null, labelPref
     for (let i = 0; i < p.count; i++) {
       const boothMm = c.boothWidths[i] || c.boothW;
       const boothPx = boothMm * fit;
-      backendDrawDim(B, model, boothDimX, boothY, boothDimX + boothPx, boothY, `${fmtMm(boothMm)}mm`, -10, 32, 'booth-width-dimension');
+      backendDrawDim(B, model, boothDimX, boothY, boothDimX + boothPx, boothY, `${fmtMm(boothMm)}`, -10, 32, 'booth-width-dimension');
       boothDimX += boothPx;
     }
   }
@@ -9874,14 +9917,17 @@ function pageBlockSnapshot(pageIndex) {
 function applySheetOrderKeys(keys) {
   const order = new Map(keys.map((key, index) => [key, index]));
   const compactCols = QUICK_COMPACT_COLS;
+  const fallbackPageSize = Math.max(1, compactCols * Math.max(1, quickLayoutRows.length || 1));
   const pageByKey = new Map((sheetOrderDrag?.allPageBlocks || []).map(area => [area.orderKey, Number(area.pageIndex) || 0]));
+  const rawPageByKey = new Map(keys.map((key, index) => [key, pageByKey.has(key) ? Math.max(0, Number(pageByKey.get(key)) || 0) : Math.floor(index / fallbackPageSize)]));
+  const orderedPages = [...new Set(keys.map(key => rawPageByKey.get(key) || 0))].sort((a, b) => a - b);
   const pageOffsets = new Map();
   groups.forEach(group => ensureRows(group).forEach(row => {
     const key = `${group.id}:${row.id}`;
     if (!order.has(key)) return;
     const index = order.get(key);
-    const page = pageByKey.has(key) ? pageByKey.get(key) : Math.floor(index / Math.max(1, compactCols * Math.max(1, quickLayoutRows.length || 1)));
-    const pageIndex = Math.max(0, Number(page) || 0);
+    const rawPage = rawPageByKey.get(key) || 0;
+    const pageIndex = orderedPages.indexOf(rawPage);
     const localIndex = pageOffsets.get(pageIndex) || 0;
     pageOffsets.set(pageIndex, localIndex + 1);
     row.sheetOrder = index;
@@ -10720,8 +10766,6 @@ window.addEventListener('keydown', e => {
   input?.addEventListener('input', setBoardSheetEstimateInput);
   input?.addEventListener('change', setBoardSheetEstimateInput);
 });
-document.getElementById('board-kerf')?.addEventListener('input', setBoardKerfInput);
-document.getElementById('board-kerf')?.addEventListener('change', setBoardKerfInput);
 document.getElementById('board-sheet-select')?.addEventListener('change', e => setActiveBoardSheet(e.currentTarget.value));
 
 document.getElementById('project-file-list')?.addEventListener('click', e => {
