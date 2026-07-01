@@ -1423,6 +1423,8 @@ function selectionDeleteTargets() {
     else if (selectionScope === 'row' && activeGroupId && activeRowId) targets.push({type:'block', groupId:activeGroupId, rowId:activeRowId, index:''});
     else if (selectionScope === 'booth' && selectedBoothRef) targets.push({type:'booth', ...selectedBoothRef});
     else if (selectionScope === 'depth-panel' && selectedDepthPanelRef) targets.push({type:'depth-panel', ...selectedDepthPanelRef});
+    else if (selectionScope === 'board-panel' && selectedBoardPanelRef) targets.push({type:'board-panel', ...selectedBoardPanelRef, index:boardPanelKey(selectedBoardPanelRef.panel)});
+    else if (selectionScope === 'free-text' && selectedFreeTextId) targets.push({type:'free-text', groupId:'text', rowId:selectedFreeTextId, index:selectedFreeTextId});
   }
   const unique = new Map();
   targets.forEach(target => unique.set(selectionKey(target.type, target.groupId, target.rowId, target.index), target));
@@ -1440,6 +1442,12 @@ function deleteSelectedItems() {
   targets.forEach(target => {
     if (target.type === 'sheet-note') {
       if (sheetHeaderText) { sheetHeaderText = ''; changed = true; }
+      return;
+    }
+    if (target.type === 'free-text') {
+      const before = freePlanTexts.length;
+      freePlanTexts = freePlanTexts.filter(item => item.id !== target.index && item.id !== target.rowId);
+      if (freePlanTexts.length !== before) changed = true;
       return;
     }
     if (target.type === 'group') {
@@ -1471,6 +1479,8 @@ function deleteSelectedItems() {
       row.depthPanelSpecials = normalizeDepthPanelSpecials(row.depthPanelSpecials, count);
       if (!isDepthPanelDeleted(row, index)) changed = true;
       row.depthPanelSpecials[index] = depthPanelDeletedSpecial(row);
+    } else if (target.type === 'board-panel') {
+      if (clearBoardPanelCustomVariables(row, target.panel || {kind:String(target.index || '').split(':')[0], index:String(target.index || '').split(':')[1], lockIndex:String(target.index || '').split(':')[2]})) changed = true;
     }
   });
   if (groupsToDelete.size && groups.length > 1) {
@@ -1519,11 +1529,14 @@ function deleteSelectedItems() {
 }
 
 function hitSelectionIndex(hit) {
-  return hit.type === 'booth' || hit.type === 'depth-panel' ? hit.index : '';
+  if (hit.type === 'booth' || hit.type === 'depth-panel') return hit.index;
+  if (hit.type === 'board-panel') return boardPanelKey(hit.panel);
+  if (hit.type === 'free-text') return hit.id;
+  return '';
 }
 
 function hitCanMultiSelect(hit) {
-  return ['booth', 'depth-panel', 'tag', 'block', 'sheet-note'].includes(hit?.type);
+  return ['booth', 'depth-panel', 'board-panel', 'free-text', 'tag', 'block', 'sheet-note'].includes(hit?.type);
 }
 
 function setSelectedDepthPanel(groupId, rowId, index) {
@@ -1708,10 +1721,10 @@ function createFreePlanTextId() {
 }
 
 function isSelectedBoardPanel(groupId, rowId, panel) {
-  return selectionScope === 'board-panel'
+  return isMultiSelected('board-panel', groupId, rowId, boardPanelKey(panel)) || (selectionScope === 'board-panel'
     && selectedBoardPanelRef?.groupId === groupId
     && selectedBoardPanelRef?.rowId === rowId
-    && boardPanelKey(selectedBoardPanelRef?.panel) === boardPanelKey(panel);
+    && boardPanelKey(selectedBoardPanelRef?.panel) === boardPanelKey(panel));
 }
 
 function boardPanelKey(panel) {
@@ -1885,7 +1898,8 @@ function drawFreePlanTexts(layout) {
   freePlanTexts.forEach(item => {
     const textValue = String(item.text || '');
     const style = normalizeTextStyle(item.style || defaultTextStyle);
-    const visible = textValue || (selectionScope === 'free-text' && selectedFreeTextId === item.id);
+    const multiSelected = isMultiSelected('free-text', 'text', item.id, item.id);
+    const visible = textValue || (selectionScope === 'free-text' && selectedFreeTextId === item.id) || multiSelected;
     if (!visible) return;
     const x = Number(item.x) || 0;
     const y = Number(item.y) || 0;
@@ -1897,7 +1911,7 @@ function drawFreePlanTexts(layout) {
     if (!drawingForExport) planHitAreas.push({type:'free-text', id:item.id, x, y, w:width, h:height});
     ctx.fillStyle = style.color;
     if (textValue) lines.forEach((line, index) => ctx.fillText(line, x, y + index * lineH));
-    if (selectionScope === 'free-text' && selectedFreeTextId === item.id) drawTextSelectionMarker(x, y, width, height);
+    if ((selectionScope === 'free-text' && selectedFreeTextId === item.id) || multiSelected) drawTextSelectionMarker(x, y, width, height);
     if (canvasTextCaretVisible('free-text') && selectedFreeTextId === item.id) {
       const caret = canvasTextCaretPosition();
       const beforeCaret = String(caret.lineTextBeforeCaret || '');
@@ -10380,6 +10394,37 @@ function setRowDimensionLock(row, section, index, value) {
   row.dimensionLocks = locks;
 }
 
+function clearBoardPanelCustomVariables(row, panel) {
+  if (!row || !panel) return false;
+  let changed = false;
+  const key = boardPanelHeightKey(panel);
+  if (key && row.boardPanelHeights?.[key]) {
+    const nextHeights = {...row.boardPanelHeights};
+    delete nextHeights[key];
+    row.boardPanelHeights = Object.keys(nextHeights).length ? nextHeights : null;
+    changed = true;
+  }
+  if (panel.kind === 'door') {
+    const count = Math.max(1, Number(row.count) || 1);
+    const index = Math.max(0, Math.min(count - 1, Number(panel.index) || 0));
+    row.boothDoorWidths = rowDoorWidthOverrides(row, count);
+    if (row.boothDoorWidths[index]) {
+      row.boothDoorWidths[index] = 0;
+      changed = true;
+    }
+  } else {
+    const count = Math.max(1, Number(row.count) || 1);
+    const lockIndex = frontPanelLockIndex(panel, row);
+    const locks = normalizeDimensionLocks(row.dimensionLocks, count);
+    if (locks.frontPanels[lockIndex]) {
+      locks.frontPanels[lockIndex] = null;
+      row.dimensionLocks = hasDimensionLocks(locks) ? locks : null;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 function dimensionCurrentValue(row, meta = {}) {
   const c = compute(row);
   if (meta.kind === 'total') return c.totalRun || row.total;
@@ -10921,8 +10966,10 @@ function handlePlanTapFromPoint(pt, shiftKey = false) {
   }
   if (shiftKey && hitCanMultiSelect(hit)) {
     if (hit.type === 'sheet-note') toggleMultiSelection('sheet-note', 'sheet', 'header');
+    else if (hit.type === 'free-text') toggleMultiSelection('free-text', 'text', hit.id, hit.id);
     else toggleMultiSelection(hit.type, hit.groupId, hit.rowId, hitSelectionIndex(hit));
-    if (hit.type === 'free-text') editFreePlanTextFromHit(hit);
+    renderDepthPanelSpecialPanel();
+    drawView(lastParams || getParams(), currentTab);
     return;
   }
   if (hit.type === 'free-text') {
